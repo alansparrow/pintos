@@ -1,0 +1,7 @@
+build/
+*~
+setitimer-helper
+squish-pty
+squish-unix
+*.o
+*.d
