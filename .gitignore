@@ -5,3 +5,4 @@ squish-pty
 squish-unix
 *.o
 *.d
+.idea
