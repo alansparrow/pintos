@@ -120,6 +120,9 @@ main (void)
   serial_init_queue ();
   timer_calibrate ();
 
+  /* Start Wake Up Call service thread */
+  thread_create("WakeUpCall Service", PRI_DEFAULT, timer_wake_up_service, NULL);
+
 #ifdef FILESYS
   /* Initialize file system. */
   ide_init ();
@@ -131,6 +134,8 @@ main (void)
   
   /* Run actions specified on kernel command line. */
   run_actions (argv);
+
+  timer_stop_wake_up_service ();
 
   /* Finish up. */
   shutdown ();

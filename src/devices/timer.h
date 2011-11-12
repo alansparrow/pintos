@@ -26,4 +26,7 @@ void timer_ndelay (int64_t nanoseconds);
 
 void timer_print_stats (void);
 
+void timer_wake_up_service (void *aux);
+void timer_stop_wake_up_service (void);
+
 #endif /* devices/timer.h */

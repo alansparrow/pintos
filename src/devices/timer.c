@@ -7,6 +7,7 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
+#include "threads/malloc.h"
   
 /* See [8254] for hardware details of the 8254 timer chip. */
 
@@ -20,6 +21,22 @@
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
 
+static bool wake_up_service = true;
+static struct lock service_lock;
+
+/* Sorted list of wake up calls to be processed */
+static struct list wake_up_calls;
+
+/* A wake up call list element */
+typedef struct wake_up_call
+{
+  struct list_elem elem;
+  struct semaphore semaphore;
+
+  // Wake up time in ticks
+  int64_t wake_up_ticks;
+} wake_up_call;
+
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
 static unsigned loops_per_tick;
@@ -29,6 +46,11 @@ static bool too_many_loops (unsigned loops);
 static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
+static bool wake_up_call_less (const struct list_elem *a,
+            const struct list_elem *b,
+            void *aux UNUSED);
+
+void timer_wake_up_service (void *aux);
 
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
@@ -37,6 +59,11 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
+
+  // setup list for wakeup calls
+  list_init(&wake_up_calls);
+
+  lock_init (&service_lock);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -92,8 +119,27 @@ timer_sleep (int64_t ticks)
   int64_t start = timer_ticks ();
 
   ASSERT (intr_get_level () == INTR_ON);
+
+  // Wake up call defines when this thread shall be woken up in future
+  wake_up_call *w = malloc (sizeof(wake_up_call));
+  sema_init(&w->semaphore, 0);
+  w->wake_up_ticks = start + ticks;
+
+  lock_acquire (&service_lock);
+
+  list_insert_ordered (&wake_up_calls, (struct list_elem*)w,
+      wake_up_call_less, NULL);
+  //list_push_back(&wake_up_calls, &w->elem);
+
+  lock_release (&service_lock);
+
+  //printf("T%d sleep\n", thread_tid());
+  sema_down(&w->semaphore);
+
+  /* Old Busy Waiting
   while (timer_elapsed (start) < ticks) 
     thread_yield ();
+  //*/
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -243,4 +289,68 @@ real_time_delay (int64_t num, int32_t denom)
      the possibility of overflow. */
   ASSERT (denom % 1000 == 0);
   busy_wait (loops_per_tick * num / 1000 * TIMER_FREQ / (denom / 1000)); 
+}
+
+/* Returns true if wake up call A is earlier than B, false
+   otherwise. */
+static bool
+wake_up_call_less (const struct list_elem *a, const struct list_elem *b,
+            void *aux UNUSED)
+{
+  ASSERT(a != NULL);
+  ASSERT(b != NULL);
+
+  int64_t a_ticks = ((wake_up_call*)a)->wake_up_ticks;
+  int64_t b_ticks = ((wake_up_call*)b)->wake_up_ticks;
+
+  return a_ticks <= b_ticks;
+}
+
+void timer_stop_wake_up_service (void)
+{
+  wake_up_service = false;
+}
+
+/* Checks the wake_up_calls list and wakes up sleeping threads whose
+ * time has come.
+ */
+void timer_wake_up_service (void *aux)
+{
+  while (wake_up_service)
+    {
+      if (list_empty(&wake_up_calls))
+        {
+          thread_yield ();
+          continue;
+        }
+
+      lock_acquire (&service_lock);
+
+      wake_up_call *p = (wake_up_call*) list_begin(&wake_up_calls);
+      int64_t ticks = timer_ticks();
+
+      while (p != (wake_up_call*) list_end(&wake_up_calls))
+        {
+          if (p->wake_up_ticks > ticks) break;
+          wake_up_call *next = (wake_up_call*) p->elem.next;
+
+          struct semaphore s = p->semaphore;
+
+          // Remove wake up call from list
+          list_pop_front(&wake_up_calls);
+
+          // Wake up sleeping thread
+          //printf("TX wakeup\n");
+          sema_up(&s);
+
+          // Free resources
+          free(p);
+          p = NULL;
+
+          // Continue search
+          p = next;
+        }
+
+      lock_release (&service_lock);
+    }
 }
