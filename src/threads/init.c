@@ -121,7 +121,7 @@ main (void)
   timer_calibrate ();
 
   /* Start Wake Up Call service thread */
-  thread_create("WakeUpCall Service", PRI_DEFAULT, timer_wake_up_service, NULL);
+  timer_start_wake_up_service ();
 
 #ifdef FILESYS
   /* Initialize file system. */

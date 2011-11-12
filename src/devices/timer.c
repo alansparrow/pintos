@@ -18,11 +18,15 @@
 #error TIMER_FREQ <= 1000 recommended
 #endif
 
+#define TIMER_IDLE_TICKS 2
+
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
 
 static bool wake_up_service = true;
-static struct lock service_lock;
+static int64_t next_call = 0;
+static struct semaphore idle_semaphore;
+static struct thread *service_thread = NULL;
 
 /* Sorted list of wake up calls to be processed */
 static struct list wake_up_calls;
@@ -48,6 +52,7 @@ static bool wake_up_call_less (const struct list_elem *a,
             const struct list_elem *b,
             void *aux UNUSED);
 
+void timer_start_wake_up_service (void);
 void timer_wake_up_service (void *aux UNUSED);
 
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
@@ -61,7 +66,7 @@ timer_init (void)
   // setup list for wakeup calls
   list_init(&wake_up_calls);
 
-  lock_init (&service_lock);
+  sema_init (&idle_semaphore, 0);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -121,12 +126,19 @@ timer_sleep (int64_t ticks)
   w->wake_up_ticks = ticks + timer_ticks();
   w->thread = thread_current ();
 
-  // Store wake up call and then block this thread, which will be
-  // unblocked by wake up call service later on
   enum intr_level old_level = intr_disable();
+
+  // Schedule wake up call in priority queue (sorted by ascending time)
   list_insert_ordered (&wake_up_calls, (struct list_elem*)w,
       wake_up_call_less, NULL);
+
+  // Update the time of the next wake up call; this is used to wake up
+  // the wake up call service thread itself, in case it is sleeping
+  if (w->wake_up_ticks < next_call) next_call = w->wake_up_ticks;
+
+  // Let this thread sleep now until it is woken up by the scheduled call
   thread_block ();
+
   intr_set_level(old_level);
 }
 
@@ -206,6 +218,19 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+
+  if (service_thread != NULL)
+    {
+      // If the next scheduled wake up call is soon and the
+      // service thread is sleeping, wake it up early
+      if (next_call - ticks <= TIMER_IDLE_TICKS
+          && service_thread->status == THREAD_BLOCKED)
+        {
+          enum intr_level old_level = intr_disable ();
+          thread_unblock (service_thread);
+          intr_set_level (old_level);
+        }
+    }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
@@ -294,6 +319,11 @@ wake_up_call_less (const struct list_elem *a, const struct list_elem *b,
   return a_ticks < b_ticks;
 }
 
+void timer_start_wake_up_service ()
+{
+  thread_create("WakeUpCallService", PRI_DEFAULT, timer_wake_up_service, NULL);
+}
+
 /* Stops the wake up service thread by setting the switch variable
  * wake_up_service to false. */
 void timer_stop_wake_up_service (void)
@@ -307,6 +337,8 @@ void timer_stop_wake_up_service (void)
  * The thread will run until stop_wake_up_service() is called */
 void timer_wake_up_service (void *aux UNUSED)
 {
+  service_thread = thread_current ();
+
   while (wake_up_service)
     {
       enum intr_level old_level = intr_disable();
@@ -320,6 +352,9 @@ void timer_wake_up_service (void *aux UNUSED)
 
           if (w->wake_up_ticks > ticks)
             {
+              // The next time a thread will want to wake up
+              next_call = w->wake_up_ticks;
+
               // this call is in the future, so the thread will not be
               // unblocked. since all following calls will be later too,
               // the loop can be left here
@@ -334,6 +369,13 @@ void timer_wake_up_service (void *aux UNUSED)
               e = list_next (e);
               free (w);
             }
+        }
+
+      // Now go to sleep until next wake up call or timer_sleep invocation
+      // if the next call is not very soon
+      if (next_call - ticks > TIMER_IDLE_TICKS)
+        {
+          thread_block ();
         }
 
       intr_set_level (old_level);
