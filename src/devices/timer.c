@@ -32,9 +32,6 @@ typedef struct wake_up_call
 {
   struct list_elem elem;
   struct thread* thread;
-  struct semaphore semaphore;
-
-  // Wake up time in ticks
   int64_t wake_up_ticks;
 } wake_up_call;
 
@@ -51,7 +48,7 @@ static bool wake_up_call_less (const struct list_elem *a,
             const struct list_elem *b,
             void *aux UNUSED);
 
-void timer_wake_up_service (void *aux);
+void timer_wake_up_service (void *aux UNUSED);
 
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
@@ -119,40 +116,18 @@ timer_sleep (int64_t ticks)
 {
   ASSERT (intr_get_level () == INTR_ON);
 
+  // Create wake up call with thread and time of wake up
   wake_up_call* w = malloc (sizeof (wake_up_call));
   w->wake_up_ticks = ticks + timer_ticks();
   w->thread = thread_current ();
+
+  // Store wake up call and then block this thread, which will be
+  // unblocked by wake up call service later on
   enum intr_level old_level = intr_disable();
   list_insert_ordered (&wake_up_calls, (struct list_elem*)w,
       wake_up_call_less, NULL);
   thread_block ();
   intr_set_level(old_level);
-
-  /*
-  int64_t start = timer_ticks ();
-
-
-
-  // Wake up call defines when this thread shall be woken up in future
-  wake_up_call *w = malloc (sizeof(wake_up_call));
-  //sema_init(&w->semaphore, 0);
-  w->wake_up_ticks = start + ticks;
-
-  lock_acquire (&service_lock);
-
-  list_insert_ordered (&wake_up_calls, (struct list_elem*)w,
-      wake_up_call_less, NULL);
-
-  lock_release (&service_lock);
-
-  printf("Thread sleep for %d ticks\n", ticks);
-  sema_down(&w->semaphore);
-
-  //* Old Busy Waiting
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
-  //* /
-  */
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -319,82 +294,48 @@ wake_up_call_less (const struct list_elem *a, const struct list_elem *b,
   return a_ticks < b_ticks;
 }
 
+/* Stops the wake up service thread by setting the switch variable
+ * wake_up_service to false. */
 void timer_stop_wake_up_service (void)
 {
   wake_up_service = false;
 }
 
 /* Checks the wake_up_calls list and wakes up sleeping threads whose
- * time has come.
- */
-void timer_wake_up_service (void *aux)
+ * time has come. This function is supposed to be executed within its
+ * own thread and should be started in main().
+ * The thread will run until stop_wake_up_service() is called */
+void timer_wake_up_service (void *aux UNUSED)
 {
   while (wake_up_service)
     {
       enum intr_level old_level = intr_disable();
+      int64_t ticks = timer_ticks ();
 
-      struct list_elem* e = list_next (list_head (&wake_up_calls));
+      // Goes through the list of wake up calls in ascending order of time
+      struct list_elem* e = list_begin (&wake_up_calls);
       while (e != list_end(&wake_up_calls))
         {
           wake_up_call* w = (wake_up_call*) e;
-          if (w->wake_up_ticks == ticks)
+
+          if (w->wake_up_ticks > ticks)
             {
-              printf("Wake up thread...\n");
+              // this call is in the future, so the thread will not be
+              // unblocked. since all following calls will be later too,
+              // the loop can be left here
+              break;
+            }
+          else
+            {
+              // this call was scheduled to be executed now, so unblock
+              // the thread and dispose the wake up call object
               list_pop_front(&wake_up_calls);
               thread_unblock (w->thread);
-              w->thread = 0xCCCCCC;
               e = list_next (e);
               free (w);
             }
-          else
-            break;
         }
 
       intr_set_level (old_level);
-    }
-
-
-  return;
-
-  while (wake_up_service)
-    {
-      if (list_empty(&wake_up_calls))
-        {
-          thread_yield ();
-          continue;
-        }
-
-      lock_acquire (&service_lock);
-
-      struct list_elem *e = (wake_up_call*) list_head(&wake_up_calls);
-      wake_up_call *p = NULL;
-      int64_t ticks = timer_ticks();
-
-      int i = 0;
-
-      while ((e = list_next (e)) != list_end (&wake_up_calls))
-        {
-
-
-          p = (wake_up_call*) e;
-          if (p->wake_up_ticks < 0) continue;
-          if (p->wake_up_ticks > ticks) break;
-
-          struct semaphore s = p->semaphore;
-
-          // Remove wake up call from list
-          //list_pop_front(&wake_up_calls);
-
-          // Wake up sleeping thread
-          printf("Thread wakeup at %d\n", p->wake_up_ticks);
-          p->wake_up_ticks = -1;
-          sema_up(&s);
-
-          // Free resources
-          //free(p);
-          //p = NULL;
-        }
-
-      lock_release (&service_lock);
     }
 }
