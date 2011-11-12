@@ -18,14 +18,22 @@
 #error TIMER_FREQ <= 1000 recommended
 #endif
 
+/* If within the next TIMER_IDLE_TICKS ticks no wake up call is scheduled,
+ * the service thread will be blocked until the next call has to be executed.
+ */
 #define TIMER_IDLE_TICKS 2
 
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
 
+/* Switch that controls whether the wake up service should be running.
+ * Set to false to quit the service thread. */
 static bool wake_up_service = true;
+
+/* Time of the next scheduled wake up call in ticks since boot */
 static int64_t next_call = 0;
-static struct semaphore idle_semaphore;
+
+/* Thread that executes wake up calls */
 static struct thread *service_thread = NULL;
 
 /* Sorted list of wake up calls to be processed */
@@ -65,8 +73,6 @@ timer_init (void)
 
   // setup list for wakeup calls
   list_init(&wake_up_calls);
-
-  sema_init (&idle_semaphore, 0);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -319,6 +325,7 @@ wake_up_call_less (const struct list_elem *a, const struct list_elem *b,
   return a_ticks < b_ticks;
 }
 
+/* Starts the wake up service thread */
 void timer_start_wake_up_service ()
 {
   thread_create("WakeUpCallService", PRI_DEFAULT, timer_wake_up_service, NULL);
