@@ -133,11 +133,10 @@ main (void)
   printf ("Boot complete.\n");
   
   /* Run actions specified on kernel command line. */
-  run_actions (argv);
-
-  timer_stop_wake_up_service ();
+  run_actions (argv);  
 
   /* Finish up. */
+  timer_stop_wake_up_service ();
   shutdown ();
   thread_exit ();
 }
