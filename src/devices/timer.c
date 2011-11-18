@@ -356,7 +356,7 @@ void
 timer_start_wake_up_service ()
 {
   wake_up_service_started = true;
-  thread_create ("WakeUpCallService", PRI_DEFAULT, timer_wake_up_service, NULL);
+  thread_create ("WakeUpCallService", PRI_MAX, timer_wake_up_service, NULL);
 }
 
 /* Signals the service thread to exit. **/
