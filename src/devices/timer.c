@@ -31,6 +31,9 @@ static int64_t ticks;
  * the service thread is started. */
 static bool wake_up_service = false;
 
+/* Determines if timer_start_wake_up_service() was called */
+static bool wake_up_service_started = false;
+
 /* Time of the next scheduled wake up call in ticks since boot */
 static int64_t next_call = 0;
 
@@ -131,7 +134,24 @@ void
 timer_sleep (int64_t ticks)
 {
   ASSERT (intr_get_level () == INTR_ON);
-  ASSERT (wake_up_service);
+   
+  if (!wake_up_service)
+    {    
+      // Check if the service was started, could be that it was started but
+      // not yet scheduled
+      if (!wake_up_service_started)
+        {
+          printf("Warning: timer_sleep waits busy, since wake up service was "
+                 "not started. Call timer_start_wake_up_service() to enable "
+                 "it.\n");
+        }
+      
+      // Busy waiting since wake up service is not available
+      int64_t start = timer_ticks ();
+      while (timer_elapsed (start) < ticks) 
+      thread_yield ();
+      return;
+    }
 
   // Create wake up call with thread and time of wake up
   wake_up_call* w = malloc (sizeof (wake_up_call));
@@ -335,10 +355,11 @@ wake_up_call_less (const struct list_elem *a, const struct list_elem *b,
 void
 timer_start_wake_up_service ()
 {
+  wake_up_service_started = true;
   thread_create ("WakeUpCallService", PRI_DEFAULT, timer_wake_up_service, NULL);
 }
 
-/* Signals the service thread to exit. **//
+/* Signals the service thread to exit. **/
 void
 timer_stop_wake_up_service (void)
 {
