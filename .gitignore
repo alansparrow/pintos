@@ -6,3 +6,4 @@ squish-unix
 *.o
 *.d
 .idea
+/Pintos-Threads/nbproject/private/

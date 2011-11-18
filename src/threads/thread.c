@@ -248,6 +248,14 @@ thread_unblock (struct thread *t)
   ASSERT (t->status == THREAD_BLOCKED);  
   ready_list_enqueue (t);
   t->status = THREAD_READY;
+  
+  // If currently running thread has a lower priority, "jump the queue"
+  struct thread* cur = running_thread ();
+  struct thread* highest = list_entry(&t->elem, struct thread, elem);
+  
+  if (cur->priority < highest->priority)    
+    thread_block ();    
+  
   intr_set_level (old_level);
 }
 
