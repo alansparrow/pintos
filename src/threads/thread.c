@@ -54,6 +54,9 @@ static long long user_ticks;    /* # of timer ticks in user programs. */
 #define TIME_SLICE 4            /* # of timer ticks to give each thread. */
 static unsigned thread_ticks;   /* # of timer ticks since last yield. */
 
+/* Set to true, if a higher priority thread is ready */
+static bool higher_thread_rdy = false;
+
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
@@ -118,6 +121,14 @@ thread_start (void)
   sema_down (&idle_started);
 }
 
+
+/* Returns true if there's a thread in the ready list that has a higher
+ * priority than t. */
+bool is_higher_ready (struct thread* t)
+{
+  return higher_thread_rdy;
+}
+
 /* Called by the timer interrupt handler at each timer tick.
    Thus, this function runs in an external interrupt context. */
 void
@@ -133,15 +144,13 @@ thread_tick (void)
     user_ticks++;
 #endif
   else
-    kernel_ticks++;  
-    
-  // If currently running thread has a lower priority yield
-  struct thread* highest = list_entry(&t->elem, struct thread, elem);
+    kernel_ticks++;      
 
-  /* Enforce preemption. */
-  if (++thread_ticks >= TIME_SLICE || t->priority < highest->priority)
+  /* Enforce preemption when time is up or there's a higher thread ready. */
+  if (++thread_ticks >= TIME_SLICE || is_higher_ready (t))
     intr_yield_on_return ();
 }
+
 
 /* Prints thread statistics. */
 void
@@ -323,6 +332,9 @@ thread_yield (void)
   if (cur != idle_thread) 
     ready_list_enqueue (cur);
   cur->status = THREAD_READY;
+  
+  higher_thread_rdy = false;
+  
   schedule ();
   intr_set_level (old_level);
 }
@@ -408,7 +420,7 @@ idle (void *idle_started_ UNUSED)
   sema_up (idle_started);
 
   for (;;) 
-    {
+    {            
       /* Let someone else run. */
       intr_disable ();
       thread_block ();
@@ -506,7 +518,7 @@ next_thread_to_run (void)
     {
       // Gets thread with highest priority from sorted ready list
       struct thread* t = list_entry (list_pop_front (&ready_list), 
-                                     struct thread, elem);
+                                     struct thread, elem);            
       
       return t;
     }
@@ -595,9 +607,9 @@ allocate_tid (void)
   return tid;
 }
 
-/* Returns true if thread A has a lower priority than thread B. */
+/* Returns true if thread A has a higher priority than thread B. */
 bool
-thread_less (const struct list_elem *a, const struct list_elem *b,
+thread_priority_sort (const struct list_elem *a, const struct list_elem *b,
                    void *aux UNUSED)
 {
   ASSERT (a != NULL);
@@ -606,15 +618,23 @@ thread_less (const struct list_elem *a, const struct list_elem *b,
   struct thread* thread_a = list_entry (a, struct thread, elem);
   struct thread* thread_b = list_entry (b, struct thread, elem);
 
-  return thread_a->priority < thread_b->priority;
+  return thread_a->priority > thread_b->priority;
 }
 
-/* Adds the given thread to the ready_list. The list is inserted 
- * in ascending order of priority. */
+/* Adds the given thread to the ready_list. */
 static void 
 ready_list_enqueue (struct thread* t)
 {  
-  list_insert_ordered(&ready_list, &t->elem, thread_less, NULL);
+  struct thread* cur = thread_current ();
+  if (cur->priority < t->priority)
+    {
+      higher_thread_rdy = true;
+      list_push_front (&ready_list, &t->elem);
+    }
+  else
+    {  
+      list_push_back (&ready_list, &t->elem);
+    }
 }
 
 

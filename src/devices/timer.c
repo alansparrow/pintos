@@ -162,7 +162,7 @@ timer_sleep (int64_t ticks)
 
   // Schedule wake up call in priority queue (sorted by ascending time)
   list_insert_ordered (&wake_up_calls, (struct list_elem*) w,
-                       wake_up_call_less, NULL);
+                       wake_up_call_less, NULL);    
 
   // Update the time of the next wake up call; this is used to wake up
   // the wake up call service thread itself, in case it is sleeping
@@ -337,18 +337,25 @@ real_time_delay (int64_t num, int32_t denom)
 }
 
 /* Returns true if wake up call A is earlier than B, false
-   otherwise. */
+   otherwise. If A and B are scheduled for the same point in time,
+ * the thread with the higher priority is considered "earlier". */
 static bool
 wake_up_call_less (const struct list_elem *a, const struct list_elem *b,
                    void *aux UNUSED)
 {
   ASSERT (a != NULL);
   ASSERT (b != NULL);
+  
+  wake_up_call* call_a = (wake_up_call*) a;
+  wake_up_call* call_b = (wake_up_call*) b;
 
-  int64_t a_ticks = ((wake_up_call*) a)->wake_up_ticks;
-  int64_t b_ticks = ((wake_up_call*) b)->wake_up_ticks;
+  int64_t a_ticks = call_a->wake_up_ticks;
+  int64_t b_ticks = call_b->wake_up_ticks;
 
-  return a_ticks < b_ticks;
+  if (a_ticks == b_ticks)
+    return call_a->thread->priority > call_b->thread->priority;
+  else
+    return a_ticks < b_ticks;
 }
 
 /* Starts the wake up service thread */
@@ -379,7 +386,7 @@ timer_wake_up_service (void *aux UNUSED)
   while (wake_up_service)
     {
       enum intr_level old_level = intr_disable ();
-      int64_t ticks = timer_ticks ();
+      int64_t ticks = timer_ticks ();           
 
       // Goes through the list of wake up calls in ascending order of time
       // Usually none or only one or two iterations will be necessary
@@ -399,7 +406,7 @@ timer_wake_up_service (void *aux UNUSED)
               break;
             }
           else
-            {
+            {              
               // this call was scheduled to be executed now, so unblock
               // the thread and dispose the wake up call object
               list_pop_front (&wake_up_calls);
