@@ -349,6 +349,8 @@ void
 thread_set_priority (int new_priority) 
 {
   thread_current ()->priority = new_priority;
+  
+  // up
 }
 
 /* Returns the current thread's priority. */
@@ -501,7 +503,13 @@ next_thread_to_run (void)
   if (list_empty (&ready_list))
     return idle_thread;
   else
-    return list_entry (list_pop_front (&ready_list), struct thread, elem);
+    {
+      // Gets thread with highest priority from sorted ready list
+      struct thread* t = list_entry (list_pop_front (&ready_list), 
+                                     struct thread, elem);
+      
+      return t;
+    }
 }
 
 /* Completes a thread switch by activating the new thread's page
@@ -588,7 +596,7 @@ allocate_tid (void)
 }
 
 /* Returns true if thread A has a lower priority than thread B. */
-static bool
+bool
 thread_less (const struct list_elem *a, const struct list_elem *b,
                    void *aux UNUSED)
 {
