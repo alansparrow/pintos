@@ -56,6 +56,7 @@ static unsigned thread_ticks;   /* # of timer ticks since last yield. */
 
 /* Set to true, if a higher priority thread is ready */
 static bool higher_thread_rdy = false;
+static int highest_ready_priority = -1;
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
@@ -122,13 +123,6 @@ thread_start (void)
 }
 
 
-/* Returns true if there's a thread in the ready list that has a higher
- * priority than t. */
-bool is_higher_ready (struct thread* t)
-{
-  return higher_thread_rdy;
-}
-
 /* Called by the timer interrupt handler at each timer tick.
    Thus, this function runs in an external interrupt context. */
 void
@@ -147,7 +141,7 @@ thread_tick (void)
     kernel_ticks++;      
 
   /* Enforce preemption when time is up or there's a higher thread ready. */
-  if (++thread_ticks >= TIME_SLICE || is_higher_ready (t))
+  if (++thread_ticks >= TIME_SLICE)
     intr_yield_on_return ();
 }
 
@@ -259,9 +253,13 @@ thread_unblock (struct thread *t)
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);  
   ready_list_enqueue (t);
-  t->status = THREAD_READY;
+  t->status = THREAD_READY;     
   
   intr_set_level (old_level);
+  
+  //struct thread* cur = thread_current ();
+  //if (cur->priority < t->priority && false)
+  //  thread_yield ();
 }
 
 /* Returns the name of the running thread. */
@@ -331,9 +329,7 @@ thread_yield (void)
   old_level = intr_disable ();
   if (cur != idle_thread) 
     ready_list_enqueue (cur);
-  cur->status = THREAD_READY;
-  
-  higher_thread_rdy = false;
+  cur->status = THREAD_READY;    
   
   schedule ();
   intr_set_level (old_level);
@@ -362,7 +358,8 @@ thread_set_priority (int new_priority)
 {
   thread_current ()->priority = new_priority;
   
-  // up
+  //if (new_priority < highest_ready_priority)
+  //  thread_yield ();
 }
 
 /* Returns the current thread's priority. */
@@ -625,16 +622,7 @@ thread_priority_sort (const struct list_elem *a, const struct list_elem *b,
 static void 
 ready_list_enqueue (struct thread* t)
 {  
-  struct thread* cur = thread_current ();
-  if (cur->priority < t->priority)
-    {
-      higher_thread_rdy = true;
-      list_push_front (&ready_list, &t->elem);
-    }
-  else
-    {  
-      list_push_back (&ready_list, &t->elem);
-    }
+  list_push_back (&ready_list, &t->elem);    
 }
 
 

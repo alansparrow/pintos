@@ -166,7 +166,8 @@ timer_sleep (int64_t ticks)
 
   // Update the time of the next wake up call; this is used to wake up
   // the wake up call service thread itself, in case it is sleeping
-  if (w->wake_up_ticks < next_call) next_call = w->wake_up_ticks;
+  if (next_call < timer_ticks() || w->wake_up_ticks < next_call) 
+    next_call = w->wake_up_ticks;
 
   // Let this thread sleep now until it is woken up by the scheduled call
   thread_block ();
@@ -255,11 +256,12 @@ timer_interrupt (struct intr_frame *args UNUSED)
     {
       // If the next scheduled wake up call is soon and the
       // service thread is sleeping, wake it up early
-      if (next_call - ticks <= TIMER_IDLE_TICKS
+      if (next_call >= ticks 
+          && next_call - ticks <= TIMER_IDLE_TICKS          
           && service_thread->status == THREAD_BLOCKED)
         {
           enum intr_level old_level = intr_disable ();
-          thread_unblock (service_thread);
+          thread_unblock (service_thread);          
           intr_set_level (old_level);
         }
     }
@@ -370,7 +372,11 @@ timer_start_wake_up_service ()
 void
 timer_stop_wake_up_service (void)
 {
-  wake_up_service = false;
+  wake_up_service = false;    
+  if (service_thread->status == THREAD_BLOCKED)
+    {      
+      thread_unblock (service_thread);
+    }
 }
 
 /* Checks the wake_up_calls list and wakes up sleeping threads whose
@@ -393,7 +399,7 @@ timer_wake_up_service (void *aux UNUSED)
       struct list_elem* e = list_begin (&wake_up_calls);
       while (e != list_end (&wake_up_calls))
         {
-          wake_up_call* w = (wake_up_call*) e;
+          wake_up_call* w = (wake_up_call*) e;          
 
           if (w->wake_up_ticks > ticks)
             {
@@ -418,13 +424,15 @@ timer_wake_up_service (void *aux UNUSED)
 
       // Now go to sleep until next wake up call or timer_sleep invocation
       // if the next call is not very soon
-      if (next_call - ticks > TIMER_IDLE_TICKS)
-        {
+      if (next_call < ticks || next_call - ticks > TIMER_IDLE_TICKS)
+        {          
           thread_block ();
         }
 
       intr_set_level (old_level);
     }
+  
+  printf("WakeUpService stopped.\n");
 
   service_thread = NULL;
 }
