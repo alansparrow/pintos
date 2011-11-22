@@ -133,7 +133,17 @@ sema_up (struct semaphore *sema)
 
   // If current thread has lower priority than new one, yield CPU to it
   struct thread* cur = thread_current ();
-  if (unblocked != NULL && cur->priority < unblocked->priority)
+  if (unblocked == NULL) return;
+  
+  int my_priority = thread_priority (cur);
+  int unblocked_priority = thread_priority (unblocked);
+  
+  if (my_priority == unblocked_priority)
+    {
+      if (unblocked->donation_recipient == cur)
+        thread_yield ();
+    }  
+  else if (my_priority < unblocked_priority)
     {
       thread_yield ();
     }
@@ -213,9 +223,21 @@ lock_acquire (struct lock *lock)
 {
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
-  ASSERT (!lock_held_by_current_thread (lock));
+  ASSERT (!lock_held_by_current_thread (lock)); 
 
-  sema_down (&lock->semaphore);
+  struct thread* cur = thread_current ();
+  bool donated = false;
+  
+  if (lock->holder != NULL
+      && thread_priority (lock->holder) < thread_priority (cur))
+    {      
+      thread_add_donation (lock->holder);      
+      donated = true;
+    }
+  
+  sema_down (&lock->semaphore);  
+  
+  if (donated) thread_remove_donation (cur);
   lock->holder = thread_current ();
 }
 
@@ -251,6 +273,9 @@ lock_release (struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
 
   lock->holder = NULL;
+  
+  //thread_release_donations (lock);
+  
   sema_up (&lock->semaphore);
 }
 
@@ -384,7 +409,7 @@ sema_priority_sort (const struct list_elem *a, const struct list_elem *b,
       struct thread* t_b = list_entry (list_front (&s_b->semaphore.waiters),
                                        struct thread, elem); 
       
-      return priority_a > t_b->priority;
+      return priority_a > thread_priority (t_b);
     }
   
   ASSERT (list_size (&s_a->semaphore.waiters) > 0);
@@ -398,5 +423,5 @@ sema_priority_sort (const struct list_elem *a, const struct list_elem *b,
   ASSERT (t_a->status == THREAD_BLOCKED);
   ASSERT (t_b->status == THREAD_BLOCKED);
   
-  return t_a->priority > t_b->priority;
+  return thread_priority (t_a) > thread_priority (t_b);
 }

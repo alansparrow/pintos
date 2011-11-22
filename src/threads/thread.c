@@ -54,10 +54,6 @@ static long long user_ticks; /* # of timer ticks in user programs. */
 #define TIME_SLICE 4            /* # of timer ticks to give each thread. */
 static unsigned thread_ticks; /* # of timer ticks since last yield. */
 
-/* Set to true, if a higher priority thread is ready */
-static bool higher_thread_rdy = false;
-static int highest_ready_priority = -1;
-
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
@@ -217,8 +213,8 @@ thread_create (const char *name, int priority,
   // If current thread has lower priority than new one, yield CPU to it
   struct thread* cur = thread_current ();
   ASSERT (cur != t);
-  if (cur->priority < t->priority)
-    {      
+  if (thread_priority (cur) < thread_priority (t))
+    {
       thread_yield ();
     }
 
@@ -365,7 +361,7 @@ thread_set_priority (int new_priority)
   if (!list_empty (&ready_list))
     {
       struct thread* next = list_entry (list_front (&ready_list), struct thread, elem);
-      if (next->priority > new_priority)
+      if (thread_priority (next) > new_priority)
         thread_yield ();
     }
 }
@@ -374,7 +370,7 @@ thread_set_priority (int new_priority)
 int
 thread_get_priority (void)
 {
-  return thread_current ()->priority;
+  return thread_priority (thread_current());  
 }
 
 /* Sets the current thread's nice value to NICE. */
@@ -492,6 +488,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->magic = THREAD_MAGIC;
   list_push_back (&all_list, &t->allelem);
+  list_init (&t->donators);
+  t->donation_recipient = NULL;
+  t->donation_lock = NULL;
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -617,9 +616,23 @@ thread_priority_sort (const struct list_elem *a, const struct list_elem *b,
 {
   ASSERT (a != NULL);
   ASSERT (b != NULL);
-  
+
   struct thread* thread_a = list_entry (a, struct thread, elem);
   struct thread* thread_b = list_entry (b, struct thread, elem);
+
+  return thread_priority (thread_a) > thread_priority (thread_b);
+}
+
+/* Returns true if thread A has a higher priority than thread B. */
+bool
+donation_sort (const struct list_elem *a, const struct list_elem *b,
+               void *aux UNUSED)
+{
+  ASSERT (a != NULL);
+  ASSERT (b != NULL);
+
+  struct thread* thread_a = list_entry (a, struct thread, donation_elem);
+  struct thread* thread_b = list_entry (b, struct thread, donation_elem);
 
   return thread_a->priority > thread_b->priority;
 }
@@ -629,9 +642,83 @@ static void
 ready_list_enqueue (struct thread* t)
 {
   list_insert_ordered (&ready_list, &t->elem, thread_priority_sort, NULL);
-  //list_push_back (&ready_list, &t->elem);
 }
 
+/**
+ * Gets the priority of given thread which is the maximum of its original own
+ * priority and donated priorities.
+ * @param thread Some thread
+ * @return Priority
+ */
+int
+thread_priority (struct thread* thread)
+{
+  if (list_empty (&thread->donators))
+    return thread->priority;
+
+  struct thread* max_donator = list_entry (list_front (&thread->donators),
+                                           struct thread, donation_elem);
+  
+  int donated_priority = thread_priority (max_donator);
+  
+  if (donated_priority > thread->priority)
+    return donated_priority;
+  else
+    return thread->priority;
+}
+
+/**
+ * Adds the current thread to the donator list of t.
+ * @param t Some thread
+ */
+void
+thread_add_donation (struct thread* t)
+{
+  ASSERT (thread_current ()->donation_recipient == NULL);
+  
+  list_insert_ordered (&t->donators, &thread_current ()->donation_elem,
+                       thread_priority_sort, NULL);
+  
+  thread_current ()->donation_recipient = t;
+}
+
+/**
+ * Removes the current thread from the donator list of t.
+ * @param t Some thread
+ */
+void
+thread_remove_donation (struct thread* t)
+{
+  ASSERT (t->donation_recipient != NULL);
+  
+  list_remove (&t->donation_elem);
+  
+  t->donation_recipient = NULL;
+}
+
+/* Releases all donations */
+void
+thread_release_donations (struct lock* lock)
+{
+  struct thread* t = thread_current ();  
+  if (list_size (&t->donators) == 0) return;
+  
+  struct list_elem* e = list_begin (&t->donators);
+    
+  while (e != list_end (&t->donators))
+    {
+      struct thread* t = list_entry (e, struct thread, donation_elem);     
+      
+      if (t->donation_lock == lock)
+        {
+          t->donation_lock = NULL;
+          t->donation_recipient = NULL;
+          e = list_next (e);
+          list_remove (&t->donators);
+          break;
+        }            
+    }
+}
 
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */

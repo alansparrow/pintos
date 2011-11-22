@@ -92,6 +92,18 @@ struct thread
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
+    
+    /* Used for donators list */
+    struct list_elem donation_elem;
+    
+    /* List of threads donating their priority to this thread */
+    struct list donators;
+    
+    /* Thread that currently owns this priority */
+    struct thread* donation_recipient;
+    
+    /* Lock that is being waited for */
+    struct lock* donation_lock;
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -130,8 +142,13 @@ void thread_yield (void);
 typedef void thread_action_func (struct thread *t, void *aux);
 void thread_foreach (thread_action_func *, void *);
 
+int thread_priority (struct thread* thread);
 int thread_get_priority (void);
 void thread_set_priority (int);
+
+void thread_add_donation (struct thread*);
+void thread_remove_donation (struct thread*);
+void thread_release_donations (struct lock*);
 
 int thread_get_nice (void);
 void thread_set_nice (int);
