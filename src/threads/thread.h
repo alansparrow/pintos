@@ -102,8 +102,8 @@ struct thread
     /* Thread that currently owns this priority */
     struct thread* donation_recipient;
     
-    /* Lock that is being waited for */
-    struct lock* donation_lock;
+    /* Quick check if this thread has been donated to */
+    bool is_donee;
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -148,7 +148,6 @@ void thread_set_priority (int);
 
 void thread_add_donation (struct thread*);
 void thread_remove_donation (struct thread*);
-void thread_release_donations (struct lock*);
 
 int thread_get_nice (void);
 void thread_set_nice (int);

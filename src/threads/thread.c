@@ -490,7 +490,7 @@ init_thread (struct thread *t, const char *name, int priority)
   list_push_back (&all_list, &t->allelem);
   list_init (&t->donators);
   t->donation_recipient = NULL;
-  t->donation_lock = NULL;
+  t->is_donee = false;
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -652,10 +652,11 @@ ready_list_enqueue (struct thread* t)
  */
 int
 thread_priority (struct thread* thread)
-{
+{    
+  if (!thread->is_donee) return thread->priority;    
   if (list_empty (&thread->donators))
-    return thread->priority;
-
+    return thread->priority;  
+   
   struct thread* max_donator = list_entry (list_front (&thread->donators),
                                            struct thread, donation_elem);
   
@@ -680,6 +681,7 @@ thread_add_donation (struct thread* t)
                        thread_priority_sort, NULL);
   
   thread_current ()->donation_recipient = t;
+  t->is_donee = true;
 }
 
 /**
@@ -693,31 +695,9 @@ thread_remove_donation (struct thread* t)
   
   list_remove (&t->donation_elem);
   
-  t->donation_recipient = NULL;
-}
-
-/* Releases all donations */
-void
-thread_release_donations (struct lock* lock)
-{
-  struct thread* t = thread_current ();  
-  if (list_size (&t->donators) == 0) return;
+  t->is_donee = !list_empty (&t->donators);
   
-  struct list_elem* e = list_begin (&t->donators);
-    
-  while (e != list_end (&t->donators))
-    {
-      struct thread* t = list_entry (e, struct thread, donation_elem);     
-      
-      if (t->donation_lock == lock)
-        {
-          t->donation_lock = NULL;
-          t->donation_recipient = NULL;
-          e = list_next (e);
-          list_remove (&t->donators);
-          break;
-        }            
-    }
+  t->donation_recipient = NULL;
 }
 
 /* Offset of `stack' member within `struct thread'.
