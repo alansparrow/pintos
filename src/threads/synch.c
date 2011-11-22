@@ -228,6 +228,7 @@ lock_acquire (struct lock *lock)
   struct thread* cur = thread_current ();
   bool donated = false;
   
+  // If someone with a lower priority is holding the lock, donate our priority
   if (lock->holder != NULL
       && thread_priority (lock->holder) < thread_priority (cur))
     {      
@@ -402,8 +403,8 @@ sema_priority_sort (const struct list_elem *a, const struct list_elem *b,
   if (list_size (&s_a->semaphore.waiters) == 0)
     {
       int priority_a = (int)aux;
-      ASSERT (priority_a >= PRI_MIN && priority_a <= PRI_MAX);
       
+      ASSERT (priority_a >= PRI_MIN && priority_a <= PRI_MAX);      
       ASSERT (list_size (&s_b->semaphore.waiters) > 0);
       
       struct thread* t_b = list_entry (list_front (&s_b->semaphore.waiters),

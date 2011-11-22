@@ -135,7 +135,7 @@ thread_tick (void)
   else
     kernel_ticks++;
 
-  /* Enforce preemption when time is up or there's a higher thread ready. */
+  /* Enforce preemption when time is up */
   if (++thread_ticks >= TIME_SLICE)
     intr_yield_on_return ();
 }
@@ -370,7 +370,7 @@ thread_set_priority (int new_priority)
 int
 thread_get_priority (void)
 {
-  return thread_priority (thread_current());  
+  return thread_priority (thread_current ());
 }
 
 /* Sets the current thread's nice value to NICE. */
@@ -634,7 +634,8 @@ donation_sort (const struct list_elem *a, const struct list_elem *b,
   struct thread* thread_a = list_entry (a, struct thread, donation_elem);
   struct thread* thread_b = list_entry (b, struct thread, donation_elem);
 
-  return thread_a->priority > thread_b->priority;
+  //return thread_a->priority > thread_b->priority;
+  return thread_priority (thread_a) > thread_priority (thread_b);
 }
 
 /* Adds the given thread to the ready_list. */
@@ -652,17 +653,21 @@ ready_list_enqueue (struct thread* t)
  */
 int
 thread_priority (struct thread* thread)
-{    
-  if (!thread->is_donee) return thread->priority;    
+{
+  // Check if donations have to be considered
+  if (!thread->is_donee) return thread->priority;
   if (list_empty (&thread->donators))
-    return thread->priority;  
-   
-  struct thread* max_donator = list_entry (list_front (&thread->donators),
+    return thread->priority;
+
+  // The donator list is sorted by priority
+  struct thread* max_donator = list_entry (list_max (&thread->donators,
+                                                     thread_priority_sort, NULL),
                                            struct thread, donation_elem);
-  
+
   int donated_priority = thread_priority (max_donator);
-  
-  if (donated_priority > thread->priority)
+
+  // This threads priority is max of its base priority and donated priorities
+  if (donated_priority > thread->priority) 
     return donated_priority;
   else
     return thread->priority;
@@ -676,10 +681,10 @@ void
 thread_add_donation (struct thread* t)
 {
   ASSERT (thread_current ()->donation_recipient == NULL);
-  
+
   list_insert_ordered (&t->donators, &thread_current ()->donation_elem,
                        thread_priority_sort, NULL);
-  
+
   thread_current ()->donation_recipient = t;
   t->is_donee = true;
 }
@@ -692,11 +697,9 @@ void
 thread_remove_donation (struct thread* t)
 {
   ASSERT (t->donation_recipient != NULL);
-  
+
   list_remove (&t->donation_elem);
-  
   t->is_donee = !list_empty (&t->donators);
-  
   t->donation_recipient = NULL;
 }
 

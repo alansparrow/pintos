@@ -357,7 +357,6 @@ wake_up_call_less (const struct list_elem *a, const struct list_elem *b,
 
   if (a_ticks == b_ticks)
     return call_a->thread->priority > call_b->thread->priority;
-    //return thread_priority (call_a->thread) > thread_priority (call_b);
   else
     return a_ticks < b_ticks;
 }

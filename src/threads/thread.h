@@ -102,7 +102,7 @@ struct thread
     /* Thread that currently owns this priority */
     struct thread* donation_recipient;
     
-    /* Quick check if this thread has been donated to */
+    /* For quick check if this thread has been donated to */
     bool is_donee;
 
 #ifdef USERPROG
