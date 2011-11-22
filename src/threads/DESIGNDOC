@@ -1,162 +1,217 @@
-			+--------------------+
-			|        CS 140      |
-			| PROJECT 1: THREADS |
-			|   DESIGN DOCUMENT  |
-			+--------------------+
-				   
+            +------------------------------------+
+            | Betriebssysteme                    |
+            | PROJECT 1: THREADS                 |
+            | DESIGN DOCUMENT                    |
+            +------------------------------------+
+               
 ---- GROUP ----
 
->> Fill in the names and email addresses of your group members.
-
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
-FirstName LastName <email@domain.example>
+Mathias Kahl <mathias.kahl@googlemail.com>
+Alexander Bach <alexbach@zedat.fu-berlin.de>
 
 ---- PRELIMINARIES ----
 
->> If you have any preliminary comments on your submission, notes for the
->> TAs, or extra credit, please give them here.
+Wir sind aus Mangel an Zeit nicht fertig geworden und haben daher nur 1. und 2. 
+Aufgabe bearbeitet. Die Lösung zur 2. Aufgabe ist auch noch nicht fehlerfrei, 
+sodass einige Tests dort fehlschlagen.
 
->> Please cite any offline or online sources you consulted while
->> preparing your submission, other than the Pintos documentation, course
->> text, lecture notes, and course staff.
-
-			     ALARM CLOCK
-			     ===========
+             ALARM CLOCK
+             ===========
 
 ---- DATA STRUCTURES ----
 
 >> A1: Copy here the declaration of each new or changed `struct' or
 >> `struct' member, global or static variable, `typedef', or
->> enumeration.  Identify the purpose of each in 25 words or less.
+>> enumeration. Identify the purpose of each in 25 words or less.
+
+| #define TIMER_IDLE_TICKS 2
+
+Gibt die Zeitspanne in Ticks an, nach der der Wake-Up-Service-Thread selbst 
+blockiert (via timer_sleep), d.h. nichts zu tun ist.
+
+
+| static bool wake_up_service = false;
+
+Gibt an, ob der wake_up_service im Moment läuft. Dient auch als 
+Abbruchbedingung des Service-Threads.
+
+
+| static bool wake_up_service_started = false;
+
+Gibt an, ob der Wake-Up-Service-Thread (jemals) gestartet wurde. Wurde 
+hauptsächlich für Debugging-Zwecke genutzt.
+
+
+| static int64_t next_call = 0;
+
+Speichert den Zeitpunkt in Ticks seit OS-Start, zu dem der nächste Thread 
+aufgeweckt werden muss. Wird benutzt um die Aktivität des Service-Threads 
+zu steuern.
+
+
+| static struct thread *service_thread = NULL;
+
+Pointer auf den Wake-Up-Service-Thread.
+
+
+| static struct list wake_up_calls;
+
+Sortierte Liste der nächsten Wake-Up-Calls, um zu entscheiden, welcher Thread 
+als nächstes geweckt werden soll.
+
+
+| typedef struct wake_up_call
+{
+ struct list_elem elem;   
+ struct thread* thread;    
+ int64_t wake_up_ticks;
+} wake_up_call; |
+
+Speichert Listeninformationen über den wake-up-call, sowie den aufzuweckenden 
+Thread und den Zeitpunkt des Weckrufs.
 
 ---- ALGORITHMS ----
 
 >> A2: Briefly describe what happens in a call to timer_sleep(),
 >> including the effects of the timer interrupt handler.
 
+In timer_sleep() wird ein neues wake_up_call-Element in eine 
+Prioritätswarteschlange eingereiht, welche nach Aufweckzeit und Priorität 
+sortiert ist. Danach wird der aufrufende Thread blockiert. Außerdem wird ggf. 
+die Variable next_call aktualisiert (s.o.).
+
 >> A3: What steps are taken to minimize the amount of time spent in
 >> the timer interrupt handler?
+
+Im Interrupt wird lediglich der Service-Thread geweckt, welcher sich dann um 
+alles kümmert. Dadurch wird die benötigte Zeit für den Interrupt auf ein 
+Minimum reduziert.
 
 ---- SYNCHRONIZATION ----
 
 >> A4: How are race conditions avoided when multiple threads call
 >> timer_sleep() simultaneously?
 
+Interrupts werden deaktiviert während ein neuer Wake-Up-Call registriert und 
+der Thread blockiert wird.
+
 >> A5: How are race conditions avoided when a timer interrupt occurs
 >> during a call to timer_sleep()?
 
+siehe A4
+
 ---- RATIONALE ----
 
->> A6: Why did you choose this design?  In what ways is it superior to
+>> A6: Why did you choose this design? In what ways is it superior to
 >> another design you considered?
 
-			 PRIORITY SCHEDULING
-			 ===================
+Das gewählte Design ist einer Variante überlegen, in welcher die Aufgaben des 
+Service-Threads direkt im Interrupt abgearbeitet wurden. Und zwar insofern, 
+als dass die Zeit, welche im Interrupt verbracht wurde kürzer ist und die 
+Antwort- bzw. Reaktionszeit des Betriebssystems dadurch ebenfalls kürzer wird.
+
+Weiterhin wird dadurch, dass der Wake-Up-Thread selbst blockiert wenn nichts 
+zu tun ist, die benötigte Rechenzeit für das Aufwecken von Threads zusätzlich 
+minimiert, im Gegensatz zu Designs, welche z.B. mit jedem Timer-Tick auf 
+aufzuweckende Threads prüfen.
+
+             PRIORITY SCHEDULING
+             ===================
 
 ---- DATA STRUCTURES ----
 
 >> B1: Copy here the declaration of each new or changed `struct' or
 >> `struct' member, global or static variable, `typedef', or
->> enumeration.  Identify the purpose of each in 25 words or less.
+>> enumeration. Identify the purpose of each in 25 words or less.
+
+
+| struct list_elem donation_elem;
+
+Listenelement für die Donator-Liste.
+
+
+| struct list donators;
+
+Liste von Threads, welche diesem Thread ihre Priorität gespendet haben.
+
+
+| struct thread* donation_recipient;
+
+Thread, welcher von diesem Thread seine Priorität gespendet bekommen hat.
+
+
+| bool is_donee;
+
+Speichert, ob dieser Thread Prioritäten gespendet bekommen hat oder nicht.
+
 
 >> B2: Explain the data structure used to track priority donation.
->> Use ASCII art to diagram a nested donation.  (Alternately, submit a
+>> Use ASCII art to diagram a nested donation. (Alternately, submit a
 >> .png file.)
+
+Jeder Thread hat eine Liste von Spendern, welche ihm ihre jeweilige Priorität 
+gespendet haben. Zur Ermittlung der aktuellen Priorität eines Threads wird 
+das Maximum aus seiner Basis-Priorität und der gespendeten Prioritäten 
+ermittelt. Erbt ein Thread die Priorität eines anderen Threads, welcher selbst 
+eine Priorität geerbt hat, erbt er diese somit automatisch.
+
+(siehe Nested-Donation.png)
 
 ---- ALGORITHMS ----
 
 >> B3: How do you ensure that the highest priority thread waiting for
 >> a lock, semaphore, or condition variable wakes up first?
 
+Indem die Wartelisten alle nach Thread-Priorität sortiert werden.
+
 >> B4: Describe the sequence of events when a call to lock_acquire()
->> causes a priority donation.  How is nested donation handled?
+>> causes a priority donation. How is nested donation handled?
+
+Vor dem Runterzählen der Lock-Semaphore wird geprüft, ob ein anderer Thread 
+das Lock hält. Wenn dem so ist und dessen Priorität geringer ist, wird die 
+eigene Priorität gespendet, indem die Spenderliste erweitert wird. 
+Verschachtelte Vererbung wird dadurch behandelt, dass die Funktion 
+thread_priority() die Priorität dynamisch als Maximum der Basis- und der 
+Spendenprioritäten berechnet.
 
 >> B5: Describe the sequence of events when lock_release() is called
 >> on a lock that a higher-priority thread is waiting for.
 
+Beim Freigeben des Locks wird innerhalb der Semaphore geprüft, ob der nächste 
+Thread mit gleich hoher Priorität (da von ihm gespendet) der Spender ist, in 
+dem Fall wird die CPU freigegeben (thread_yield).
+
 ---- SYNCHRONIZATION ----
 
 >> B6: Describe a potential race in thread_set_priority() and explain
->> how your implementation avoids it.  Can you use a lock to avoid
+>> how your implementation avoids it. Can you use a lock to avoid
 >> this race?
 
+In unserer Implementierung von thread_set_priority wird lediglich die 
+Basispriorität gesetzt und ggf. die CPU freigegeben, wenn ein wichtigerer 
+Thread bereit zur Ausführung ist. Wir sehen keine Möglichkeit für eine 
+Race-Condition an dieser Stelle.
+
 ---- RATIONALE ----
 
->> B7: Why did you choose this design?  In what ways is it superior to
+>> B7: Why did you choose this design? In what ways is it superior to
 >> another design you considered?
 
-			  ADVANCED SCHEDULER
-			  ==================
+Da wir mit der Aufgabe nicht ganz fertig wurden, ist das Design auch nicht 
+komplett richtig oder optimal. Jedesmal wenn irgendein Thread seine Priorität 
+ändert, müsste in allen Warteschlangen, in denen er sich befindet, überprüft 
+werden, ob sich dadurch die Reihenfolge ändern würde. Dies wird momentan 
+nicht getan.
 
----- DATA STRUCTURES ----
+Aber wir wählten dieses Design da es kurzfristig am einfachsten zu 
+Implementieren schien.
 
->> C1: Copy here the declaration of each new or changed `struct' or
->> `struct' member, global or static variable, `typedef', or
->> enumeration.  Identify the purpose of each in 25 words or less.
+Eine Alternative zu einer thread_priority-Methode, welche die Priorität 
+dynamisch ermittelt, wäre gewesen, die aktuelle Priorität immer direkt zu 
+speichern, wobei dann jedoch durch weitere Datenstrukturen die Spenden 
+detailierter erfasst werden müssten.
 
----- ALGORITHMS ----
+             ADVANCED SCHEDULER
+             ==================
 
->> C2: Suppose threads A, B, and C have nice values 0, 1, and 2.  Each
->> has a recent_cpu value of 0.  Fill in the table below showing the
->> scheduling decision and the priority and recent_cpu values for each
->> thread after each given number of timer ticks:
-
-timer  recent_cpu    priority   thread
-ticks   A   B   C   A   B   C   to run
------  --  --  --  --  --  --   ------
- 0
- 4
- 8
-12
-16
-20
-24
-28
-32
-36
-
->> C3: Did any ambiguities in the scheduler specification make values
->> in the table uncertain?  If so, what rule did you use to resolve
->> them?  Does this match the behavior of your scheduler?
-
->> C4: How is the way you divided the cost of scheduling between code
->> inside and outside interrupt context likely to affect performance?
-
----- RATIONALE ----
-
->> C5: Briefly critique your design, pointing out advantages and
->> disadvantages in your design choices.  If you were to have extra
->> time to work on this part of the project, how might you choose to
->> refine or improve your design?
-
->> C6: The assignment explains arithmetic for fixed-point math in
->> detail, but it leaves it open to you to implement it.  Why did you
->> decide to implement it the way you did?  If you created an
->> abstraction layer for fixed-point math, that is, an abstract data
->> type and/or a set of functions or macros to manipulate fixed-point
->> numbers, why did you do so?  If not, why not?
-
-			   SURVEY QUESTIONS
-			   ================
-
-Answering these questions is optional, but it will help us improve the
-course in future quarters.  Feel free to tell us anything you
-want--these questions are just to spur your thoughts.  You may also
-choose to respond anonymously in the course evaluations at the end of
-the quarter.
-
->> In your opinion, was this assignment, or any one of the three problems
->> in it, too easy or too hard?  Did it take too long or too little time?
-
->> Did you find that working on a particular part of the assignment gave
->> you greater insight into some aspect of OS design?
-
->> Is there some particular fact or hint we should give students in
->> future quarters to help them solve the problems?  Conversely, did you
->> find any of our guidance to be misleading?
-
->> Do you have any suggestions for the TAs to more effectively assist
->> students, either for future quarters or the remaining projects?
-
->> Any other comments?
+( Nicht mehr geschafft, aber unser Scheduler ist trotzdem fair! )
