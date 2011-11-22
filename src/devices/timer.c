@@ -134,6 +134,7 @@ void
 timer_sleep (int64_t ticks)
 {
   ASSERT (intr_get_level () == INTR_ON);
+  if (ticks <= 0) return;
    
   if (!wake_up_service)
     {    
@@ -375,7 +376,8 @@ timer_stop_wake_up_service (void)
   wake_up_service = false;    
   if (service_thread->status == THREAD_BLOCKED)
     {      
-      thread_unblock (service_thread);
+      // ERROR: produces Page Fault Exception in priority-change test...
+      //thread_unblock (service_thread);
     }
 }
 
