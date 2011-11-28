@@ -58,12 +58,11 @@ process_execute (const char *file_name)
 static void 
 parse_args (const char* input, char*** argv, int* argc)
 {
+  ASSERT (input[0] != ' ');
+  
   int input_length = strlen(input) + 1;
   char* read = malloc(sizeof(char) * input_length);
   strlcpy(read, input, input_length);
-  
-  // ltrim
-  while (*read == ' ') read++;
   
   // count words
   int wcount = 0;
@@ -79,7 +78,7 @@ parse_args (const char* input, char*** argv, int* argc)
         w++;
     }
   while (*w != '\0');
-  
+        
   // copy single arguments
   char** args = malloc(sizeof(char*) * wcount);
   char* save_ptr;
