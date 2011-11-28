@@ -17,6 +17,8 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "threads/malloc.h"
+#include "lib/string.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -45,6 +47,56 @@ process_execute (const char *file_name)
   return tid;
 }
 
+/**
+ * Parses input string and copies a new array of strings into argv containing
+ * the single words (separated by spaces) and the number of arguments into
+ * argc.
+ * @param input
+ * @param argv
+ * @param argc
+ */
+static void 
+parse_args (const char* input, char*** argv, int* argc)
+{
+  int input_length = strlen(input) + 1;
+  char* read = malloc(sizeof(char) * input_length);
+  strlcpy(read, input, input_length);
+  
+  // ltrim
+  while (*read == ' ') read++;
+  
+  // count words
+  int wcount = 0;
+  char* w = read;
+  do
+    {
+      if (*w == ' ')
+        {
+          while (*w == ' ') w++;
+          wcount++;
+        }
+      else
+        w++;
+    }
+  while (*w != '\0');
+  
+  // copy single arguments
+  char** args = malloc(sizeof(char*) * wcount);
+  char* save_ptr;
+  int c = 0;
+  
+  char* token = strtok_r (read, " ", &save_ptr);
+  while (token != NULL)
+    {
+      args[c++] = token;
+      
+      token = strtok_r (NULL, " ", &save_ptr);
+    }
+  
+  *argv = args;
+  *argc = c;
+}
+
 /* A thread function that loads a user process and starts it
    running. */
 static void
@@ -53,6 +105,11 @@ start_process (void *file_name_)
   char *file_name = file_name_;
   struct intr_frame if_;
   bool success;
+  
+  /* Split file_name parameter into file and arguments */
+  char** argv = NULL;
+  int argc = 0;
+  parse_args (file_name, &argv, &argc);
 
   /* Initialize interrupt frame and load executable. */
   memset (&if_, 0, sizeof if_);
