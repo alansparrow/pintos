@@ -132,6 +132,8 @@ pagedir_get_page (uint32_t *pd, const void *uaddr)
 {
   uint32_t *pte;
   
+  ASSERT(is_user_vaddr(uaddr)); 
+  
   // Validate pointer
   if (uaddr == NULL || !is_user_vaddr(uaddr))
     {
@@ -147,9 +149,14 @@ pagedir_get_page (uint32_t *pd, const void *uaddr)
   else
     {
       // Memory not mapped
-      reject();
       return NULL;
     }
+}
+
+pagedir_valid_uaddr (const void* uaddr, uint32_t* pd)
+{
+  return uaddr != NULL && is_user_vaddr(uaddr) &&
+      lookup_page (pd, uaddr, false) != NULL;
 }
 
 /* Marks user virtual page UPAGE "not present" in page
