@@ -40,14 +40,16 @@ process_execute (const char *file_name)
   if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
-  
+
   // Reasonable limit for size of arguments
+  /*
   if (strlen(fn_copy) > 2048)
     {
       printf("Too much argument data (max. 2048 Bytes)\n");
       return -1;
     }
-
+  */
+   
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
@@ -104,53 +106,40 @@ parse_args (const char* input, char*** argv, int* argc)
   *argc = c;
 }
 
-/* A thread function that loads a user process and starts it
-   running. */
-static void
-start_process (void *file_name_)
+void push_int (void** esp, int value)
 {
-  char *file_name = file_name_;
-  struct intr_frame if_;
-  bool success;
-  int i;
-  
-  /* Split file_name parameter into file and arguments */
-  char** argv = NULL;
-  int argc = 0;
-  parse_args (file_name, &argv, &argc);
-  
-  ASSERT(argc > 0);
+  int* p = (int*)*esp;
+  *--p = value;
+  *esp = p;
+}
 
-  /* Initialize interrupt frame and load executable. */
-  memset (&if_, 0, sizeof if_);
-  if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
-  if_.cs = SEL_UCSEG;
-  if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (argv[0], &if_.eip, &if_.esp);
+void push_arguments (char** argv, int argc, void** pesp)
+{
+  void* esp = *pesp;
   
-  ASSERT(if_.esp > 0);
+  int i;
+  ASSERT(esp > 0);
   
   // original start address of stack (usually PHYS_BASE)  
-  void* esp_start = if_.esp;
+  void* esp_start = esp;
   
   /* Push parameters onto stack */
   for (i = argc - 1; i >= 0; i--)
     {      
       int length = strlen(argv[i]) + 1;
-      if_.esp -= length;
-      strlcpy((char*)if_.esp, argv[i], length);
+      esp -= length;
+      strlcpy((char*)esp, argv[i], length);
     }
   
   // Address where arguments start  
-  void* stack_args_start = if_.esp;
+  void* stack_args_start = esp;
   int stack_args_size = esp_start - stack_args_start;
   
   // round stack pointer to multiple of four
-  if_.esp -= ((int)if_.esp % 4); 
+  //esp -= ((int)esp % 4); 
   
   // NULL sentinel for args
-  int* esp_int = (int*)if_.esp;   
-  *--esp_int = 0;
+  push_int (&esp, 0);
   
   /* Push parameters addresses */
   for (i = argc - 1; i >= 0; i--)
@@ -158,16 +147,50 @@ start_process (void *file_name_)
       int length = strlen(argv[i]) + 1;
       stack_args_size -= length;
       
-      if_.esp -= sizeof(void*);
-      *esp_int = (int)(stack_args_start + stack_args_size);
+      //esp -= sizeof(void*);
+      //*esp_int = (int)(stack_args_start + stack_args_size);
+      push_int (&esp, (int)(stack_args_start + stack_args_size));
     }
   
-  void* argv0 = if_.esp;    
+  void* argv0 = esp;    
   
   // Push argv and argc, then fake return address  
-  *--esp_int = (int)argv0;
-  *--esp_int = argc;
-  *--esp_int = 0;   
+  push_int (&esp, (int)argv0);
+  push_int (&esp, argc);
+  push_int (&esp, 0);
+  //*--esp_int = (int)argv0;
+  //*--esp_int = argc;
+  //*--esp_int = 0;
+  
+  *pesp = esp;
+}
+
+/* A thread function that loads a user process and starts it
+   running. */
+static void
+start_process (void *file_name_)
+{  
+  char *file_name = file_name_;
+  struct intr_frame if_;
+  bool success;
+  int i;
+
+  /* Split file_name parameter into file and arguments */
+  char** argv = NULL;
+  int argc = 0;  
+  parse_args (file_name, &argv, &argc);  
+  ASSERT(argc > 0);   
+  
+  /* Initialize interrupt frame and load executable. */
+  memset (&if_, 0, sizeof if_);
+  if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
+  if_.cs = SEL_UCSEG;
+  if_.eflags = FLAG_IF | FLAG_MBS;
+  success = load ("args-many", &if_.eip, &if_.esp);
+
+  // Push arguments onto stack
+  push_arguments (argv, argc, &if_.esp);     
+  free(argv);    
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
@@ -182,9 +205,6 @@ start_process (void *file_name_)
      and jump to it. */
   asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
   NOT_REACHED ();
-    
-  printf("argc = %d\n", argc);
-  printf("argv[0] = %s\n", argv[0]);
 }
 
 /* Waits for thread TID to die and returns its exit status.  If
@@ -199,7 +219,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  timer_msleep (1000 * 60);
+  timer_msleep (1000 * 10);
   
   return -1;
 }
