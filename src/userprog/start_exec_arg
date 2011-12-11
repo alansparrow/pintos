@@ -1,0 +1,3 @@
+#!/bin/sh
+
+pintos --filesys-size=2 -p build/tests/userprog/exec-arg -a exec-arg -p build/tests/userprog/child-args -a child-args -- -f -q run 'exec-arg'

@@ -20,6 +20,7 @@
 #include "threads/malloc.h"
 #include "lib/string.h"
 #include "devices/timer.h"
+#include "threads/synch.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -27,10 +28,14 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
-   thread id, or TID_ERROR if the thread cannot be created. */
+   thread id, or TID_ERROR if the thread cannot be created. 
+   If "wait" is true, the function returns only after the user program
+   was loaded, or failed to load.
+ */
 tid_t
-process_execute (const char *file_name) 
+process_execute (const char *file_name, bool wait) 
 {
+  struct semaphore* sema = NULL;
   char *fn_copy;
   tid_t tid;
 
@@ -41,19 +46,36 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
 
-  // Reasonable limit for size of arguments
-  /*
+  // Reasonable limit for size of arguments  
   if (strlen(fn_copy) > 2048)
     {
       printf("Too much argument data (max. 2048 Bytes)\n");
       return -1;
+    }  
+  
+  // Append pointer to semaphore after file_name  
+  struct semaphore** p = (struct semaphore*)(fn_copy + strlen(file_name) + 1);
+  
+  if (wait)    
+    {
+      sema = malloc(sizeof(struct semaphore));      
+      ASSERT (sema != NULL);
+      sema_init (sema, 0);
     }
-  */
+      
+  *p = sema;
    
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
     palloc_free_page (fn_copy); 
+  
+  if (wait && tid != TID_ERROR)
+    sema_down (sema);
+  
+  if (sema != NULL)
+    free(sema);
+  
   return tid;
 }
 
@@ -172,8 +194,15 @@ start_process (void *file_name_)
 {  
   char *file_name = file_name_;
   struct intr_frame if_;
+  
+  int length = strlen (file_name);  
+  char *sema_addr = &file_name[length + 1];
+  struct semaphore *semaphore = (struct semaphore*)(*(int*)(sema_addr));
+  
+  ASSERT (semaphore == NULL || (semaphore != NULL & semaphore->value == 0));
+  
   bool success;
-  int i;
+  int i;    
 
   /* Split file_name parameter into file and arguments */
   char** argv = NULL;
@@ -195,8 +224,20 @@ start_process (void *file_name_)
   /* If load failed, quit. */
   palloc_free_page (file_name);
   if (!success) 
-    thread_exit ();
+    {
+      if (semaphore != NULL) 
+        {
+          sema_up (semaphore);
+        }
+      thread_exit ();
+    }
 
+  if (semaphore != NULL) 
+    {
+      if (!list_empty (&semaphore->waiters))
+        sema_up (semaphore);  
+    }
+  
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
      threads/intr-stubs.S).  Because intr_exit takes all of its

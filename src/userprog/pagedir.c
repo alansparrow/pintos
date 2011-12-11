@@ -153,6 +153,7 @@ pagedir_get_page (uint32_t *pd, const void *uaddr)
     }
 }
 
+bool
 pagedir_valid_uaddr (const void* uaddr, uint32_t* pd)
 {
   return uaddr != NULL && is_user_vaddr(uaddr) &&
