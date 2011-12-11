@@ -25,6 +25,9 @@
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
+void push_int (void** esp, int value);
+void push_arguments (char** argv, int argc, void** pesp);
+
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
@@ -140,7 +143,7 @@ void push_arguments (char** argv, int argc, void** pesp)
   void* esp = *pesp;
   
   int i;
-  ASSERT(esp > 0);
+  ASSERT (esp > 0);
   
   // original start address of stack (usually PHYS_BASE)  
   void* esp_start = esp;
@@ -199,10 +202,9 @@ start_process (void *file_name_)
   char *sema_addr = &file_name[length + 1];
   struct semaphore *semaphore = (struct semaphore*)(*(int*)(sema_addr));
   
-  ASSERT (semaphore == NULL || (semaphore != NULL & semaphore->value == 0));
+  ASSERT (semaphore == NULL || (semaphore != NULL && semaphore->value == 0));
   
-  bool success;
-  int i;    
+  bool success;  
 
   /* Split file_name parameter into file and arguments */
   char** argv = NULL;
@@ -260,7 +262,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  timer_msleep (1000 * 10);
+  timer_msleep (1000 * 10); 
   
   return -1;
 }
@@ -277,6 +279,12 @@ process_exit (void)
   pd = cur->pagedir;
   if (pd != NULL) 
     {
+      // notify waiting parent process
+      sema_up (&cur->exit_semaphore);     
+      
+      // wait till exit code was read
+      sema_down (&cur->exit_code_semaphore);
+      
       /* Correct ordering here is crucial.  We must set
          cur->pagedir to NULL before switching page directories,
          so that a timer interrupt can't switch back to the

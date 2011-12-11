@@ -4,6 +4,8 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "threads/synch.h"
+
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -104,6 +106,13 @@ struct thread
     
     /* For quick check if this thread has been donated to */
     bool is_donee;
+    
+    int exit_code;
+    struct semaphore exit_semaphore;
+    struct semaphore exit_code_semaphore;
+    struct list child_threads;
+    struct list_elem child_elem;
+    int parent_pid;
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -142,6 +151,8 @@ void thread_yield (void);
 typedef void thread_action_func (struct thread *t, void *aux);
 void thread_foreach (thread_action_func *, void *);
 
+int thread_exit_status (int pid);
+
 int thread_priority (struct thread* thread);
 int thread_get_priority (void);
 void thread_set_priority (int);
@@ -153,6 +164,8 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+bool thread_valid (struct thread *t);
 
 bool
 thread_priority_sort (const struct list_elem *a, const struct list_elem *b,

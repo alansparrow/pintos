@@ -83,6 +83,9 @@ syscall_exit (struct intr_frame *f)
   VALIDATE_P (esp);
   int status = *((int*) esp);
   
+  struct thread* t = thread_current ();
+  t->exit_code = status;
+  
   // TODO: Close open files of this process
   
   exit (status);
@@ -414,6 +417,48 @@ syscall_read (struct intr_frame *f)
   f->eax = read;
 }
 
+void
+syscall_wait (struct intr_frame *f)
+{
+  void* esp = f->esp + 4;
+  VALIDATE_ESP1 (esp);
+  
+  int pid = *((int*)esp);
+      
+  // Look for child process with this PID
+  struct thread* t = thread_current ();
+  struct thread* child = NULL;
+  struct list_elem* e = list_begin (&t->child_threads);
+  while (e != list_end (&t->child_threads))
+    {
+      struct thread* temp = list_entry(e, struct thread, child_elem);
+      ASSERT (thread_valid (temp));
+      
+      if (temp->tid == pid)
+        {
+          child = temp;
+          break;
+        }
+    }
+  
+  if (child == NULL)
+    {
+      // Search for termination notice
+      int status = thread_exit_status (pid);
+      f->eax = status;      
+      return;
+    }
+  
+  // wait for process to exit
+  sema_down (&child->exit_code_semaphore);
+  sema_down (&child->exit_semaphore);
+  
+  int status = child->exit_code;
+  
+  sema_up (&child->exit_code_semaphore);
+  f->eax = status;
+}
+
 bool
 valid_pointer (const void* uaddr)
 {
@@ -484,6 +529,10 @@ syscall_handler (struct intr_frame *f)
       
     case SYS_SEEK:
       syscall_seek (f);
+      break;
+      
+    case SYS_WAIT:
+      syscall_wait (f);
       break;
 
     default:

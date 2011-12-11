@@ -14,6 +14,7 @@
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
+#include "threads/malloc.h"
 
 /* Random value for struct thread's `magic' member.
    Used to detect stack overflow.  See the big comment at the top
@@ -27,6 +28,9 @@ static struct list ready_list;
 /* List of all processes.  Processes are added to this list
    when they are first scheduled and removed when they exit. */
 static struct list all_list;
+
+/* List of termination notices  */
+static struct list termination_notices;
 
 /* Idle thread. */
 static struct thread *idle_thread;
@@ -43,6 +47,14 @@ struct kernel_thread_frame
   void *eip; /* Return address. */
   thread_func *function; /* Function to call. */
   void *aux; /* Auxiliary data for function. */
+};
+
+struct termination_notice
+{
+  struct list_elem elem;
+  int pid;
+  int exit_code;
+  int parent_pid;
 };
 
 /* Statistics. */
@@ -93,12 +105,43 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+  list_init (&termination_notices);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
-  initial_thread->tid = allocate_tid ();
+  initial_thread->tid = allocate_tid ();   
+}
+
+int thread_exit_status (int pid)
+{
+  struct thread* cur = thread_current ();
+  struct termination_notice* notice = NULL;
+  struct list_elem* e = list_begin (&termination_notices);
+  while (e != list_end (&termination_notices))
+    {
+      struct termination_notice* temp = list_entry(e, struct termination_notice, elem);      
+
+      if (temp->pid == pid && temp->parent_pid == cur->tid)
+        {
+          notice = temp;
+          break;
+        }
+    }
+  
+  int exit_status = -1;
+  
+  if (notice != NULL)
+    {
+      exit_status = notice->exit_code;
+      
+      // remove notice from list
+      list_remove (&notice->elem);
+      free (notice);
+    }
+  
+  return exit_status;
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -184,6 +227,14 @@ thread_create (const char *name, int priority,
   /* Initialize thread. */
   init_thread (t, name, priority);
   tid = t->tid = allocate_tid ();
+  
+  // Add this thread to the list of child threads of the parent
+  if (is_thread(running_thread()))
+    {
+      struct thread* parent = thread_current ();
+      list_push_back (&parent->child_threads, &t->child_elem);
+      t->parent_pid = parent->tid;
+    }
 
   /* Prepare thread for first run by initializing its stack.
      Do this atomically so intermediate values for the 'stack' 
@@ -302,14 +353,30 @@ thread_exit (void)
 
 #ifdef USERPROG
   process_exit ();
-#endif
+#endif    
 
   /* Remove thread from all threads list, set our status to dying,
      and schedule another process.  That process will destroy us
      when it calls thread_schedule_tail(). */
   intr_disable ();
-  list_remove (&thread_current ()->allelem);
+  
+  struct thread* cur = thread_current ();
+  
+  // Add termination notice
+  struct termination_notice* notice = malloc(sizeof(struct termination_notice));
+  if (notice != NULL)
+    {
+      notice->parent_pid = cur->parent_pid;
+      notice->pid = cur->tid;
+      notice->exit_code = cur->exit_code;
+      list_push_back (&termination_notices, &notice->elem);
+    }
+  
+  list_remove (&cur->allelem);
   thread_current ()->status = THREAD_DYING;
+  
+  list_remove (&cur->child_elem);
+  
   schedule ();
   NOT_REACHED ();
 }
@@ -472,6 +539,12 @@ is_thread (struct thread *t)
   return t != NULL && t->magic == THREAD_MAGIC;
 }
 
+bool 
+thread_valid (struct thread *t)
+{
+  return is_thread (t);
+}
+
 /* Does basic initialization of T as a blocked thread named
    NAME. */
 static void
@@ -491,6 +564,11 @@ init_thread (struct thread *t, const char *name, int priority)
   list_init (&t->donators);
   t->donation_recipient = NULL;
   t->is_donee = false;
+  t->exit_code = -1;
+  
+  sema_init (&t->exit_semaphore, 0);
+  sema_init (&t->exit_code_semaphore, 1);
+  list_init (&t->child_threads);  
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
