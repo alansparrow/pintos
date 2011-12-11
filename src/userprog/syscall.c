@@ -381,7 +381,7 @@ syscall_read (struct intr_frame *f)
   
   // Buffer to write into
   esp += 4;
-  uint8_t* buffer = (uint8_t*)esp;
+  uint8_t* buffer = *(uint8_t**)esp;
   VALIDATE_P (buffer);
   
   // Number of bytes to read
