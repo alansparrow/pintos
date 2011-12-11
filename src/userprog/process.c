@@ -262,9 +262,10 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  timer_msleep (1000 * 10); 
+  timer_msleep (1000 * 10);     
   
   return -1;
+  //return wait (child_tid);
 }
 
 /* Free the current process's resources. */
