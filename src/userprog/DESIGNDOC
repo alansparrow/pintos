@@ -1,0 +1,286 @@
+﻿+--------------------------+
+                  |            CS 140                             |
+                     | PROJECT 2: USER PROGRAMS |
+                     |            DESIGN DOCUMENT                 |
+                     +--------------------------+
+
+
+---- GROUP ----
+
+
+Mathias Kahl <mathias.kahl@googlemail.com>
+Alexander Bach <alexbach@zedat.fu-berlin.de>
+
+
+---- PRELIMINARIES ----
+
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please give them here.
+
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+
+
+Für die Frage A2 wurde angenommen, dass es um argument passing und nicht argument parsing geht.
+
+
+                           ARGUMENT PASSING
+                           ================
+
+
+---- DATA STRUCTURES ----
+
+
+>> A1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+
+Es wurden keine derartigen Dinge hinzufügt oder geändert.
+
+
+---- ALGORITHMS ----
+
+
+>> A2: Briefly describe how you implemented argument parsing.  How do
+>> you arrange for the elements of argv[] to be in the right order?
+>> How do you avoid overflowing the stack page?
+
+
+Für das Parsen der Argumente wurde die Funktion parse_args geschrieben. In der dieser werden zunächst die Worte anhand der Leerzeichen gezählt und dann ein Array entsprechender Größe angelegt. Anschließend werden per strtok_r die einzelnen Worte eingelesen und im Array gespeichert. 
+
+
+Beim Ablegen der Werte auf dem Stack entsprechend der Pintos-Dokumentation werden die Parameter dann in umgekehrter Reihenfolge abgearbeitet.
+
+
+Um einen Überlauf der Stackpage zu vermeiden, haben wir die Gesamtgröße der Argumente auf 2048 Bytes beschränkt - was zumindest für die Tests zu reichen schien.
+
+
+---- RATIONALE ----
+
+
+>> A3: Why does Pintos implement strtok_r() but not strtok()?
+
+
+strtok_r() hat noch ein Argument mehr als strtok(). Dieses ist der saveptr, welcher genutzt wird, um dafür zu sorgen, dass strtok_r() threadsafe ist und somit ohne weitere Gefahr in einer Betriebssystemumgebung genutzt werden kann.
+
+
+>> A4: In Pintos, the kernel separates commands into an executable name
+>> and arguments.  In Unix-like systems, the shell does this
+>> separation.  Identify at least two advantages of the Unix approach.
+
+
+Dadurch, dass die Aufteilung durch die Shell geschiet, wird das Ganze damit automatisch im User Space abgewickelt und bietet somit weniger Angriffsfläche auf das Betriebssystem.
+
+
+
+
+                             SYSTEM CALLS
+                             ============
+
+
+---- DATA STRUCTURES ----
+
+
+>> B1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+
+struct termination_notice
+{
+  struct list_elem elem;
+  int pid;
+  int exit_code;
+  int parent_pid;
+};
+
+
+Wird benutzt nachträglich um den Exit-Status bereits beendeter Prozesse abfragen zu können.
+
+
+--
+
+
+static struct list termination_notices;
+
+
+Speichert alle Termination-Notices
+
+
+--
+
+
+struct file_elem
+{
+  struct list_elem elem;
+  struct file* file;
+  int fd;
+};
+
+
+Ordnet jedem File-Descriptor ein FILE-Objekt hinzu.
+
+
+--
+
+
+static struct list opened_files;
+
+
+Liste von file_elem-Objekten, um ein FILE-Objekt zu einem fd finden zu können.
+
+
+--
+
+
+static struct lock fd_lock;
+static struct lock file_lock;
+static struct lock file_list_lock;
+
+
+Diverse Locks, um die Zugriffe auf File-Descriptor, Dateien und die opened_files-Liste zu synchronisieren.
+
+
+--
+
+
+struct thread {
+     // …
+        int exit_code;
+        struct semaphore exit_semaphore;
+        struct semaphore exit_code_semaphore;
+        struct list child_threads;
+        struct list_elem child_elem;
+        int parent_pid;
+     // … 
+}
+
+
+Die Thread-Struktur wurde für die Implementierung des Wait-System-Calls erweitert. Threads speichern ihren Exit-Code, Kind- und Elternrprozesse und haben Semaphoren für die Synchronisierung von wait() und exit().
+
+
+>> B2: Describe how file descriptors are associated with open files.
+>> Are file descriptors unique within the entire OS or just within a
+>> single process?
+
+
+Es gibt eine globale Liste von file_elem-Objekten, die jedem File-Descriptor eine Datei (struct file) zuordnet. Die fd-Werte sind betriebssystemweit einzigartig.
+
+
+---- ALGORITHMS ----
+
+
+>> B3: Describe your code for reading and writing user data from the
+>> kernel.
+
+
+Beim Lesen und Schreiben von Argumenten im Userspace (inkl. Stack) werden alle Pointer auf Gültigkeit geprüft. Gültige Pointer sind nicht NULL und verweisen auf einen Speicherbereich im virtuellen Addressraum der User, der gerade nicht ausgelagert ist.
+
+
+>> B4: Suppose a system call causes a full page (4,096 bytes) of data
+>> to be copied from user space into the kernel.  What is the least
+>> and the greatest possible number of inspections of the page table
+>> (e.g. calls to pagedir_get_page()) that might result?  What about
+>> for a system call that only copies 2 bytes of data?  Is there room
+>> for improvement in these numbers, and how much?
+
+
+Wenn eine ganze Seite kopiert werden soll, so müssen in beiden Fällen zwei Aufrufe von pagedir_get_page() durchgeführt werden. Denn keine der bereits allozierten Seiten sollte leer sein und jede bereits bestehende Seite bietet nicht genug Platz für eine ganze Seite. Also muss eine neue alloziert werden.
+
+
+Wenn nur 2 Byte kopiert werden sollen, dann muss die Funktion im günstigsten Fall nur einmal aufgerufen werden. Dann ist in der zuerst erhaltenen Seite noch ausreichend Platz vorhanden um sie dort hin zu kopieren. Im schlimmsten Fall ist das nicht der Fall und es muss eine neue Seite alloziert werden, das resultiert in zwei Aufrufen der Funktion.
+
+
+Gesetzt den Fall es soll eine ganze Seite kopiert werden, so kann die Menge der Funktionsaufrufe auf 1 reduziert werden, wenn dann stets direkt eine neue Seite alloziert wird.
+
+
+>> B5: Briefly describe your implementation of the "wait" system call
+>> and how it interacts with process termination.
+
+
+Beim Wait-Systemaufruf wird die Liste der Kindprozesse über die gegebene pid durchsucht. Sollte sich ein entsprechender Kindprozess noch in Ausführung befinden, werden die zwei Semaphoren exit_code_semaphore und exit_semaphore genutzt, um erst auf den Aufruf von exit() zu warten, und dann exit() darauf warten zu lassen, dass wait() den Exit-Code gelesen hat, welcher dann zurückgeliefert wird.
+
+
+Wird kein Kindprozess gefunden, heißt das i.d.R., dass dieser schon terminiert ist. Für diesen Fall wird die Liste der Termination-Notices, welche von exit() angelegt werden, durchsucht. Wird ein entsprechender Eintrag gefunden, wird der Exit-Code zurückgeliefert und der Eintrag aus der Liste gelöscht.
+
+
+>> B6: Any access to user program memory at a user-specified address
+>> can fail due to a bad pointer value.  Such accesses must cause the
+>> process to be terminated.  System calls are fraught with such
+>> accesses, e.g. a "write" system call requires reading the system
+>> call number from the user stack, then each of the call's three
+>> arguments, then an arbitrary amount of user memory, and any of
+>> these can fail at any point.  This poses a design and
+>> error-handling problem: how do you best avoid obscuring the primary
+>> function of code in a morass of error-handling?  Furthermore, when
+>> an error is detected, how do you ensure that all temporarily
+>> allocated resources (locks, buffers, etc.) are freed?  In a few
+>> paragraphs, describe the strategy or strategies you adopted for
+>> managing these issues.  Give an example.
+
+
+Für die Validierung von jeglichen Pointern werden einfache Makros benutzt, welche relevante Pointer überprüfen und bei Erkennen von falschen Pointern den exit()-Systemaufruf nutzen, um die Ressourcen freizugeben.
+
+
+---- SYNCHRONIZATION ----
+
+
+>> B7: The "exec" system call returns -1 if loading the new executable
+>> fails, so it cannot return before the new executable has completed
+>> loading.  How does your code ensure this?  How is the load
+>> success/failure status passed back to the thread that calls "exec"?
+
+
+Die Funktion process_execute wurde so erweitert, dass sie auf das Laden oder Fehlschlagen der Prozesse warten kann. Dafür wird der Methode start_process eine Semaphore übergeben, welche genutzt wird, um auf dessen Ergebnis zu warten. Process_execute signalisiert mit der Sempahore ein Fehlschlagen oder Erfolg des Ladevorgangs. 
+
+
+In der aktuellen Implementierung wird das Ergebnis noch nicht überprüft, sondern eben nur darauf gewartet.
+
+
+>> B8: Consider parent process P with child process C.  How do you
+>> ensure proper synchronization and avoid race conditions when P
+>> calls wait(C) before C exits?  After C exits?  How do you ensure
+>> that all resources are freed in each case?  How about when P
+>> terminates without waiting, before C exits?  After C exits?  Are
+>> there any special cases?
+
+
+In unserer Implementierung werden nur zwei Fälle unterschieden:
+
+
+a) P wartet auf C während C läuft
+b) P wartet auf C nachdem C bereits terminiert ist
+
+
+Im 1. Fall werden zwei Semaphoren für die Synchronisierung benutzt, sodass vor dem Freigeben der Ressourcen noch der Status-Code von wait gelesen werden kann.
+
+
+Im 2. Fall wird eine “Termination-Notice”, die von exit() angelegt wurde, genutzt, um nachträglich den Exit-Status zu ermitteln, nachdem bereits alle Ressourcen freigegeben wurden.
+
+
+---- RATIONALE ----
+
+
+>> B9: Why did you choose to implement access to user memory from the
+>> kernel in the way that you did?
+
+
+Weil es am einfachsten war.
+
+
+>> B10: What advantages or disadvantages can you see to your design
+>> for file descriptors?
+
+
+Der Vorteil ist, dass es sehr einfach und schnell zu implementieren war. Nachteil ist, dass es relativ ineffizient und unsicher ist, weil alle Prozesse eine Liste teilen.
+
+
+>> B11: The default tid_t to pid_t mapping is the identity mapping.
+>> If you changed it, what advantages are there to your approach?
+
+
+tid_t = pid_t in unserer Implementierung.

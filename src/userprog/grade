@@ -1,0 +1,980 @@
+TOTAL TESTING SCORE: 79.4%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY BY TEST SET
+
+Test Set                                      Pts Max  % Ttl  % Max
+--------------------------------------------- --- --- ------ ------
+tests/userprog/Rubric.functionality            99/108  32.1%/ 35.0%
+tests/userprog/Rubric.robustness               75/ 88  21.3%/ 25.0%
+tests/userprog/no-vm/Rubric                     0/  1   0.0%/ 10.0%
+tests/filesys/base/Rubric                      26/ 30  26.0%/ 30.0%
+--------------------------------------------- --- --- ------ ------
+Total                                                  79.4%/100.0%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY OF INDIVIDUAL TESTS
+
+Functionality of system calls (tests/userprog/Rubric.functionality):
+	- Test argument passing on Pintos command line.
+	     3/ 3 tests/userprog/args-none
+	     3/ 3 tests/userprog/args-single
+	     3/ 3 tests/userprog/args-multiple
+	     3/ 3 tests/userprog/args-many
+	     3/ 3 tests/userprog/args-dbl-space
+
+	- Test "create" system call.
+	     3/ 3 tests/userprog/create-empty
+	     3/ 3 tests/userprog/create-long
+	     3/ 3 tests/userprog/create-normal
+	     3/ 3 tests/userprog/create-exists
+
+	- Test "open" system call.
+	     3/ 3 tests/userprog/open-missing
+	     3/ 3 tests/userprog/open-normal
+	     3/ 3 tests/userprog/open-twice
+
+	- Test "read" system call.
+	     3/ 3 tests/userprog/read-normal
+	     3/ 3 tests/userprog/read-zero
+
+	- Test "write" system call.
+	     3/ 3 tests/userprog/write-normal
+	     3/ 3 tests/userprog/write-zero
+
+	- Test "close" system call.
+	     3/ 3 tests/userprog/close-normal
+
+	- Test "exec" system call.
+	     5/ 5 tests/userprog/exec-once
+	     5/ 5 tests/userprog/exec-multiple
+	     5/ 5 tests/userprog/exec-arg
+
+	- Test "wait" system call.
+	     5/ 5 tests/userprog/wait-simple
+	     5/ 5 tests/userprog/wait-twice
+
+	- Test "exit" system call.
+	     5/ 5 tests/userprog/exit
+
+	- Test "halt" system call.
+	     3/ 3 tests/userprog/halt
+
+	- Test recursive execution of user programs.
+	    15/15 tests/userprog/multi-recurse
+
+	- Test read-only executable feature.
+	  ** 0/ 3 tests/userprog/rox-simple
+	  ** 0/ 3 tests/userprog/rox-child
+	  ** 0/ 3 tests/userprog/rox-multichild
+
+	- Section summary.
+	     25/ 28 tests passed
+	     99/108 points subtotal
+
+Robustness of system calls (tests/userprog/Rubric.robustness):
+	- Test robustness of file descriptor handling.
+	     2/ 2 tests/userprog/close-stdin
+	     2/ 2 tests/userprog/close-stdout
+	     2/ 2 tests/userprog/close-bad-fd
+	     2/ 2 tests/userprog/close-twice
+	     2/ 2 tests/userprog/read-bad-fd
+	     2/ 2 tests/userprog/read-stdout
+	     2/ 2 tests/userprog/write-bad-fd
+	     2/ 2 tests/userprog/write-stdin
+	  ** 0/ 2 tests/userprog/multi-child-fd
+
+	- Test robustness of pointer handling.
+	     3/ 3 tests/userprog/create-bad-ptr
+	     3/ 3 tests/userprog/exec-bad-ptr
+	     3/ 3 tests/userprog/open-bad-ptr
+	     3/ 3 tests/userprog/read-bad-ptr
+	     3/ 3 tests/userprog/write-bad-ptr
+
+	- Test robustness of buffer copying across page boundaries.
+	     3/ 3 tests/userprog/create-bound
+	     3/ 3 tests/userprog/open-boundary
+	     3/ 3 tests/userprog/read-boundary
+	     3/ 3 tests/userprog/write-boundary
+
+	- Test handling of null pointer and empty strings.
+	     2/ 2 tests/userprog/create-null
+	     2/ 2 tests/userprog/open-null
+	     2/ 2 tests/userprog/open-empty
+
+	- Test robustness of system call implementation.
+	     3/ 3 tests/userprog/sc-bad-arg
+	     3/ 3 tests/userprog/sc-bad-sp
+	     5/ 5 tests/userprog/sc-boundary
+	     5/ 5 tests/userprog/sc-boundary-2
+
+	- Test robustness of "exec" and "wait" system calls.
+	  ** 0/ 5 tests/userprog/exec-missing
+	     5/ 5 tests/userprog/wait-bad-pid
+	     5/ 5 tests/userprog/wait-killed
+
+	- Test robustness of exception handling.
+	  ** 0/ 1 tests/userprog/bad-read
+	  ** 0/ 1 tests/userprog/bad-write
+	  ** 0/ 1 tests/userprog/bad-jump
+	  ** 0/ 1 tests/userprog/bad-read2
+	  ** 0/ 1 tests/userprog/bad-write2
+	  ** 0/ 1 tests/userprog/bad-jump2
+
+	- Section summary.
+	     26/ 34 tests passed
+	     75/ 88 points subtotal
+
+Functionality of features that VM might break (tests/userprog/no-vm/Rubric):
+
+	  ** 0/ 1 tests/userprog/no-vm/multi-oom
+
+	- Section summary.
+	      0/  1 tests passed
+	      0/  1 points subtotal
+
+Functionality of base file system (tests/filesys/base/Rubric):
+	- Test basic support for small files.
+	     1/ 1 tests/filesys/base/sm-create
+	     2/ 2 tests/filesys/base/sm-full
+	     2/ 2 tests/filesys/base/sm-random
+	     2/ 2 tests/filesys/base/sm-seq-block
+	     3/ 3 tests/filesys/base/sm-seq-random
+
+	- Test basic support for large files.
+	     1/ 1 tests/filesys/base/lg-create
+	     2/ 2 tests/filesys/base/lg-full
+	     2/ 2 tests/filesys/base/lg-random
+	     2/ 2 tests/filesys/base/lg-seq-block
+	     3/ 3 tests/filesys/base/lg-seq-random
+
+	- Test synchronized multiprogram access to files.
+	  ** 0/ 4 tests/filesys/base/syn-read
+	     4/ 4 tests/filesys/base/syn-write
+	     2/ 2 tests/filesys/base/syn-remove
+
+	- Section summary.
+	     12/ 13 tests passed
+	     26/ 30 points subtotal
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/rox-simple FAILURE:
+
+run: try to write "rox-simple": FAILED
+
+OUTPUT FROM tests/userprog/rox-simple:
+
+Copying tests/userprog/rox-simple to scratch partition...
+qemu -hda /tmp/QUkDQViSM6.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run rox-simple
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 75 sectors (37 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'rox-simple' into the file system...
+Erasing ustar archive...
+Executing 'rox-simple':
+(rox-simple) begin
+(rox-simple) open "rox-simple"
+(rox-simple) read "rox-simple"
+(rox-simple) try to write "rox-simple"
+(rox-simple) try to write "rox-simple": FAILED
+rox-simple: exit(1)
+Simulation terminated due to test failure.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/rox-child FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (rox-child) begin
+  (rox-child) open "child-rox"
+  (rox-child) read "child-rox"
+  (rox-child) write "child-rox"
+  (rox-child) exec "child-rox 1"
+  (child-rox) begin
+  (child-rox) try to write "child-rox"
+  (child-rox) try to write "child-rox"
+  (child-rox) end
+  child-rox: exit(12)
+  (rox-child) write "child-rox"
+  (rox-child) end
+  rox-child: exit(0)
+Differences in `diff -u' format:
+  (rox-child) begin
+  (rox-child) open "child-rox"
+  (rox-child) read "child-rox"
+  (rox-child) write "child-rox"
+  (rox-child) exec "child-rox 1"
+  (child-rox) begin
+  (child-rox) try to write "child-rox"
+- (child-rox) try to write "child-rox"
+- (child-rox) end
+- child-rox: exit(12)
+- (rox-child) write "child-rox"
+- (rox-child) end
+- rox-child: exit(0)
+
+OUTPUT FROM tests/userprog/rox-child:
+
+Copying tests/userprog/rox-child to scratch partition...
+Copying tests/userprog/child-rox to scratch partition...
+qemu -hda /tmp/jIjCBPNhxP.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run rox-child
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  26,316,800 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 157 sectors (78 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'rox-child' into the file system...
+Putting 'child-rox' into the file system...
+Erasing ustar archive...
+Executing 'rox-child':
+(rox-child) begin
+(rox-child) open "child-rox"
+(rox-child) read "child-rox"
+(rox-child) write "child-rox"
+(rox-child) exec "child-rox 1"
+(child-rox) begin
+(child-rox) try to write "child-rox"
+Execution of 'rox-child' complete.
+Timer: 1349 ticks
+Thread: 26 idle ticks, 321 kernel ticks, 1002 user ticks
+hda2 (filesys): 144 reads, 321 writes
+hda3 (scratch): 156 reads, 2 writes
+Console: 1076 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/rox-multichild FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (rox-multichild) begin
+  (rox-multichild) open "child-rox"
+  (rox-multichild) read "child-rox"
+  (rox-multichild) write "child-rox"
+  (rox-multichild) exec "child-rox 5"
+  (child-rox) begin
+  (child-rox) try to write "child-rox"
+  (child-rox) exec "child-rox 4"
+  (child-rox) begin
+  (child-rox) try to write "child-rox"
+  (child-rox) exec "child-rox 3"
+  (child-rox) begin
+  (child-rox) try to write "child-rox"
+  (child-rox) exec "child-rox 2"
+  (child-rox) begin
+  (child-rox) try to write "child-rox"
+  (child-rox) exec "child-rox 1"
+  (child-rox) begin
+  (child-rox) try to write "child-rox"
+  (child-rox) try to write "child-rox"
+  (child-rox) end
+  child-rox: exit(12)
+  (child-rox) try to write "child-rox"
+  (child-rox) end
+  child-rox: exit(12)
+  (child-rox) try to write "child-rox"
+  (child-rox) end
+  child-rox: exit(12)
+  (child-rox) try to write "child-rox"
+  (child-rox) end
+  child-rox: exit(12)
+  (child-rox) try to write "child-rox"
+  (child-rox) end
+  child-rox: exit(12)
+  (rox-multichild) write "child-rox"
+  (rox-multichild) end
+  rox-multichild: exit(0)
+Differences in `diff -u' format:
+  (rox-multichild) begin
+  (rox-multichild) open "child-rox"
+  (rox-multichild) read "child-rox"
+  (rox-multichild) write "child-rox"
+  (rox-multichild) exec "child-rox 5"
+  (child-rox) begin
+  (child-rox) try to write "child-rox"
+- (child-rox) exec "child-rox 4"
+- (child-rox) begin
+- (child-rox) try to write "child-rox"
+- (child-rox) exec "child-rox 3"
+- (child-rox) begin
+- (child-rox) try to write "child-rox"
+- (child-rox) exec "child-rox 2"
+- (child-rox) begin
+- (child-rox) try to write "child-rox"
+- (child-rox) exec "child-rox 1"
+- (child-rox) begin
+- (child-rox) try to write "child-rox"
+- (child-rox) try to write "child-rox"
+- (child-rox) end
+- child-rox: exit(12)
+- (child-rox) try to write "child-rox"
+- (child-rox) end
+- child-rox: exit(12)
+- (child-rox) try to write "child-rox"
+- (child-rox) end
+- child-rox: exit(12)
+- (child-rox) try to write "child-rox"
+- (child-rox) end
+- child-rox: exit(12)
+- (child-rox) try to write "child-rox"
+- (child-rox) end
+- child-rox: exit(12)
+- (rox-multichild) write "child-rox"
+- (rox-multichild) end
+- rox-multichild: exit(0)
+
+OUTPUT FROM tests/userprog/rox-multichild:
+
+Copying tests/userprog/rox-multichild to scratch partition...
+Copying tests/userprog/child-rox to scratch partition...
+qemu -hda /tmp/t6qlA4RPJT.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run rox-multichild
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 157 sectors (78 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'rox-multichild' into the file system...
+Putting 'child-rox' into the file system...
+Erasing ustar archive...
+Executing 'rox-multichild':
+(rox-multichild) begin
+(rox-multichild) open "child-rox"
+(rox-multichild) read "child-rox"
+(rox-multichild) write "child-rox"
+(rox-multichild) exec "child-rox 5"
+(child-rox) begin
+(child-rox) try to write "child-rox"
+Execution of 'rox-multichild' complete.
+Timer: 1347 ticks
+Thread: 26 idle ticks, 319 kernel ticks, 1002 user ticks
+hda2 (filesys): 144 reads, 321 writes
+hda3 (scratch): 156 reads, 2 writes
+Console: 1121 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/multi-child-fd FAILURE:
+
+run: read of 239 bytes at offset 0 in "sample.txt" returned 4294967295: FAILED
+
+OUTPUT FROM tests/userprog/multi-child-fd:
+
+Copying tests/userprog/multi-child-fd to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+Copying tests/userprog/child-close to scratch partition...
+qemu -hda /tmp/aJ2vXSgLoO.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run multi-child-fd
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,219,200 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 157 sectors (78 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'multi-child-fd' into the file system...
+Putting 'sample.txt' into the file system...
+Putting 'child-close' into the file system...
+Erasing ustar archive...
+Executing 'multi-child-fd':
+(multi-child-fd) begin
+(multi-child-fd) open "sample.txt"
+(child-close) begin
+(child-close) end
+child-close: exit(0)
+(multi-child-fd) wait(exec()) = 0
+(multi-child-fd) size of sample.txt (4294967295) differs from expected (239)
+(multi-child-fd) read of 239 bytes at offset 0 in "sample.txt" returned 4294967295: FAILED
+multi-child-fd: exit(1)
+Simulation terminated due to test failure.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/exec-missing FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/process.c:145 in push_arguments(): assertion `esp > 0' failed.
+Call stack: 0xc002aff7 0xc002d95f 0xc002dc0f 0xc0021473
+Translation of call stack:
+0xc002aff7: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002d95f: push_arguments (...../userprog/process.c:148)
+0xc002dc0f: start_process (...../userprog/process.c:216)
+0xc0021473: kernel_thread (..../../threads/thread.c:525)
+
+OUTPUT FROM tests/userprog/exec-missing:
+
+Copying tests/userprog/exec-missing to scratch partition...
+qemu -hda /tmp/w8r9toyeTG.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run exec-missing
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 74 sectors (37 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'exec-missing' into the file system...
+Erasing ustar archive...
+Executing 'exec-missing':
+(exec-missing) begin
+load: no-such-file: open failed
+Kernel PANIC at ../../userprog/process.c:145 in push_arguments(): assertion `esp > 0' failed.
+Call stack: 0xc002aff7 0xc002d95f 0xc002dc0f 0xc0021473.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 198 ticks
+Thread: 26 idle ticks, 171 kernel ticks, 1 user ticks
+hda2 (filesys): 80 reads, 152 writes
+hda3 (scratch): 73 reads, 2 writes
+Console: 1165 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/bad-read FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (bad-read) begin
+  bad-read: exit(-1)
+Differences in `diff -u' format:
+  (bad-read) begin
+- bad-read: exit(-1)
+
+(User fault messages are excluded for matching purposes.)
+
+OUTPUT FROM tests/userprog/bad-read:
+
+Copying tests/userprog/bad-read to scratch partition...
+qemu -hda /tmp/hH7tLg4lvT.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run bad-read
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 74 sectors (37 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'bad-read' into the file system...
+Erasing ustar archive...
+Executing 'bad-read':
+(bad-read) begin
+Page fault at 0: not present error reading page in user context.
+bad-read: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x804809f
+ cr2=00000000 error=00000004
+ eax=00000000 ebx=00000000 ecx=ffffffed edx=000000ad
+ esi=00000000 edi=00000000 esp=bfffff80 ebp=bfffff98
+ cs=001b ds=0023 es=0023 ss=0023
+Execution of 'bad-read' complete.
+Timer: 1188 ticks
+Thread: 1022 idle ticks, 164 kernel ticks, 2 user ticks
+hda2 (filesys): 63 reads, 152 writes
+hda3 (scratch): 73 reads, 2 writes
+Console: 1207 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/bad-write FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (bad-write) begin
+  bad-write: exit(-1)
+Differences in `diff -u' format:
+  (bad-write) begin
+- bad-write: exit(-1)
+
+(User fault messages are excluded for matching purposes.)
+
+OUTPUT FROM tests/userprog/bad-write:
+
+Copying tests/userprog/bad-write to scratch partition...
+qemu -hda /tmp/gfYTzCDr7d.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run bad-write
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 74 sectors (37 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'bad-write' into the file system...
+Erasing ustar archive...
+Executing 'bad-write':
+(bad-write) begin
+Page fault at 0: not present error writing page in user context.
+bad-write: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x804809f
+ cr2=00000000 error=00000006
+ eax=00000000 ebx=00000000 ecx=ffffffec edx=000000ad
+ esi=00000000 edi=00000000 esp=bfffff80 ebp=bfffff98
+ cs=001b ds=0023 es=0023 ss=0023
+Execution of 'bad-write' complete.
+Timer: 1200 ticks
+Thread: 1022 idle ticks, 176 kernel ticks, 2 user ticks
+hda2 (filesys): 63 reads, 152 writes
+hda3 (scratch): 73 reads, 2 writes
+Console: 1213 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/bad-jump FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (bad-jump) begin
+  bad-jump: exit(-1)
+Differences in `diff -u' format:
+  (bad-jump) begin
+- bad-jump: exit(-1)
+
+(User fault messages are excluded for matching purposes.)
+
+OUTPUT FROM tests/userprog/bad-jump:
+
+Copying tests/userprog/bad-jump to scratch partition...
+qemu -hda /tmp/3tLGsnb2ZZ.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run bad-jump
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 74 sectors (37 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'bad-jump' into the file system...
+Erasing ustar archive...
+Executing 'bad-jump':
+(bad-jump) begin
+Page fault at 0: not present error reading page in user context.
+bad-jump: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0
+ cr2=00000000 error=00000004
+ eax=00000000 ebx=00000000 ecx=ffffffed edx=000000ad
+ esi=00000000 edi=00000000 esp=bfffff7c ebp=bfffff98
+ cs=001b ds=0023 es=0023 ss=0023
+Execution of 'bad-jump' complete.
+Timer: 1200 ticks
+Thread: 1023 idle ticks, 176 kernel ticks, 1 user ticks
+hda2 (filesys): 63 reads, 152 writes
+hda3 (scratch): 73 reads, 2 writes
+Console: 1199 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/bad-read2 FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (bad-read2) begin
+  bad-read2: exit(-1)
+Differences in `diff -u' format:
+  (bad-read2) begin
+- bad-read2: exit(-1)
+
+(User fault messages are excluded for matching purposes.)
+
+OUTPUT FROM tests/userprog/bad-read2:
+
+Copying tests/userprog/bad-read2 to scratch partition...
+qemu -hda /tmp/cQEH6i6zek.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run bad-read2
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  29,542,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 74 sectors (37 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'bad-read2' into the file system...
+Erasing ustar archive...
+Executing 'bad-read2':
+(bad-read2) begin
+Page fault at 0xc0000000: rights violation error reading page in user context.
+bad-read2: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x804809f
+ cr2=c0000000 error=00000005
+ eax=c0000000 ebx=00000000 ecx=ffffffec edx=000000ad
+ esi=00000000 edi=00000000 esp=bfffff80 ebp=bfffff98
+ cs=001b ds=0023 es=0023 ss=0023
+Execution of 'bad-read2' complete.
+Timer: 1195 ticks
+Thread: 1022 idle ticks, 171 kernel ticks, 2 user ticks
+hda2 (filesys): 63 reads, 152 writes
+hda3 (scratch): 73 reads, 2 writes
+Console: 1227 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/bad-write2 FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (bad-write2) begin
+  bad-write2: exit(-1)
+Differences in `diff -u' format:
+  (bad-write2) begin
+- bad-write2: exit(-1)
+
+(User fault messages are excluded for matching purposes.)
+
+OUTPUT FROM tests/userprog/bad-write2:
+
+Copying tests/userprog/bad-write2 to scratch partition...
+qemu -hda /tmp/cgEuyIKtry.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run bad-write2
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 74 sectors (37 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'bad-write2' into the file system...
+Erasing ustar archive...
+Executing 'bad-write2':
+(bad-write2) begin
+Page fault at 0xc0000000: rights violation error writing page in user context.
+bad-write2: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x804809f
+ cr2=c0000000 error=00000007
+ eax=c0000000 ebx=00000000 ecx=ffffffeb edx=000000ad
+ esi=00000000 edi=00000000 esp=bfffff80 ebp=bfffff98
+ cs=001b ds=0023 es=0023 ss=0023
+Execution of 'bad-write2' complete.
+Timer: 1194 ticks
+Thread: 1022 idle ticks, 170 kernel ticks, 2 user ticks
+hda2 (filesys): 63 reads, 152 writes
+hda3 (scratch): 73 reads, 2 writes
+Console: 1233 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/bad-jump2 FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (bad-jump2) begin
+  bad-jump2: exit(-1)
+Differences in `diff -u' format:
+  (bad-jump2) begin
+- bad-jump2: exit(-1)
+
+(User fault messages are excluded for matching purposes.)
+
+OUTPUT FROM tests/userprog/bad-jump2:
+
+Copying tests/userprog/bad-jump2 to scratch partition...
+qemu -hda /tmp/2hy9pJw1ad.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run bad-jump2
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 74 sectors (37 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'bad-jump2' into the file system...
+Erasing ustar archive...
+Executing 'bad-jump2':
+(bad-jump2) begin
+Page fault at 0xc0000000: rights violation error reading page in user context.
+bad-jump2: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc0000000
+ cr2=c0000000 error=00000005
+ eax=c0000000 ebx=00000000 ecx=ffffffec edx=000000ad
+ esi=00000000 edi=00000000 esp=bfffff7c ebp=bfffff98
+ cs=001b ds=0023 es=0023 ss=0023
+Execution of 'bad-jump2' complete.
+Timer: 1197 ticks
+Thread: 1021 idle ticks, 174 kernel ticks, 2 user ticks
+hda2 (filesys): 63 reads, 152 writes
+hda3 (scratch): 73 reads, 2 writes
+Console: 1228 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/no-vm/multi-oom FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (multi-oom) begin
+  (multi-oom) success. program forked 10 times.
+  (multi-oom) end
+Differences in `diff -u' format:
+  (multi-oom) begin
+- (multi-oom) success. program forked 10 times.
+- (multi-oom) end
+
+(Process exit codes are excluded for matching purposes.)
+
+(User fault messages are excluded for matching purposes.)
+
+OUTPUT FROM tests/userprog/no-vm/multi-oom:
+
+Copying tests/userprog/no-vm/multi-oom to scratch partition...
+qemu -hda /tmp/6QdRxwVWK_.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run multi-oom
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  26,188,800 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 87 sectors (43 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'multi-oom' into the file system...
+Erasing ustar archive...
+Executing 'multi-oom':
+(multi-oom) begin
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+multi-oom: exit(-1)
+Page fault at 0xc0000000: rights violation error reading page in user context.
+multi-oom 21 -k: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0x804818d
+ cr2=c0000000 error=00000005
+ eax=c0000000 ebx=00000000 ecx=a73db9f4 edx=a73db9f2
+ esi=c0000000 edi=0804b635 esp=bfffff30 ebp=bfffff58
+ cs=001b ds=0023 es=0023 ss=0023
+Execution of 'multi-oom' complete.
+Timer: 1218 ticks
+Thread: 1000 idle ticks, 196 kernel ticks, 22 user ticks
+hda2 (filesys): 2501 reads, 178 writes
+hda3 (scratch): 86 reads, 2 writes
+Console: 1316 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/syn-read FAILURE:
+
+Kernel panic in run: PANIC at ../../userprog/syscall.c:451 in syscall_wait(): assertion `thread_valid (temp)' failed.
+Call stack: 0xc002aff7 0xc002fc1b 0xc002fde9 0xc002240e 0xc002266b 0x804abf6 0x804851b 0x80481c2 0x8048aa8 0x8048ad4
+Translation of call stack:
+In kernel.o:
+0xc002aff7: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002fc1b: syscall_wait (...../userprog/syscall.c:453)
+0xc002fde9: syscall_handler (...../userprog/syscall.c:562)
+0xc002240e: intr_handler (..../threads/interrupt.c:367)
+0xc002266b: intr_entry (threads/intr-stubs.S:38)
+In tests/filesys/base/syn-read:
+0x0804abf6: wait (.../../lib/user/syscall.c:87)
+0x0804851b: wait_children (...ild/../../tests/lib.c:100)
+0x080481c2: test_main (...ilesys/base/syn-read.c:31)
+0x08048aa8: main (...ild/../../tests/main.c:13)
+0x08048ad4: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/filesys/base/syn-read:
+
+Copying tests/filesys/base/syn-read to scratch partition...
+Copying tests/filesys/base/child-syn-read to scratch partition...
+qemu -hda /tmp/pn7RlggHcB.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading.............
+Kernel command line: -q -f extract run syn-read
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  32,716,800 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 223 sectors (111 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 161 sectors (80 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'syn-read' into the file system...
+Putting 'child-syn-read' into the file system...
+Erasing ustar archive...
+Executing 'syn-read':
+(syn-read) begin
+(syn-read) create "data"
+(syn-read) open "data"
+(syn-read) write "data"
+(syn-read) close "data"
+(syn-read) exec child 1 of 10: "child-syn-read 0"
+(syn-read) exec child 2 of 10: "child-syn-read 1"
+child-syn-read: exit(0)
+(syn-read) exec child 3 of 10: "child-syn-read 2"
+child-syn-read: exit(1)
+(syn-read) exec child 4 of 10: "child-syn-read 3"
+child-syn-read: exit(2)
+(syn-read) exec child 5 of 10: "child-syn-read 4"
+child-syn-read: exit(3)
+(syn-read) exec child 6 of 10: "child-syn-read 5"
+child-syn-read: exit(4)
+(syn-read) exec child 7 of 10: "child-syn-read 6"
+child-syn-read: exit(5)
+(syn-read) exec child 8 of 10: "child-syn-read 7"
+child-syn-read: exit(6)
+(syn-read) exec child 9 of 10: "child-syn-read 8"
+child-syn-read: exit(7)
+(syn-read) exec child 10 of 10: "child-syn-read 9"
+Kernel PANIC at ../../userprog/syscall.c:451 in syscall_wait(): assertion `thread_valid (temp)' failed.
+Call stack: 0xc002aff7 0xc002fc1b 0xc002fde9 0xc002240e 0xc002266b 0x804abf6 0x804851b 0x80481c2 0x8048aa8 0x8048ad4.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 416 ticks
+Thread: 26 idle ticks, 314 kernel ticks, 76 user ticks
+hda2 (filesys): 9821 reads, 336 writes
+hda3 (scratch): 160 reads, 2 writes
+Console: 2031 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
