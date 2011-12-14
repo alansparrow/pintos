@@ -20,6 +20,7 @@
 #define VALIDATE_ESP2(p) if (!valid_pointer(p) || !valid_pointer(p+4)) exit (-1)
 #define VALIDATE_ESP3(p) if (!valid_pointer(p) || !valid_pointer(p+4) || !valid_pointer(p+8)) exit (-1)
 
+/* Element of the open file list that associates fds to files */
 struct file_elem
 {
   struct list_elem elem;
@@ -27,9 +28,13 @@ struct file_elem
   int fd;
 };
 
+/* lock for unique fd generation */
 static struct lock fd_lock;
+/* lock for file access */
 static struct lock file_lock;
+/* lock for file list access */
 static struct lock file_list_lock;
+/* list of open files and their fds */
 static struct list opened_files;
 
 struct file_elem* get_file_elem (int fd);
@@ -52,6 +57,7 @@ void syscall_seek (struct intr_frame *f);
 void syscall_read (struct intr_frame *f);
 void syscall_wait (struct intr_frame *f);
 
+/* Generates a new unique file descriptor number */
 int
 allocate_fd (void)
 {
@@ -79,6 +85,7 @@ syscall_init (void)
 void
 syscall_exit (struct intr_frame *f)
 {
+  // Get parameters from stack: status code
   void* esp = f->esp + 4;
   VALIDATE_P (esp);
   int status = *((int*) esp);
@@ -91,6 +98,8 @@ syscall_exit (struct intr_frame *f)
   exit (status);
 }
 
+/* Prints out an exit message containing the given status code and name of
+   the current thread, and then exits the thread. */
 void
 exit (int status)
 {
@@ -111,6 +120,7 @@ exit (int status)
 void
 syscall_exec (struct intr_frame *f)
 {
+  // Get parameters from stack: file_name
   void* esp = f->esp + 4;
   VALIDATE_ESP1 (esp);
 
@@ -127,6 +137,7 @@ syscall_exec (struct intr_frame *f)
 void
 syscall_create (struct intr_frame *f)
 {
+  // Get parameters from stack: file_name, initial_size
   void* esp = f->esp + 4;
   VALIDATE_ESP2 (esp);
 
@@ -150,6 +161,7 @@ syscall_create (struct intr_frame *f)
 void
 syscall_open (struct intr_frame *f)
 {
+  // Get parameters from stack: file_name
   void* esp = f->esp + 4;
   VALIDATE_ESP1 (esp);
 
@@ -190,6 +202,7 @@ syscall_open (struct intr_frame *f)
 void
 syscall_write (struct intr_frame *f)
 {
+  // Get parameters from stack: fd, buffer, size
   void* esp = f->esp + 4;
   VALIDATE_ESP3 (esp);
 
@@ -230,6 +243,7 @@ syscall_write (struct intr_frame *f)
 
 void syscall_remove (struct intr_frame *f)
 {
+  // get parameters from stack: file_name
   void* esp = f->esp + 4;
   VALIDATE_ESP1 (esp);
   
@@ -243,12 +257,8 @@ void syscall_remove (struct intr_frame *f)
   f->eax = success;
 }
 
-/**
- * Searches for a file list entry with given fd and returns it, if it exists.
- * Otherwise NULL is returned.
- * @param fd File Descriptor
- * @return File list entry or NULL
- */
+/** Searches for a file list entry with given fd and returns it, if it exists.
+    Otherwise NULL is returned. */
 struct file_elem* get_file_elem (int fd)
 {
   struct file_elem* file = NULL;
@@ -273,6 +283,7 @@ struct file_elem* get_file_elem (int fd)
 
 void syscall_filesize (struct intr_frame *f)
 {
+  // get parameters from stack: fd
   void* esp = f->esp + 4; // skip syscall number
   VALIDATE_ESP1 (esp);
   
@@ -303,6 +314,7 @@ void syscall_filesize (struct intr_frame *f)
 
 void syscall_close (struct intr_frame *f)
 {
+  // get parameters from stack: fd
   void* esp = f->esp + 4; // skip syscall number on stack
   VALIDATE_ESP1 (esp);
   
@@ -330,6 +342,7 @@ void syscall_close (struct intr_frame *f)
 void
 syscall_tell (struct intr_frame *f)
 {
+  // get parameters from stack: fd
   void* esp = f->esp + 4; // skip syscall number on stack
   VALIDATE_ESP1 (esp);
   
@@ -352,6 +365,7 @@ syscall_tell (struct intr_frame *f)
 void
 syscall_seek (struct intr_frame *f)
 {
+  // get parameters from stack: fd, pos
   void* esp = f->esp + 4; // skip syscall number on stack
   VALIDATE_ESP2 (esp);
   
@@ -375,6 +389,7 @@ syscall_seek (struct intr_frame *f)
 void
 syscall_read (struct intr_frame *f)
 {
+  // get parameters from stack: fd, buffer, size
   void* esp = f->esp + 4; // skip syscall number on stack
   VALIDATE_ESP3 (esp);
   
@@ -420,6 +435,7 @@ syscall_read (struct intr_frame *f)
 void
 syscall_wait (struct intr_frame *f)
 {
+  // get parameters from stack: pid
   void* esp = f->esp + 4;
   VALIDATE_ESP1 (esp);
   
@@ -439,8 +455,13 @@ syscall_wait (struct intr_frame *f)
           child = temp;
           break;
         }
+      else
+        {
+          e = list_next (&e);
+        }
     }
   
+  // If there is no such child, the process might already is terminated
   if (child == NULL)
     {
       // Search for termination notice
@@ -455,10 +476,14 @@ syscall_wait (struct intr_frame *f)
   
   int status = child->exit_code;
   
+  // let process_exit() continue
   sema_up (&child->exit_code_semaphore);
+  
   f->eax = status;
 }
 
+/* Checks if a user address pointer is valid, i.e. not NULL, points to 
+   user address space and is memory mapped. */
 bool
 valid_pointer (const void* uaddr)
 {
@@ -476,6 +501,7 @@ syscall_halt (struct intr_frame *f UNUSED)
 static void
 syscall_handler (struct intr_frame *f)
 {
+  // get syscall number from stack
   void* esp = f->esp;
   VALIDATE_ESP1 (esp);
 

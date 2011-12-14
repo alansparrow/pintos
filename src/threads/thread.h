@@ -107,11 +107,18 @@ struct thread
     /* For quick check if this thread has been donated to */
     bool is_donee;
     
+    /* Exit code of the thread set by process_exit */
     int exit_code;
-    struct semaphore exit_semaphore;
+    
+    /* Semaphore that can be used to wait for exit of this thread*/
+    struct semaphore exit_semaphore;    
+    /* Semaphore that can be used to block exit until exit code was read */
     struct semaphore exit_code_semaphore;
+    /* List of child processes / threads */
     struct list child_threads;
+    /* List element for child_threads list */
     struct list_elem child_elem;
+    /* PID of parent process */
     int parent_pid;
 
 #ifdef USERPROG

@@ -49,6 +49,8 @@ struct kernel_thread_frame
   void *aux; /* Auxiliary data for function. */
 };
 
+/* Notice of process termination, storing pid, exit code
+   and parent pid even after termination of the process. */
 struct termination_notice
 {
   struct list_elem elem;
@@ -114,11 +116,16 @@ thread_init (void)
   initial_thread->tid = allocate_tid ();   
 }
 
+/* Attempts to retrieve the exit_status of a thread with given PID after it 
+   is already terminated. Returns -1 if no termination_notice is found or the
+   current thread is not parent of the thread with that pid. */
 int thread_exit_status (int pid)
 {
   struct thread* cur = thread_current ();
   struct termination_notice* notice = NULL;
   struct list_elem* e = list_begin (&termination_notices);
+  
+  // Look for a termination notice for this process 
   while (e != list_end (&termination_notices))
     {
       struct termination_notice* temp = list_entry(e, struct termination_notice, elem);      

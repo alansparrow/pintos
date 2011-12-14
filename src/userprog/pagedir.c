@@ -118,11 +118,6 @@ pagedir_set_page (uint32_t *pd, void *upage, void *kpage, bool writable)
     return false;
 }
 
-void reject()
-{
-  process_exit();
-}
-
 /* Looks up the physical address that corresponds to user virtual
    address UADDR in PD.  Returns the kernel virtual address
    corresponding to that physical address, or a null pointer if
@@ -137,7 +132,7 @@ pagedir_get_page (uint32_t *pd, const void *uaddr)
   // Validate pointer
   if (uaddr == NULL || !is_user_vaddr(uaddr))
     {
-      reject();
+      thread_exit ();
       return NULL;
     }
   

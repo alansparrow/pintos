@@ -56,7 +56,8 @@ process_execute (const char *file_name, bool wait)
       return -1;
     }  
   
-  // Append pointer to semaphore after file_name  
+  // Append pointer to semaphore after file_name if wait = true
+  // that is used to wait until process was successfully started (or failed)
   struct semaphore** p = (struct semaphore*)(fn_copy + strlen(file_name) + 1);
   
   if (wait)    
@@ -82,13 +83,9 @@ process_execute (const char *file_name, bool wait)
   return tid;
 }
 
-/**
- * Parses input string and copies a new array of strings into argv containing
- * the single words (separated by spaces) and the number of arguments into
- * argc.
- * @param input
- * @param argv
- * @param argc
+/** Parses input string and copies a new array of strings into argv containing
+    the single words (separated by spaces) and the number of arguments into
+    argc.
  */
 static void 
 parse_args (const char* input, char*** argv, int* argc)
@@ -131,6 +128,7 @@ parse_args (const char* input, char*** argv, int* argc)
   *argc = c;
 }
 
+/* Push an integer value onto the stack at esp */
 void push_int (void** esp, int value)
 {
   int* p = (int*)*esp;
@@ -138,6 +136,7 @@ void push_int (void** esp, int value)
   *esp = p;
 }
 
+/* Push given arguments onto the stack and change esp accordingly */
 void push_arguments (char** argv, int argc, void** pesp)
 {
   void* esp = *pesp;
@@ -158,10 +157,7 @@ void push_arguments (char** argv, int argc, void** pesp)
   
   // Address where arguments start  
   void* stack_args_start = esp;
-  int stack_args_size = esp_start - stack_args_start;
-  
-  // round stack pointer to multiple of four
-  //esp -= ((int)esp % 4); 
+  int stack_args_size = esp_start - stack_args_start; 
   
   // NULL sentinel for args
   push_int (&esp, 0);
@@ -183,9 +179,6 @@ void push_arguments (char** argv, int argc, void** pesp)
   push_int (&esp, (int)argv0);
   push_int (&esp, argc);
   push_int (&esp, 0);
-  //*--esp_int = (int)argv0;
-  //*--esp_int = argc;
-  //*--esp_int = 0;
   
   *pesp = esp;
 }
@@ -196,15 +189,14 @@ static void
 start_process (void *file_name_)
 {  
   char *file_name = file_name_;
-  struct intr_frame if_;
-  
+  struct intr_frame if_;  
   int length = strlen (file_name);  
-  char *sema_addr = &file_name[length + 1];
-  struct semaphore *semaphore = (struct semaphore*)(*(int*)(sema_addr));
-  
-  ASSERT (semaphore == NULL || (semaphore != NULL && semaphore->value == 0));
-  
   bool success;  
+  
+  // Semaphore that can be used to signal waiting threads when process was loaded
+  char *sema_addr = &file_name[length + 1];
+  struct semaphore *semaphore = (struct semaphore*)(*(int*)(sema_addr));  
+  ASSERT (semaphore == NULL || (semaphore != NULL && semaphore->value == 0));    
 
   /* Split file_name parameter into file and arguments */
   char** argv = NULL;
@@ -227,6 +219,7 @@ start_process (void *file_name_)
   palloc_free_page (file_name);
   if (!success) 
     {
+      // Notify threads which are waiting for process to have started
       if (semaphore != NULL) 
         {
           sema_up (semaphore);
@@ -234,6 +227,7 @@ start_process (void *file_name_)
       thread_exit ();
     }
 
+  // Notify threads which are waiting for process to have started
   if (semaphore != NULL) 
     {
       if (!list_empty (&semaphore->waiters))
@@ -264,8 +258,7 @@ process_wait (tid_t child_tid UNUSED)
 {
   timer_msleep (1000 * 10);     
   
-  return -1;
-  //return wait (child_tid);
+  return -1;  
 }
 
 /* Free the current process's resources. */
