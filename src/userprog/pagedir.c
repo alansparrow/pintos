@@ -126,33 +126,14 @@ void *
 pagedir_get_page (uint32_t *pd, const void *uaddr) 
 {
   uint32_t *pte;
-  
-  ASSERT(is_user_vaddr(uaddr)); 
-  
-  // Validate pointer
-  if (uaddr == NULL || !is_user_vaddr(uaddr))
-    {
-      thread_exit ();
-      return NULL;
-    }
+
+  ASSERT (is_user_vaddr (uaddr));
   
   pte = lookup_page (pd, uaddr, false);
   if (pte != NULL && (*pte & PTE_P) != 0)
-    {
-      return pte_get_page (*pte) + pg_ofs (uaddr);
-    }
+    return pte_get_page (*pte) + pg_ofs (uaddr);
   else
-    {
-      // Memory not mapped
-      return NULL;
-    }
-}
-
-bool
-pagedir_valid_uaddr (const void* uaddr, uint32_t* pd)
-{
-  return uaddr != NULL && is_user_vaddr(uaddr) &&
-      lookup_page (pd, uaddr, false) != NULL;
+    return NULL;
 }
 
 /* Marks user virtual page UPAGE "not present" in page

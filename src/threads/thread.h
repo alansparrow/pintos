@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include "threads/synch.h"
 
-
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -76,6 +75,22 @@ typedef int tid_t;
    the `magic' member of the running thread's `struct thread' is
    set to THREAD_MAGIC.  Stack overflow will normally change this
    value, triggering the assertion. */
+
+/* Caches the exit status of a child process */
+struct exit_status
+  {
+    struct thread *child;               /* ower of the status */
+    tid_t child_tid;			/* tid of child (pointer above invalid
+                                           if finished true) */
+    int status;                         /* value set if finished */
+    struct list_elem elem;              /* element for children list */
+    bool finished;                      /* child execution finished */
+    int started;		        /* used to check if a process started 
+                                           successfully.
+                                           >0 if so <0 otherwise */
+  };
+
+
 /* The `elem' member has a dual purpose.  It can be an element in
    the run queue (thread.c), or it can be an element in a
    semaphore wait list (synch.c).  It can be used these two ways
@@ -94,33 +109,17 @@ struct thread
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-    
-    /* Used for donators list */
-    struct list_elem donation_elem;
-    
-    /* List of threads donating their priority to this thread */
-    struct list donators;
-    
-    /* Thread that currently owns this priority */
-    struct thread* donation_recipient;
-    
-    /* For quick check if this thread has been donated to */
-    bool is_donee;
-    
-    /* Exit code of the thread set by process_exit */
-    int exit_code;
-    
-    /* Semaphore that can be used to wait for exit of this thread*/
-    struct semaphore exit_semaphore;    
-    /* Semaphore that can be used to block exit until exit code was read */
-    struct semaphore exit_code_semaphore;
-    /* List of child processes / threads */
-    struct list child_threads;
-    /* List element for child_threads list */
-    struct list_elem child_elem;
-    /* PID of parent process */
-    int parent_pid;
 
+    struct list children;               /* List of children from this process
+                                           filled */
+    struct thread *parent;              /* process which startet this
+                                           process */
+    struct exit_status *wait_child;     /* exit status for which this process
+                                           is waiting */
+    struct semaphore wait_for_child;    /* used to block current process if
+                                           waiting for an exit status */
+    struct exit_status *own_exit_status;/* own exit status in parents list
+                                           invalid pointer if parent==NULL */
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -158,24 +157,14 @@ void thread_yield (void);
 typedef void thread_action_func (struct thread *t, void *aux);
 void thread_foreach (thread_action_func *, void *);
 
-int thread_exit_status (int pid);
-
-int thread_priority (struct thread* thread);
 int thread_get_priority (void);
 void thread_set_priority (int);
-
-void thread_add_donation (struct thread*);
-void thread_remove_donation (struct thread*);
 
 int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
-bool thread_valid (struct thread *t);
+bool file_executed (const char *);
 
-bool
-thread_priority_sort (const struct list_elem *a, const struct list_elem *b,
-                   void *aux UNUSED);
-
-#endif /* threads/thread.h */
+#endif

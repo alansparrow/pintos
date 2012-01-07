@@ -1,569 +1,583 @@
 #include "userprog/syscall.h"
 #include <stdio.h>
 #include <syscall-nr.h>
+#include <string.h>
+#include "devices/input.h"
+#include "devices/shutdown.h"
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "threads/palloc.h"
+#include "threads/malloc.h"
+#include "threads/synch.h"
 #include "userprog/pagedir.h"
+#include "userprog/process.h"
+#include "filesys/file.h"
 #include "filesys/filesys.h"
 #include "devices/shutdown.h"
-#include "list.h"
-#include "threads/synch.h"
-#include "userprog/process.h"
-#include "threads/malloc.h"
-#include "filesys/file.h"
-#include "filesys/inode.h"
-#include "devices/input.h"
 
-#define VALIDATE_P(p) if (!valid_pointer(p)) exit (-1)
-#define VALIDATE_ESP1(p) if (!valid_pointer(p)) exit (-1)
-#define VALIDATE_ESP2(p) if (!valid_pointer(p) || !valid_pointer(p+4)) exit (-1)
-#define VALIDATE_ESP3(p) if (!valid_pointer(p) || !valid_pointer(p+4) || !valid_pointer(p+8)) exit (-1)
-
-/* Element of the open file list that associates fds to files */
-struct file_elem
-{
-  struct list_elem elem;
-  struct file* file;
-  int fd;
+struct file_descriptor {
+  int fd_id;            /* FD unique identifier */
+  tid_t owner;	        /* thread/process holding this FD */
+  struct file *file;    /* reference to filesystem */
+  struct list_elem elem;/* element for open_files list */
+  char *exec_name;      /* name of the file (used to prevent ivalid writes)
+                           in case it is executed currently */
 };
 
-/* lock for unique fd generation */
-static struct lock fd_lock;
-/* lock for file access */
-static struct lock file_lock;
-/* lock for file list access */
-static struct lock file_list_lock;
-/* list of open files and their fds */
-static struct list opened_files;
+struct list open_files;
+struct lock file_lock;
+int get_unique_fd_id (void);
+struct file_descriptor* get_open_file (int fd);
+struct file_descriptor* get_owned_file (int fd);
 
-struct file_elem* get_file_elem (int fd);
 static void syscall_handler (struct intr_frame *);
-bool valid_pointer (const void* uaddr);
-int allocate_fd (void);
-void exit (int status);
 
-void syscall_halt (struct intr_frame *f);
-void syscall_exit (struct intr_frame *f);
-void syscall_exec (struct intr_frame *f);
-void syscall_create (struct intr_frame *f);
-void syscall_open (struct intr_frame *f);
-void syscall_write (struct intr_frame *f);
-void syscall_remove (struct intr_frame *f);
-void syscall_filesize (struct intr_frame *f);
-void syscall_close (struct intr_frame *f);
-void syscall_tell (struct intr_frame *f);
-void syscall_seek (struct intr_frame *f);
-void syscall_read (struct intr_frame *f);
-void syscall_wait (struct intr_frame *f);
+bool is_valid_uaddr(const void *);
+bool are_valid_uaddrs(const void *, int);
 
-/* Generates a new unique file descriptor number */
-int
-allocate_fd (void)
-{
-  static int next_fd = 2;
-  int fd;
-
-  lock_acquire (&fd_lock);
-  fd = next_fd++;
-  lock_release (&fd_lock);
-
-  return fd;
-}
+void halt (void);
+void exit (int) NO_RETURN;
+tid_t exec_call (const char *);
+bool create (const char *, unsigned);
+bool remove (const char *);
+int open (const char *);
+int filesize (int);
+int read (int, void *, unsigned);
+int write (int, const void *, unsigned);
+void seek (int, unsigned);
+unsigned tell (int);
+void close (int);
 
 void
-syscall_init (void)
+syscall_init (void) 
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
-
-  list_init (&opened_files);
+  list_init (&open_files);
   lock_init (&file_lock);
-  lock_init (&file_list_lock);
-  lock_init (&fd_lock);
-}
-
-void
-syscall_exit (struct intr_frame *f)
-{
-  // Get parameters from stack: status code
-  void* esp = f->esp + 4;
-  VALIDATE_P (esp);
-  int status = *((int*) esp);
-  
-  struct thread* t = thread_current ();
-  t->exit_code = status;
-  
-  // TODO: Close open files of this process
-  
-  exit (status);
-}
-
-/* Prints out an exit message containing the given status code and name of
-   the current thread, and then exits the thread. */
-void
-exit (int status)
-{
-  struct thread* t = thread_current ();
-
-  int i = 0;
-  while (t->name[i] != ' ' && t->name[i] != '\0') i++;
-  char temp = t->name[i];
-  t->name[i] = '\0';
-
-  printf ("%s: exit(%d)\n", t->name, status);
-
-  t->name[i] = temp;
-
-  thread_exit ();
-}
-
-void
-syscall_exec (struct intr_frame *f)
-{
-  // Get parameters from stack: file_name
-  void* esp = f->esp + 4;
-  VALIDATE_ESP1 (esp);
-
-  char* file_name = *((char**) esp);
-  VALIDATE_P (file_name);
-
-  // Starts a new process and waits until it has successfully loaded or failed
-  tid_t tid = process_execute (file_name, true);
-
-  // PID == TID as return value
-  f->eax = tid;
-}
-
-void
-syscall_create (struct intr_frame *f)
-{
-  // Get parameters from stack: file_name, initial_size
-  void* esp = f->esp + 4;
-  VALIDATE_ESP2 (esp);
-
-  char* filename = *((char**) esp);
-  VALIDATE_P (filename);
-
-  esp += 4;
-  int initial_size = *(int*) esp;
-
-  if (initial_size < 0)
-    {
-      f->eax = -1;
-      return;
-    }
-  
-  lock_acquire (&file_lock);
-  f->eax = filesys_create (filename, initial_size);
-  lock_release (&file_lock);
-}
-
-void
-syscall_open (struct intr_frame *f)
-{
-  // Get parameters from stack: file_name
-  void* esp = f->esp + 4;
-  VALIDATE_ESP1 (esp);
-
-  char* filename = *((char**) esp);
-  VALIDATE_P (filename);
-  
-  lock_acquire (&file_lock);
-  struct file* file = filesys_open (filename);
-  lock_release (&file_lock);
-  
-  if (file == NULL)
-    {
-      f->eax = -1;
-      return;
-    }
-
-  // Add entry to list of opened files
-  struct file_elem* file_entry = malloc (sizeof (struct file_elem));
-  if (file_entry == NULL)
-    {
-      file_close (file);
-      f->eax = -1;
-      return;
-    }
-  
-  file_entry->fd = allocate_fd ();
-  file_entry->file = file;
-
-  ASSERT (file_entry->fd > 1);
-
-  lock_acquire (&file_list_lock);
-  list_push_back (&opened_files, &file_entry->elem);
-  lock_release (&file_list_lock);
-  
-  f->eax = file_entry->fd;
-}
-
-void
-syscall_write (struct intr_frame *f)
-{
-  // Get parameters from stack: fd, buffer, size
-  void* esp = f->esp + 4;
-  VALIDATE_ESP3 (esp);
-
-  // File Handle of File to write into
-  int fd = *((int*) esp);
-  if (fd != 1 && fd < 2) exit (-1);
-  
-  // Buffer to write
-  esp += 4;
-  int dest_addr = *((int*) esp);
-  VALIDATE_P ((void*)dest_addr);
-  void* buffer = (void*)dest_addr;
-  
-  // Number of Bytes to write
-  esp += 4;  
-  int size = *((int*) esp);  
-
-  // Write into stdout
-  if (fd == 1)
-    {
-      putbuf (buffer, size);
-      f->eax = size;  
-      return;
-    }
-  
-  struct file_elem* file_elem = get_file_elem (fd);
-  if (file_elem == NULL)
-    {
-      exit (-1);
-    }  
-  
-  lock_acquire (&file_lock);
-  int written = file_write (file_elem->file, buffer, size);
-  lock_release (&file_lock);
-  
-  f->eax = written;  
-}
-
-void syscall_remove (struct intr_frame *f)
-{
-  // get parameters from stack: file_name
-  void* esp = f->esp + 4;
-  VALIDATE_ESP1 (esp);
-  
-  char* file_name = *((char**)esp);
-  VALIDATE_P (file_name);
-  
-  lock_acquire (&file_lock);
-  bool success = filesys_remove (file_name);
-  lock_release (&file_lock);
-  
-  f->eax = success;
-}
-
-/** Searches for a file list entry with given fd and returns it, if it exists.
-    Otherwise NULL is returned. */
-struct file_elem* get_file_elem (int fd)
-{
-  struct file_elem* file = NULL;
-  
-  lock_acquire (&file_list_lock);
-
-  struct list_elem* e = list_begin (&opened_files);
-  while (e != list_end (&opened_files))
-    {
-      struct file_elem* w = (struct file_elem*) e;          
-
-      if (w->fd == fd) 
-        {
-          file = w;
-          break;
-        }
-    }
-  
-  lock_release (&file_list_lock);  
-  return file;
-}
-
-void syscall_filesize (struct intr_frame *f)
-{
-  // get parameters from stack: fd
-  void* esp = f->esp + 4; // skip syscall number
-  VALIDATE_ESP1 (esp);
-  
-  int fd = *((int*)esp);
-  
-  // Cannot determine size of console in/out
-  if (fd < 2)
-    {
-      f->eax = -1;
-      return;
-    }
-  
-  // Search for file with this fd
-  struct file_elem* file_elem = get_file_elem (fd);
-  
-  if (file_elem == NULL)
-    {
-      f->eax = -1;
-    }
-  else
-    {
-      ASSERT (file_elem->file != NULL);
-      lock_acquire (&file_lock);
-      f->eax = file_length (file_elem->file);
-      lock_release (&file_lock);
-    }
-}
-
-void syscall_close (struct intr_frame *f)
-{
-  // get parameters from stack: fd
-  void* esp = f->esp + 4; // skip syscall number on stack
-  VALIDATE_ESP1 (esp);
-  
-  int fd = *((int*)esp);  
-  if (fd < 2) exit (-1);    
-  
-  struct file_elem* file_elem = get_file_elem (fd);
-  if (file_elem == NULL)
-    {
-      // nothing to do...
-      return;
-    }
-  
-  lock_acquire (&file_lock);
-  file_close (file_elem->file);
-  lock_release (&file_lock);
-  
-  // Remove file list entry
-  lock_acquire (&file_list_lock);
-  list_remove (&file_elem->elem);
-  lock_release (&file_list_lock);
-  free (file_elem);
-}
-
-void
-syscall_tell (struct intr_frame *f)
-{
-  // get parameters from stack: fd
-  void* esp = f->esp + 4; // skip syscall number on stack
-  VALIDATE_ESP1 (esp);
-  
-  int fd = *((int*)esp);  
-  if (fd < 2) exit (-1);    
-  
-  struct file_elem* file_elem = get_file_elem (fd);
-  if (file_elem == NULL)
-    {
-      exit (-1);
-    }
-  
-  lock_acquire (&file_lock);
-  int32_t pos = file_tell (file_elem->file);
-  lock_release (&file_lock);
-  
-  f->eax = pos;
-}
-
-void
-syscall_seek (struct intr_frame *f)
-{
-  // get parameters from stack: fd, pos
-  void* esp = f->esp + 4; // skip syscall number on stack
-  VALIDATE_ESP2 (esp);
-  
-  int fd = *((int*)esp);  
-  if (fd < 2) exit (-1);  
-  
-  esp += 4;
-  uint32_t pos = *((uint32_t*)esp);
-  
-  struct file_elem* file_elem = get_file_elem (fd);
-  if (file_elem == NULL)
-    {
-      exit (-1);
-    }  
-  
-  lock_acquire (&file_lock);
-  file_seek (file_elem->file, pos);
-  lock_release (&file_lock);
-}
-
-void
-syscall_read (struct intr_frame *f)
-{
-  // get parameters from stack: fd, buffer, size
-  void* esp = f->esp + 4; // skip syscall number on stack
-  VALIDATE_ESP3 (esp);
-  
-  // File Handle
-  int fd = *((int*)esp);  
-  if (fd != 0 && fd < 2) exit (-1);    
-  
-  // Buffer to write into
-  esp += 4;
-  uint8_t* buffer = *(uint8_t**)esp;
-  VALIDATE_P (buffer);
-  
-  // Number of bytes to read
-  esp += 4;
-  uint32_t size = *((uint32_t*)esp);
-  
-  // Read from stdin?
-  if (fd == 0)
-    {
-      uint32_t pos = 0;
-      while (pos < size)
-        buffer[pos++] = input_getc ();
-      
-      f->eax = pos;
-      return;
-    }  
-  
-  // Read from file
-  struct file_elem* file_elem = get_file_elem (fd);
-  if (file_elem == NULL)
-    {
-      f->eax = -1;
-      return;
-    }  
-  
-  lock_acquire (&file_lock);
-  int read = file_read (file_elem->file, (void*)buffer, size);
-  lock_release (&file_lock);
-  
-  f->eax = read;
-}
-
-void
-syscall_wait (struct intr_frame *f)
-{
-  // get parameters from stack: pid
-  void* esp = f->esp + 4;
-  VALIDATE_ESP1 (esp);
-  
-  int pid = *((int*)esp);
-      
-  // Look for child process with this PID
-  struct thread* t = thread_current ();
-  struct thread* child = NULL;
-  struct list_elem* e = list_begin (&t->child_threads);
-  while (e != list_end (&t->child_threads))
-    {
-      struct thread* temp = list_entry(e, struct thread, child_elem);
-      ASSERT (thread_valid (temp));
-      
-      if (temp->tid == pid)
-        {
-          child = temp;
-          break;
-        }
-      else
-        {
-          e = list_next (&e);
-        }
-    }
-  
-  // If there is no such child, the process might already is terminated
-  if (child == NULL)
-    {
-      // Search for termination notice
-      int status = thread_exit_status (pid);
-      f->eax = status;      
-      return;
-    }
-  
-  // wait for process to exit
-  sema_down (&child->exit_code_semaphore);
-  sema_down (&child->exit_semaphore);
-  
-  int status = child->exit_code;
-  
-  // let process_exit() continue
-  sema_up (&child->exit_code_semaphore);
-  
-  f->eax = status;
-}
-
-/* Checks if a user address pointer is valid, i.e. not NULL, points to 
-   user address space and is memory mapped. */
-bool
-valid_pointer (const void* uaddr)
-{
-  struct thread* t = thread_current ();
-  return pagedir_valid_uaddr (uaddr, t->pagedir);
-}
-
-void
-syscall_halt (struct intr_frame *f UNUSED)
-{
-  shutdown ();
-  thread_exit ();
 }
 
 static void
-syscall_handler (struct intr_frame *f)
+syscall_handler (struct intr_frame *f) 
 {
-  // get syscall number from stack
-  void* esp = f->esp;
-  VALIDATE_ESP1 (esp);
-
-  int nr = *((int*) esp);
-
-  switch (nr)
+  uint32_t* esp = f->esp;
+  
+  /* is zero-th parameter in userspace? */
+  if (!is_valid_uaddr (esp))
     {
-    case SYS_HALT:
-      syscall_halt (f);
-      break;
+      exit (-1);
+    }  
+  int syscall_nr = *esp;
+  
+  /* check all other parameters */
 
-    case SYS_EXIT:
-      syscall_exit (f);
-      break;
-
-    case SYS_EXEC:
-      syscall_exec (f);
-      break;
-
-    case SYS_OPEN:
-      syscall_open (f);
-      break;
-
-    case SYS_CREATE:
-      syscall_create (f);
-      break;
-      
-    case SYS_REMOVE:
-      syscall_remove (f);
-      break;
-      
-    case SYS_READ:
-      syscall_read (f);
-      break;
-
-    case SYS_WRITE:
-      syscall_write (f);
-      break;
-      
-    case SYS_FILESIZE:
-      syscall_filesize (f);
-      break;
-      
-    case SYS_CLOSE:
-      syscall_close (f);
-      break;
-      
-    case SYS_TELL:
-      syscall_tell (f);
-      break;
-      
-    case SYS_SEEK:
-      syscall_seek (f);
-      break;
-      
-    case SYS_WAIT:
-      syscall_wait (f);
-      break;
-
-    default:
-      printf ("Not Implemented: System Call %d\n", nr);
-      thread_exit ();
+  /* check first parameter */
+  switch (syscall_nr)
+    {
+      case SYS_EXIT:
+      case SYS_EXEC:
+      case SYS_WAIT:
+      case SYS_CREATE:
+      case SYS_REMOVE:
+      case SYS_OPEN:
+      case SYS_FILESIZE:
+      case SYS_READ:
+      case SYS_WRITE:
+      case SYS_SEEK:
+      case SYS_TELL:
+      case SYS_CLOSE:
+        if (!is_valid_uaddr (esp + 1))
+          {
+            exit (-1);
+          } 
+    }
+  
+  /* check second parameter */
+  switch (syscall_nr)
+    {
+      case SYS_CREATE:
+      case SYS_READ:
+      case SYS_WRITE:
+      case SYS_SEEK:
+        if (!is_valid_uaddr (esp + 2))
+          {
+            exit (-1);
+          } 
+    }
+	
+  /* check third parameter */
+  switch (syscall_nr)
+    {
+      case SYS_READ:
+      case SYS_WRITE:
+      if (!is_valid_uaddr (esp + 3))
+        {
+          exit (-1);
+        } 
+    }
+	
+  /* execute system call */
+  switch (syscall_nr)
+    {
+      case SYS_HALT:
+        shutdown_power_off ();
+        break;
+      case SYS_EXIT:
+        exit (* (esp + 1));
+        break;
+      case SYS_EXEC:
+        f->eax = exec_call ( (char *) * (esp + 1));
+        break;
+      case SYS_WAIT:
+        f->eax = process_wait (* (esp + 1));
+        break;
+      case SYS_CREATE:
+        f->eax = create ( (char *) * (esp + 1), * (esp + 2));
+        break;
+      case SYS_REMOVE:
+        f->eax = remove ( (char *) * (esp + 1));
+        break;
+      case SYS_OPEN:
+        f->eax = open ( (char *) * (esp + 1));
+        break;
+      case SYS_FILESIZE:
+        f->eax = filesize (* (esp + 1));
+        break;
+      case SYS_READ:
+        f->eax = read (* (esp + 1), (void *) * (esp + 2), * (esp + 3));
+        break;
+      case SYS_WRITE:
+        f->eax = write (* (esp + 1), (void *) * (esp + 2), * (esp + 3));
+        break;
+      case SYS_SEEK:
+        seek (* (esp + 1), * (esp + 2));
+        break;
+      case SYS_TELL:
+        f->eax = tell (*(esp + 1));
+        break;
+      case SYS_CLOSE:
+        close (* (esp + 1));
+        break;
+      default:
+        exit (-1);
     }
 }
 
+/* Halt the operating system. */
+void 
+halt (void) 
+{
+  shutdown_power_off ();
+}
+
+/* Prints the processes state and Name before
+   terminating the process 
+   (should only be called by userprocesses) */
+void 
+exit (int status) 
+{
+  struct thread *cur = thread_current ();
+  char *p_name, *aux = cur->name;
+
+  p_name = strtok_r (cur->name, " ", &aux);
+  printf ("%s: exit(%d)\n", p_name, status);
+  	
+  /* close all owned files */
+  struct list_elem *e;
+  struct file_descriptor *fds; 
+
+  lock_acquire (&file_lock);
+  for(e = list_begin (&open_files); e != list_tail (&open_files); 
+      e = list_next (e))
+    {
+      fds = list_entry (e, struct file_descriptor, elem);
+      if (fds->owner == cur->tid)
+        {
+          e = list_prev (e);
+          list_remove (&fds->elem);
+          file_close (fds->file);	
+          free (fds->exec_name);
+          free (fds);
+       }
+    }
+  lock_release (&file_lock);
+  if (cur->parent != NULL && cur->own_exit_status != NULL)
+    {
+      cur->own_exit_status->status = status;
+      /* thread_exit wakes waiting process if existing. */
+    }
+  thread_exit ();
+}
+
+/* Execute syscall:
+   Creates a new thread and loads given file to execute (if exists).
+   Returns tid of new thread or -1 if execution failed.  */
+tid_t
+exec_call (const char *file)
+{
+  tid_t new_pid = -1;
+  /* get filename */
+  char *p_name, *aux, *buf = palloc_get_page ( (enum palloc_flags)0);
+  if (buf == NULL)
+    {
+      return -1;
+    }
+  ASSERT (strlcpy (buf, file, PGSIZE) > 0);
+  aux = buf;
+  p_name = strtok_r (NULL, " ", &aux);
+
+  /* look if file exists */
+  lock_acquire (&file_lock);
+  struct file *f = filesys_open (p_name);
+  lock_release (&file_lock);
+  palloc_free_page (buf);
+
+  /* if file exists create new process */
+  if (f != NULL)
+    {
+      new_pid = process_execute (file);
+    }
+  return new_pid;
+}
+
+/* Creates a new file called file initially initial_size 
+bytes in size. Returns true if successful, false otherwise.
+Creating a new file does not open it: opening the new file 
+is a separate operation which would require a open system call. */
+bool 
+create (const char *file, unsigned initial_size)
+{
+  if (!is_valid_uaddr (file))
+    {
+      exit (-1);
+    }
+  bool ret = false;
+  lock_acquire (&file_lock);
+  ret = filesys_create (file, initial_size);
+  lock_release (&file_lock);
+  return ret;
+}
+
+/* Deletes the file called file. Returns true if successful, 
+false otherwise. A file may be removed regardless of whether 
+it is open or closed, and removing an open file does not 
+close it */
+bool 
+remove (const char *file) 
+{
+  if (!is_valid_uaddr (file))
+    {
+      exit (-1);
+    }
+  bool ret = false;
+  lock_acquire (&file_lock);
+  ret = filesys_remove (file);
+  lock_release (&file_lock);
+  return ret;
+}
+
+/* Opens the file called file. Returns a nonnegative integer 
+handle called a "file descriptor" (fd), or -1 if the file 
+could not be opened.  */
+int 
+open (const char *file) 
+{	
+  struct file_descriptor *fd;
+  struct file *f;
+  int status = -1;
+
+  /* check if pointer is in userspace */
+  if (!is_valid_uaddr (file))
+    {
+      exit (-1);
+    }
+	
+  /* get file */
+  lock_acquire (&file_lock);
+  f = filesys_open (file);
+  if (f != NULL)
+    {
+      fd = (struct file_descriptor *) malloc (sizeof (struct file_descriptor));
+      /* abort if no memory */
+      if (fd == NULL)
+        {
+          file_close (f);
+          status = -1;
+        }
+      else
+        {
+          fd->fd_id = get_unique_fd_id ();
+          fd->owner = thread_current ()->tid;
+          fd->file = f;
+
+          fd->exec_name = malloc (strlen (file) + 1); 
+          ASSERT (strlcpy (fd->exec_name, file, strlen (file) + 1) > 0);
+       
+         list_push_back (&open_files, &fd->elem);
+         status = fd->fd_id;
+       }
+   }
+  lock_release (&file_lock);
+  return status;
+}
+
+/* Returns the size, in bytes, of the file open as fd.  */
+int 
+filesize (int fd) 
+{
+  int ret = -1;
+  lock_acquire (&file_lock);
+  struct file_descriptor* fds = get_owned_file (fd);
+  if (fds != NULL)
+    {
+      ret = file_length (fds->file);
+    }
+  lock_release (&file_lock);
+  return ret;
+}
+
+/* Reads size bytes from the file open as fd into buffer. 
+Returns the number of bytes actually read (0 at end of file), 
+or -1 if the file could not be read (due to a condition other 
+than end of file). */
+int 
+read (int fd, void *buffer, unsigned length) 
+{
+  if (!are_valid_uaddrs (buffer, length))
+    {
+      exit (-1);
+    }
+  int status = 0;
+  lock_acquire (&file_lock);
+  if (fd == STDOUT_FILENO)
+    {
+      status = -1;
+    }
+  else if (fd == STDIN_FILENO) 
+    {
+      /* read from stdin */
+      int i = 0;
+      char c;
+      char* buf = (char *) buffer;
+      while (length > 1 && (c = input_getc ()))
+        {
+          buf[i] = c;
+          i++;
+          length--;
+        }
+      buf[i] = 0;
+      status = i;
+    }
+  else 
+    {
+      /* write to file */
+      struct file_descriptor* fds = get_owned_file(fd);
+      if (fds != NULL)
+        {
+          status = file_read(fds->file, buffer, length);
+        }
+      else
+        {
+          lock_release (&file_lock);
+          exit (-1);
+        }
+    }
+  lock_release (&file_lock);
+  return status;
+}
+
+/* Writes size bytes from buffer to the open file fd. 
+Returns the number of bytes actually written, which may 
+be less than size if some bytes could not be written.  */
+int 
+write (int fd, const void *buffer, unsigned length) 
+{
+  if (!are_valid_uaddrs (buffer, length))
+    {
+      exit (-1);
+    }
+  int status = 0;
+  lock_acquire (&file_lock);
+  if (fd == STDIN_FILENO)
+    {
+      status = -1;
+    }
+  else if (fd == STDOUT_FILENO) 
+    {
+      /* write to stdout */
+      putbuf (buffer, length);
+      status = (int) length;
+    }
+  else 
+    {
+      /* write to file if not executed */
+      struct file_descriptor* fds = get_owned_file (fd);
+      if (fds != NULL)
+        {
+          if (file_executed (fds->exec_name))
+            {
+              file_deny_write (fds->file);
+            }
+          else
+            {
+              file_allow_write (fds->file);
+            }
+          status = file_write (fds->file, buffer, length);
+        }
+      else
+        {
+          lock_release (&file_lock);
+	  exit (-1);
+        }
+    }
+  lock_release(&file_lock);
+  return status;
+}
+
+/* Changes the next byte to be read or written in
+open file fd to position, expressed in bytes from 
+the beginning of the file. */
+void 
+seek (int fd, unsigned position)
+{
+  lock_acquire (&file_lock);
+  struct file_descriptor* fds = get_owned_file (fd);
+  if (fds != NULL)
+    {
+      file_seek (fds->file, position);
+    }
+  lock_release (&file_lock);
+}
+
+/* Returns the position of the next byte to be read 
+or written in open file fd, expressed in bytes from 
+the beginning of the file. */
+unsigned 
+tell (int fd) 
+{
+  unsigned ret = 0;
+  lock_acquire (&file_lock);
+  struct file_descriptor* fds = get_owned_file (fd);
+  if (fds != NULL)
+    {
+      ret = file_tell (fds->file);
+    }
+  lock_release (&file_lock);
+  return ret;
+}
+
+/* Closes file descriptor fd. Exiting or terminating 
+a process implicitly closes all its open file 
+descriptors, as if by calling this function for 
+each one.  */
+void 
+close (int fd) 
+{
+  struct file_descriptor *fds;
+  lock_acquire (&file_lock);
+  fds = get_owned_file (fd);
+  if (fds != NULL)
+    {
+      list_remove (&fds->elem);
+      file_close (fds->file);
+      free (fds->exec_name);	
+      free (fds);
+    }
+  else
+    {
+      lock_release (&file_lock);
+      exit (-1);
+    }
+  lock_release (&file_lock);
+}
+
+/* Checks if given address is a vaild userprocess address. */
+bool
+is_valid_uaddr (const void *upointer) 
+{
+  struct thread *cur = thread_current ();
+  if (upointer != NULL && is_user_vaddr (upointer))
+    {
+      return (pagedir_get_page (cur->pagedir, upointer)) != NULL;
+    }
+  return false; 
+}
+
+/* Check if the whole memory area from given pointer to pointer + offset
+is valid in userporcess space */
+bool
+are_valid_uaddrs (const void *upointer, int size) 
+{
+  while(size > 0) 
+    {
+      /* check current "page" */
+      if (!is_valid_uaddr (upointer))
+        {
+	  return false;
+        }
+        /* get next "page" */
+        if(size >= PGSIZE)
+          {
+            size -= PGSIZE;
+            upointer += PGSIZE;
+          }
+        else
+          {
+            /* check last address */
+            upointer += size - 1;
+            size = 0;
+            if (!is_valid_uaddr (upointer)) 
+              {
+                return false;	
+              }
+       }
+    }
+  return true;
+}
+
+/* Returns a new unique file descriptor id */
+int
+get_unique_fd_id () 
+{
+  static int id = STDOUT_FILENO + 1;
+  return id++;
+}
+
+/* Get a opened file by its fd */
+struct file_descriptor *
+get_open_file (int fd) 
+{
+  struct list_elem *e;
+  struct file_descriptor *fds; 
+  for(e = list_begin (&open_files); e!=list_tail (&open_files); 
+      e = list_next (e))
+    {
+      fds = list_entry (e, struct file_descriptor, elem);
+      if (fds->fd_id == fd)
+        {
+          return fds;
+        }
+    }
+  return NULL;
+}
+
+/* Get the file if current_thread is the owner. */
+struct file_descriptor *
+get_owned_file (int fd) 
+{
+  struct file_descriptor* fds = get_open_file (fd);
+  if (fds == NULL)
+    {
+      /* always call with file_lock hold */
+      lock_release (&file_lock);
+      exit (-1);
+    }
+  if (fds->owner == thread_current ()->tid)
+    {
+      return fds;
+    }
+  else
+    {
+      return NULL;
+    }
+}
