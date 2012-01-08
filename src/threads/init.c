@@ -23,6 +23,7 @@
 #include "threads/pte.h"
 #include "threads/thread.h"
 #ifdef USERPROG
+#include "vm/frametable.h"
 #include "userprog/process.h"
 #include "userprog/exception.h"
 #include "userprog/gdt.h"
@@ -98,6 +99,7 @@ main (void)
   palloc_init (user_page_limit);
   malloc_init ();
   paging_init ();
+  frametable_init ();
 
   /* Segmentation. */
 #ifdef USERPROG

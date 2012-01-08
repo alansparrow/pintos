@@ -18,6 +18,7 @@
 #include "threads/malloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "vm/frametable.h"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -475,14 +476,17 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
       /* Get a page of memory. */
-      uint8_t *kpage = palloc_get_page (PAL_USER);
+      //uint8_t *kpage = palloc_get_page (PAL_USER);
+      uint8_t *kpage = frametable_get_page ();
+      
       if (kpage == NULL)
         return false;
 
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
         {
-          palloc_free_page (kpage);
+          //palloc_free_page (kpage);
+          frametable_free_page (kpage);
           return false; 
         }
       memset (kpage + page_read_bytes, 0, page_zero_bytes);
@@ -490,7 +494,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
         {
-          palloc_free_page (kpage);
+          //palloc_free_page (kpage);
+          frametable_free_page (kpage);
           return false; 
         }
 
@@ -619,4 +624,103 @@ install_page (void *upage, void *kpage, bool writable)
      address, then map our page there. */
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
+}
+
+/* Inserted frametable functions because of problems when in own file */
+
+static struct hash frametable;
+static struct lock frametable_lock;
+
+void
+frametable_init (void)
+{
+  hash_init (&frametable, frame_hash, frame_equals, NULL);      
+  lock_init (&frametable_lock);
+}
+
+void*
+frametable_get_page ()
+{
+  // Try to allocate page
+  void* page_vaddr = palloc_get_page (PAL_USER);
+  if (page_vaddr == NULL)
+    {   
+      // TODO: Swapping
+      //ASSERT (false);
+      return NULL;
+    }    
+  
+  // Check frame address
+  int* frame_paddr = vtop (page_vaddr);  
+  
+  // Store frame in frametable    
+  struct frame* frame = malloc (sizeof(struct frame));
+  frame->page_vaddr = page_vaddr;
+  frame->frame_paddr = frame_paddr;
+    
+  lock_acquire (&frametable_lock);
+  struct hash_elem* existing = hash_insert (&frametable, &frame->elem); 
+  lock_release (&frametable_lock);
+  
+  if (existing != NULL)
+    {
+      struct frame* exFrame = hash_entry (existing, struct frame, elem);
+      
+      if (exFrame->page_vaddr == frame->page_vaddr &&
+          exFrame->frame_paddr == frame->frame_paddr)
+        {
+          // Exact same entry already exists...
+        }
+      else
+        {      
+          // TODO: Properly handle hash collision in frame table
+          free (frame);
+          return NULL;
+        }
+    }
+  
+  return page_vaddr;
+}
+
+void 
+frametable_free_page (void* page_vaddr)
+{
+  struct frame f;
+  struct frame* pFrame;
+  struct hash_elem* e;
+  
+  f.page_vaddr = page_vaddr;
+  f.frame_paddr = vtop (page_vaddr);
+  
+  // Delete frame pointing to that page address
+  lock_acquire (&frametable_lock);
+  e = hash_delete (&frametable, &f.elem);
+  lock_release (&frametable_lock);
+  ASSERT (e != NULL);
+  
+  pFrame = hash_entry (e, struct frame, elem);
+  palloc_free_page (page_vaddr);
+  
+  free (pFrame);
+}
+
+unsigned
+frame_hash (const struct hash_elem* p_, void* aux UNUSED)
+{  
+  const struct frame* p = hash_entry (p_, struct frame, elem);
+  int hash = hash_int ((int)p->frame_paddr);
+  return hash;
+}
+
+bool
+frame_equals (const struct hash_elem* a_, const struct hash_elem* b_,
+            void* aux UNUSED)
+{            
+  struct frame* a = hash_entry (a_, struct frame, elem);
+  struct frame* b = hash_entry (b_, struct frame, elem);
+
+  if (a->frame_paddr == b->frame_paddr && a->page_vaddr == b->page_vaddr)
+    return 0;
+  else
+    return 1;
 }
