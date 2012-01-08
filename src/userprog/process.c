@@ -696,12 +696,14 @@ frametable_free_page (void* page_vaddr)
   lock_acquire (&frametable_lock);
   e = hash_delete (&frametable, &f.elem);
   lock_release (&frametable_lock);
-  ASSERT (e != NULL);
   
-  pFrame = hash_entry (e, struct frame, elem);
-  palloc_free_page (page_vaddr);
+  if (e != NULL)
+    {
+      pFrame = hash_entry (e, struct frame, elem); 
+      free (pFrame);
+    }  
   
-  free (pFrame);
+  palloc_free_page (page_vaddr);    
 }
 
 unsigned
