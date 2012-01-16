@@ -515,6 +515,7 @@ init_thread (struct thread *t, const char *name, int priority)
   sema_init (&t->wait_for_child, 0);
   t->parent = NULL;
   t->own_exit_status = NULL;
+  hash_init (&suppl_page_table, suppl_hash, suppl_equals, NULL);
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and

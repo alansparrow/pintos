@@ -153,6 +153,17 @@ page_fault (struct intr_frame *f)
   /* terminate user process if read/write to kernel or page not present */
   if ( (user && is_kernel_vaddr (fault_addr)) || not_present)
     {
+      if (not_present) 
+        {
+          void* page = frametable_get_page ();
+          
+          // TODO: Load data into page
+          
+          // Add mapping to page table
+          struct thread *t = thread_current ();
+          pagedir_set_page (t->pagedir, fault_addr, page, true);                    
+        }
+              
       exit (-1);
     }
   

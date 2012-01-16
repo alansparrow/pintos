@@ -123,6 +123,7 @@ struct thread
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
+    struct hash suppl_page_table;       /* Supplemental Page Table */
 #endif
 
     /* Owned by thread.c. */

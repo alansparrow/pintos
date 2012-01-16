@@ -635,7 +635,7 @@ void
 frametable_init (void)
 {
   hash_init (&frametable, frame_hash, frame_equals, NULL);      
-  lock_init (&frametable_lock);
+  lock_init (&frametable_lock);  
 }
 
 void*
@@ -714,6 +714,14 @@ frame_hash (const struct hash_elem* p_, void* aux UNUSED)
   return hash;
 }
 
+unsigned
+suppl_hash (const struct hash_elem* p_, void* aux UNUSED)
+{  
+  const struct page_suppl* p = hash_entry (p_, struct page_suppl, elem);
+  int hash = hash_int ((int)p->page_vaddr);
+  return hash;
+}
+
 bool
 frame_equals (const struct hash_elem* a_, const struct hash_elem* b_,
             void* aux UNUSED)
@@ -722,6 +730,19 @@ frame_equals (const struct hash_elem* a_, const struct hash_elem* b_,
   struct frame* b = hash_entry (b_, struct frame, elem);
 
   if (a->frame_paddr == b->frame_paddr && a->page_vaddr == b->page_vaddr)
+    return 0;
+  else
+    return 1;
+}
+
+bool
+suppl_equals (const struct hash_elem* a_, const struct hash_elem* b_,
+            void* aux UNUSED)
+{            
+  struct page_suppl* a = hash_entry (a_, struct page_suppl, elem);
+  struct page_suppl* b = hash_entry (b_, struct page_suppl, elem);
+
+  if (a->page_vaddr == b->page_vaddr)
     return 0;
   else
     return 1;
