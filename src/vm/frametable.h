@@ -1,26 +1,25 @@
 #ifndef FRAMETABLE_H
 #define	FRAMETABLE_H
 
-/* ICH HASSE C (MAKE)
-#include <stdio.h>
 #include "../lib/kernel/hash.h"
-#include <stdbool.h>
 #include "debug.h"
+#include "../filesys/off_t.h"
 
 struct frame
 {
     struct hash_elem elem;
     int* page_vaddr;
+    int* frame_paddr;
 };
 
-static struct hash frametable;
-
+unsigned frame_hash (const struct hash_elem* p_, void* aux UNUSED);
 void frametable_init (void);
+
 void* frametable_get_page (void);
+void frametable_free_page (void* page_vaddr);
     
-bool frame_less (const struct hash_elem* a_, const struct hash_elem* b_, 
+bool frame_equals (const struct hash_elem* a_, const struct hash_elem* b_, 
                  void* aux UNUSED);
- */
 
 #endif	/* FRAMETABLE_H */
 
