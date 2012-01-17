@@ -5,6 +5,7 @@
 #include <list.h>
 #include <stdint.h>
 #include "threads/synch.h"
+#include "../vm/suppl_page_table.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -122,9 +123,10 @@ struct thread
                                            invalid pointer if parent==NULL */
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
-    uint32_t *pagedir;                  /* Page directory. */
-    struct hash suppl_page_table;       /* Supplemental Page Table */
+    uint32_t *pagedir;                  /* Page directory. */    
 #endif
+    
+    struct hash suppl_page_table;       /* Supplemental Page Table */
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */

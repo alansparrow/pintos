@@ -14,6 +14,8 @@
 #include "threads/vaddr.h"
 #ifdef USERPROG
 #include "userprog/process.h"
+#include "vm/frametable.h"
+#include "vm/suppl_page_table.h"
 #endif
 
 /* Random value for struct thread's `magic' member.
@@ -514,8 +516,13 @@ init_thread (struct thread *t, const char *name, int priority)
   list_init (&t->children);
   sema_init (&t->wait_for_child, 0);
   t->parent = NULL;
-  t->own_exit_status = NULL;
-  hash_init (&suppl_page_table, suppl_hash, suppl_equals, NULL);
+  t->own_exit_status = NULL;    
+  
+  // Create supplemental page table for every thread, but the main thread
+  if (strcmp(name, "main") != 0)
+    {
+        hash_init (&t->suppl_page_table, suppl_hash, suppl_equals, NULL);
+    }
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
@@ -589,6 +596,7 @@ thread_schedule_tail (struct thread *prev)
       ASSERT (prev != cur);
       //palloc_free_page (prev);
       frametable_free_page (prev);
+      suppl_destroy ();
     }
 }
 

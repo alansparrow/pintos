@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="79">
+<configurationDescriptor version="80">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df name="src" root="../src">
       <df name="devices">
@@ -123,11 +123,15 @@
           <df name="base">
             <in>child-syn-read.c</in>
             <in>child-syn-wrt.c</in>
+            <in>full.inc</in>
             <in>lg-create.c</in>
             <in>lg-full.c</in>
             <in>lg-random.c</in>
             <in>lg-seq-block.c</in>
             <in>lg-seq-random.c</in>
+            <in>random.inc</in>
+            <in>seq-block.inc</in>
+            <in>seq-random.inc</in>
             <in>sm-create.c</in>
             <in>sm-full.c</in>
             <in>sm-random.c</in>
@@ -155,11 +159,13 @@
             <in>dir-vine.c</in>
             <in>grow-create.c</in>
             <in>grow-dir-lg.c</in>
+            <in>grow-dir.inc</in>
             <in>grow-file-size.c</in>
             <in>grow-root-lg.c</in>
             <in>grow-root-sm.c</in>
             <in>grow-seq-lg.c</in>
             <in>grow-seq-sm.c</in>
+            <in>grow-seq.inc</in>
             <in>grow-sparse.c</in>
             <in>grow-tell.c</in>
             <in>grow-two-files.c</in>
@@ -169,6 +175,7 @@
             <in>syn-rw.h</in>
             <in>tar.c</in>
           </df>
+          <in>create.inc</in>
           <in>seq-test.c</in>
           <in>seq-test.h</in>
         </df>
@@ -260,8 +267,10 @@
           <in>read-stdout.c</in>
           <in>read-zero.c</in>
           <in>rox-child.c</in>
+          <in>rox-child.inc</in>
           <in>rox-multichild.c</in>
           <in>rox-simple.c</in>
+          <in>sample.inc</in>
           <in>sc-bad-arg.c</in>
           <in>sc-bad-sp.c</in>
           <in>sc-boundary-2.c</in>
@@ -322,6 +331,7 @@
           <in>pt-write-code.c</in>
           <in>qsort.c</in>
           <in>qsort.h</in>
+          <in>sample.inc</in>
         </df>
         <in>arc4.c</in>
         <in>arc4.h</in>
@@ -376,6 +386,33 @@
         <in>vaddr.h</in>
       </df>
       <df name="userprog">
+        <df name="build">
+          <df name="devices">
+          </df>
+          <df name="filesys">
+          </df>
+          <df name="lib">
+            <df name="kernel">
+            </df>
+            <df name="user">
+            </df>
+          </df>
+          <df name="tests">
+            <df name="filesys">
+              <df name="base">
+              </df>
+            </df>
+            <df name="userprog">
+              <df name="no-vm">
+              </df>
+            </df>
+          </df>
+          <df name="threads">
+            <in>kernel.lds.s</in>
+          </df>
+          <df name="userprog">
+          </df>
+        </df>
         <in>exception.c</in>
         <in>exception.h</in>
         <in>gdt.c</in>
@@ -395,6 +432,103 @@
         <in>squish-unix.c</in>
       </df>
       <df name="vm">
+        <df name="build">
+          <df name="devices">
+          </df>
+          <df name="filesys">
+          </df>
+          <df name="lib">
+            <df name="kernel">
+            </df>
+            <df name="user">
+            </df>
+          </df>
+          <df name="tests">
+            <df name="filesys">
+              <df name="base">
+              </df>
+            </df>
+            <df name="userprog">
+            </df>
+            <df name="vm">
+            </df>
+          </df>
+          <df name="threads">
+            <in>kernel.lds.s</in>
+          </df>
+          <df name="userprog">
+          </df>
+          <df name="vm">
+          </df>
+        </df>
+        <df name="build">
+          <df name="devices">
+            <in>pit.d</in>
+          </df>
+          <df name="filesys">
+          </df>
+          <df name="lib">
+            <df name="kernel">
+              <in>debug.d</in>
+            </df>
+            <df name="user">
+            </df>
+          </df>
+          <df name="tests">
+            <df name="filesys">
+              <df name="base">
+              </df>
+            </df>
+            <df name="userprog">
+            </df>
+            <df name="vm">
+            </df>
+          </df>
+          <df name="threads">
+            <in>init.d</in>
+            <in>interrupt.d</in>
+            <in>intr-stubs.d</in>
+            <in>start.d</in>
+            <in>switch.d</in>
+            <in>thread.d</in>
+          </df>
+          <df name="userprog">
+          </df>
+          <df name="vm">
+          </df>
+        </df>
+        <df name="build">
+          <df name="devices">
+          </df>
+          <df name="filesys">
+          </df>
+          <df name="lib">
+            <df name="kernel">
+            </df>
+            <df name="user">
+            </df>
+          </df>
+          <df name="tests">
+            <df name="filesys">
+              <df name="base">
+              </df>
+            </df>
+            <df name="userprog">
+            </df>
+            <df name="vm">
+            </df>
+          </df>
+          <df name="threads">
+          </df>
+          <df name="userprog">
+          </df>
+          <df name="vm">
+          </df>
+        </df>
+        <in>frametable.c</in>
+        <in>frametable.h</in>
+        <in>suppl_page_table.c</in>
+        <in>suppl_page_table.h</in>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -417,20 +551,121 @@
       </toolsSet>
       <makefileType>
         <makeTool>
-          <buildCommandWorkingDir>../src/threads</buildCommandWorkingDir>
+          <buildCommandWorkingDir>../src/vm</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath>../src/threads/build/kernel.o</executablePath>
+          <executablePath>../src/vm/build/kernel.o</executablePath>
           <cTool>
             <incDir>
-              <pElem>../src/threads/build</pElem>
-              <pElem>../src/lib/kernel</pElem>
               <pElem>../src</pElem>
               <pElem>../src/lib</pElem>
             </incDir>
           </cTool>
         </makeTool>
       </makefileType>
+      <item path="../src/devices/block.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/devices/ide.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/devices/input.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/devices/intq.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/devices/kbd.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/devices/partition.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/devices/pit.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/devices/rtc.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/devices/serial.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/devices/shutdown.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/devices/speaker.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/devices/timer.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/devices/vga.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
       <item path="../src/examples/bubsort.c" ex="true" tool="0" flavor="0">
       </item>
       <item path="../src/examples/cat.c" ex="true" tool="0" flavor="0">
@@ -467,128 +702,200 @@
       </item>
       <item path="../src/examples/shell.c" ex="true" tool="0" flavor="0">
       </item>
-      <item path="../src/filesys/directory.c" ex="true" tool="0" flavor="0">
+      <item path="../src/filesys/directory.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../src/filesys/directory.h" ex="true" tool="3" flavor="0">
+      <item path="../src/filesys/file.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/filesys/file.c" ex="true" tool="0" flavor="0">
+      <item path="../src/filesys/filesys.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/filesys/file.h" ex="true" tool="3" flavor="0">
+      <item path="../src/filesys/free-map.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/filesys/filesys.c" ex="true" tool="0" flavor="0">
+      <item path="../src/filesys/fsutil.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/filesys/filesys.h" ex="true" tool="3" flavor="0">
+      <item path="../src/filesys/inode.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../src/filesys/free-map.c" ex="true" tool="0" flavor="0">
+      <item path="../src/lib/arithmetic.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/filesys/free-map.h" ex="true" tool="3" flavor="0">
+      <item path="../src/lib/debug.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/filesys/fsutil.c" ex="true" tool="0" flavor="0">
+      <item path="../src/lib/kernel/bitmap.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/filesys/fsutil.h" ex="true" tool="3" flavor="0">
+      <item path="../src/lib/kernel/console.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../src/filesys/inode.c" ex="true" tool="0" flavor="0">
+      <item path="../src/lib/kernel/debug.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/filesys/inode.h" ex="true" tool="3" flavor="0">
+      <item path="../src/lib/kernel/hash.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../src/filesys/off_t.h" ex="true" tool="3" flavor="0">
+      <item path="../src/lib/kernel/list.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../src/lib/stdio.h" ex="true" tool="3" flavor="0">
+      <item path="../src/lib/random.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/lib/syscall-nr.h" ex="true" tool="3" flavor="0">
+      <item path="../src/lib/stdio.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/lib/user/console.c" ex="true" tool="0" flavor="0">
+      <item path="../src/lib/stdlib.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/lib/user/debug.c" ex="true" tool="0" flavor="0">
+      <item path="../src/lib/string.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/lib/user/entry.c" ex="true" tool="0" flavor="0">
+      <item path="../src/lib/ustar.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/lib/user/stdio.h" ex="true" tool="3" flavor="0">
+      <item path="../src/tests/arc4.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+            <pElem>../src/lib/user</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../src/lib/user/syscall.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/lib/user/syscall.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/tests/arc4.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/arc4.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/tests/cksum.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/cksum.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/child-syn-read.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/child-syn-wrt.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/lg-create.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/lg-full.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/lg-random.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/lg-seq-block.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/lg-seq-random.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/sm-create.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/sm-full.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/sm-random.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/sm-seq-block.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/sm-seq-random.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/syn-read.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/syn-read.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/syn-remove.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/syn-write.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/base/syn-write.h"
-            ex="true"
-            tool="3"
-            flavor="0">
+      <item path="../src/tests/cksum.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+            <pElem>../src/lib/user</pElem>
+          </incDir>
+        </cTool>
       </item>
       <item path="../src/tests/filesys/extended/child-syn-rw.c"
             ex="true"
@@ -665,6 +972,11 @@
             tool="0"
             flavor="0">
       </item>
+      <item path="../src/tests/filesys/extended/grow-dir.inc"
+            ex="true"
+            tool="3"
+            flavor="0">
+      </item>
       <item path="../src/tests/filesys/extended/grow-file-size.c"
             ex="true"
             tool="0"
@@ -688,6 +1000,11 @@
       <item path="../src/tests/filesys/extended/grow-seq-sm.c"
             ex="true"
             tool="0"
+            flavor="0">
+      </item>
+      <item path="../src/tests/filesys/extended/grow-seq.inc"
+            ex="true"
+            tool="3"
             flavor="0">
       </item>
       <item path="../src/tests/filesys/extended/grow-sparse.c"
@@ -727,285 +1044,52 @@
       </item>
       <item path="../src/tests/filesys/extended/tar.c" ex="true" tool="0" flavor="0">
       </item>
-      <item path="../src/tests/filesys/seq-test.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/filesys/seq-test.h" ex="true" tool="3" flavor="0">
-      </item>
       <item path="../src/tests/internal/list.c" ex="true" tool="0" flavor="0">
       </item>
       <item path="../src/tests/internal/stdio.c" ex="true" tool="0" flavor="0">
       </item>
       <item path="../src/tests/internal/stdlib.c" ex="true" tool="0" flavor="0">
       </item>
-      <item path="../src/tests/lib.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/lib.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/tests/main.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/main.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/args.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/bad-jump.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/bad-jump2.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/bad-read.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/bad-read2.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/bad-write.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/bad-write2.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/boundary.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/boundary.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/child-bad.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/child-close.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/child-rox.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/child-simple.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/close-bad-fd.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/close-normal.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/close-stdin.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/close-stdout.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/close-twice.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/create-bad-ptr.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/create-bound.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/create-empty.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/create-exists.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/create-long.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/create-normal.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/create-null.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/exec-arg.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/exec-bad-ptr.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/exec-missing.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/exec-multiple.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/exec-once.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/exit.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/halt.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/multi-child-fd.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/multi-recurse.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/no-vm/multi-oom.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/open-bad-ptr.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/open-boundary.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/open-empty.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/open-missing.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/open-normal.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/open-null.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/open-twice.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/read-bad-fd.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/read-bad-ptr.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/read-boundary.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/read-normal.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/read-stdout.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/read-zero.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/rox-child.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/rox-multichild.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/rox-simple.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/sc-bad-arg.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/sc-bad-sp.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/sc-boundary-2.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/sc-boundary.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/wait-bad-pid.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/wait-killed.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/wait-simple.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/wait-twice.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/write-bad-fd.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/write-bad-ptr.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/write-boundary.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/userprog/write-normal.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/write-stdin.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/userprog/write-zero.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/child-inherit.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/child-linear.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/child-mm-wrt.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/child-qsort-mm.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/child-qsort.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/child-sort.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-bad-fd.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-clean.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-close.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-exit.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-inherit.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-misalign.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-null.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-over-code.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-over-data.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-over-stk.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-overlap.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-read.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-remove.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-shuffle.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-twice.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-unmap.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-write.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/mmap-zero.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/page-linear.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/page-merge-mm.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/page-merge-par.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/page-merge-seq.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/page-merge-stk.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/page-parallel.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/page-shuffle.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/parallel-merge.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/parallel-merge.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/tests/vm/pt-bad-addr.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/pt-bad-read.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/pt-big-stk-obj.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/pt-grow-bad.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/pt-grow-pusha.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/pt-grow-stack.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/pt-grow-stk-sc.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/pt-write-code-2.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/pt-write-code.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/qsort.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/tests/vm/qsort.h" ex="true" tool="3" flavor="0">
+      <item path="../src/tests/lib.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/user</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/main.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/user</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
       </item>
       <item path="../src/threads/build/threads/kernel.lds.s"
             ex="true"
             tool="4"
             flavor="0">
+      </item>
+      <item path="../src/threads/init.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/threads/interrupt.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../src/threads/intr-stubs.S" ex="true" tool="4" flavor="0">
       </item>
@@ -1013,33 +1097,102 @@
       </item>
       <item path="../src/threads/loader.S" ex="true" tool="4" flavor="0">
       </item>
+      <item path="../src/threads/malloc.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/threads/palloc.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
       <item path="../src/threads/start.S" ex="true" tool="4" flavor="0">
       </item>
       <item path="../src/threads/switch.S" ex="true" tool="4" flavor="0">
       </item>
-      <item path="../src/userprog/exception.c" ex="true" tool="0" flavor="0">
+      <item path="../src/threads/synch.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/userprog/exception.h" ex="true" tool="3" flavor="0">
+      <item path="../src/threads/thread.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/userprog/gdt.c" ex="true" tool="0" flavor="0">
+      <item path="../src/userprog/build/threads/kernel.lds.s"
+            ex="true"
+            tool="4"
+            flavor="0">
       </item>
-      <item path="../src/userprog/gdt.h" ex="true" tool="3" flavor="0">
+      <item path="../src/userprog/exception.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/userprog/pagedir.c" ex="true" tool="0" flavor="0">
+      <item path="../src/userprog/gdt.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../src/userprog/pagedir.h" ex="true" tool="3" flavor="0">
+      <item path="../src/userprog/pagedir.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../src/userprog/process.c" ex="true" tool="0" flavor="0">
+      <item path="../src/userprog/process.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/userprog/process.h" ex="true" tool="3" flavor="0">
+      <item path="../src/userprog/syscall.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
-      <item path="../src/userprog/syscall.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/userprog/syscall.h" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/userprog/tss.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/userprog/tss.h" ex="true" tool="3" flavor="0">
+      <item path="../src/userprog/tss.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../src/utils/setitimer-helper.c" ex="true" tool="0" flavor="0">
       </item>
@@ -1047,6 +1200,132 @@
       </item>
       <item path="../src/utils/squish-unix.c" ex="true" tool="0" flavor="0">
       </item>
+      <item path="../src/vm/build/devices/pit.d" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="../src/vm/build/lib/kernel/debug.d" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="../src/vm/build/threads/init.d" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="../src/vm/build/threads/interrupt.d" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="../src/vm/build/threads/intr-stubs.d" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="../src/vm/build/threads/kernel.lds.s" ex="true" tool="4" flavor="0">
+      </item>
+      <item path="../src/vm/build/threads/start.d" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="../src/vm/build/threads/switch.d" ex="true" tool="3" flavor="0">
+      </item>
+      <item path="../src/vm/build/threads/thread.d" ex="true" tool="3" flavor="0">
+      </item>
+      <folder path="src/devices">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <folder path="src/filesys">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <folder path="src/lib/kernel">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <folder path="src/lib/user">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/user</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="src/tests/filesys">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/user</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="src/tests/threads">
+        <cTool>
+          <incDir>
+            <pElem>../src/threads/build</pElem>
+            <pElem>../src/lib/kernel</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="src/tests/userprog">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/user</pElem>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="src/tests/vm">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+            <pElem>../src/lib/user</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="src/threads">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <folder path="src/userprog">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <folder path="src/vm">
+        <cTool>
+          <incDir>
+            <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>FILESYS</Elem>
+            <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
     </conf>
   </confs>
 </configurationDescriptor>

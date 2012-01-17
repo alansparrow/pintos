@@ -498,6 +498,10 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
           frametable_free_page (kpage);
           return false; 
         }
+      
+      /* Add entry to supplemental page table */
+      //suppl_set (upage, file, ofs + file->pos - page_read_bytes, 
+      //           page_read_bytes, page_zero_bytes, writable);
 
       /* Advance. */
       read_bytes -= page_read_bytes;
@@ -505,6 +509,13 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       upage += PGSIZE;
     }
   return true;
+}
+
+bool 
+process_load_segment (struct page_suppl* spte)
+{
+  return load_segment (spte->file, spte->ofs, (void*)spte->page_vaddr, spte->read_bytes, 
+                spte->zero_bytes, spte->writable);
 }
 
 /* Create a minimal stack by mapping a zeroed page at the top of
@@ -624,126 +635,4 @@ install_page (void *upage, void *kpage, bool writable)
      address, then map our page there. */
   return (pagedir_get_page (t->pagedir, upage) == NULL
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
-}
-
-/* Inserted frametable functions because of problems when in own file */
-
-static struct hash frametable;
-static struct lock frametable_lock;
-
-void
-frametable_init (void)
-{
-  hash_init (&frametable, frame_hash, frame_equals, NULL);      
-  lock_init (&frametable_lock);  
-}
-
-void*
-frametable_get_page ()
-{
-  // Try to allocate page
-  void* page_vaddr = palloc_get_page (PAL_USER);
-  if (page_vaddr == NULL)
-    {   
-      // TODO: Swapping
-      //ASSERT (false);
-      return NULL;
-    }    
-  
-  // Check frame address
-  int* frame_paddr = vtop (page_vaddr);  
-  
-  // Store frame in frametable    
-  struct frame* frame = malloc (sizeof(struct frame));
-  frame->page_vaddr = page_vaddr;
-  frame->frame_paddr = frame_paddr;
-    
-  lock_acquire (&frametable_lock);
-  struct hash_elem* existing = hash_insert (&frametable, &frame->elem); 
-  lock_release (&frametable_lock);
-  
-  if (existing != NULL)
-    {
-      struct frame* exFrame = hash_entry (existing, struct frame, elem);
-      
-      if (exFrame->page_vaddr == frame->page_vaddr &&
-          exFrame->frame_paddr == frame->frame_paddr)
-        {
-          // Exact same entry already exists...
-        }
-      else
-        {      
-          // TODO: Properly handle hash collision in frame table
-          free (frame);
-          return NULL;
-        }
-    }
-  
-  return page_vaddr;
-}
-
-void 
-frametable_free_page (void* page_vaddr)
-{
-  struct frame f;
-  struct frame* pFrame;
-  struct hash_elem* e;
-  
-  f.page_vaddr = page_vaddr;
-  f.frame_paddr = vtop (page_vaddr);
-  
-  // Delete frame pointing to that page address
-  lock_acquire (&frametable_lock);
-  e = hash_delete (&frametable, &f.elem);
-  lock_release (&frametable_lock);
-  
-  if (e != NULL)
-    {
-      pFrame = hash_entry (e, struct frame, elem); 
-      free (pFrame);
-    }  
-  
-  palloc_free_page (page_vaddr);    
-}
-
-unsigned
-frame_hash (const struct hash_elem* p_, void* aux UNUSED)
-{  
-  const struct frame* p = hash_entry (p_, struct frame, elem);
-  int hash = hash_int ((int)p->frame_paddr);
-  return hash;
-}
-
-unsigned
-suppl_hash (const struct hash_elem* p_, void* aux UNUSED)
-{  
-  const struct page_suppl* p = hash_entry (p_, struct page_suppl, elem);
-  int hash = hash_int ((int)p->page_vaddr);
-  return hash;
-}
-
-bool
-frame_equals (const struct hash_elem* a_, const struct hash_elem* b_,
-            void* aux UNUSED)
-{            
-  struct frame* a = hash_entry (a_, struct frame, elem);
-  struct frame* b = hash_entry (b_, struct frame, elem);
-
-  if (a->frame_paddr == b->frame_paddr && a->page_vaddr == b->page_vaddr)
-    return 0;
-  else
-    return 1;
-}
-
-bool
-suppl_equals (const struct hash_elem* a_, const struct hash_elem* b_,
-            void* aux UNUSED)
-{            
-  struct page_suppl* a = hash_entry (a_, struct page_suppl, elem);
-  struct page_suppl* b = hash_entry (b_, struct page_suppl, elem);
-
-  if (a->page_vaddr == b->page_vaddr)
-    return 0;
-  else
-    return 1;
 }

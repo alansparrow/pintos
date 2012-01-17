@@ -12,7 +12,7 @@ CND_DISTDIR=dist
 CND_BUILDDIR=build
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=../src/threads/build/kernel.o
+OUTPUT_PATH=../src/vm/build/kernel.o
 OUTPUT_BASENAME=kernel.o
 PACKAGE_TOP_DIR=Pintos-Threads/
 
