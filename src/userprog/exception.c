@@ -9,6 +9,7 @@
 #include "userprog/process.h"
 #include "userprog/pagedir.h"
 #include "vm/frametable.h"
+#include "vm/swaptable.h"
 
 /* Number of page faults processed. */
 static long long page_fault_cnt;
@@ -160,7 +161,9 @@ page_fault (struct intr_frame *f)
         {          
           // Load data into page
           struct page_suppl* spte = suppl_get (fault_addr);
-          process_load_segment (spte);                  
+          
+          if (!swap_read (fault_addr))
+            process_load_segment (spte);
         }
               
       exit (-1);

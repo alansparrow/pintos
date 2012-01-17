@@ -7,18 +7,24 @@
 #include "../lib/kernel/hash.h"
 #include "debug.h"
 #include "../threads/thread.h"
+#include "userprog/pagedir.h"
+#include <string.h>
 
-static struct hash frametable;
+static struct frame frametable;
+static struct frame* hand;
 static struct lock frametable_lock;
 
 void
 frametable_init (void)
 {
-  hash_init (&frametable, frame_hash, frame_equals, NULL);      
-  lock_init (&frametable_lock);  
-  
-  struct thread* main_thread = thread_current ();
-  hash_init (&main_thread->suppl_page_table, suppl_hash, suppl_equals, NULL);
+  lock_init (&frametable_lock);
+
+  frametable.next = &frametable;
+  frametable.page_vaddr = NULL;
+  frametable.frame_paddr = NULL;
+  frametable.referenced = -1;
+
+  hand = &frametable;
 }
 
 void*
@@ -27,85 +33,64 @@ frametable_get_page ()
   // Try to allocate page
   void* page_vaddr = palloc_get_page (PAL_USER);
   if (page_vaddr == NULL)
-    {   
-      // TODO: Swapping
-      //ASSERT (false);
-      return NULL;
-    }    
-  
-  // Check frame address
-  int* frame_paddr = vtop (page_vaddr);  
-  
-  // Store frame in frametable    
-  struct frame* frame = malloc (sizeof(struct frame));
-  frame->page_vaddr = page_vaddr;
-  frame->frame_paddr = frame_paddr;
-    
-  lock_acquire (&frametable_lock);
-  struct hash_elem* existing = hash_insert (&frametable, &frame->elem); 
-  lock_release (&frametable_lock);
-  
-  if (existing != NULL)
     {
-      struct frame* exFrame = hash_entry (existing, struct frame, elem);
-      
-      if (exFrame->page_vaddr == frame->page_vaddr &&
-          exFrame->frame_paddr == frame->frame_paddr)
+      // Search for a frame to evict (Clock algorithm)
+      hand = hand->next;
+      while (hand->referenced != 0)
         {
-          // Exact same entry already exists...
+          if (hand->referenced == 1)
+            hand->referenced = 0;
+
+          hand = hand->next;
+        }
+
+      // Evict page at hand
+      struct thread* thread = thread_current ();
+      if (pagedir_is_dirty (thread->pagedir, hand->page_vaddr))
+        {
+          // Write to swap
+          swap_write (hand->page_vaddr);
         }
       else
-        {      
-          // TODO: Properly handle hash collision in frame table
-          free (frame);
-          return NULL;
+        {
+          // Set page content to zero
+          memset (&hand->page_vaddr, 0, PGSIZE);
         }
+
+      // Use evicted page as new page
+      void* new_page = hand->page_vaddr;      
+      hand->referenced = 1;
+      hand = hand->next;
+      
+      return new_page;
     }
-  
+
+  // Check frame address
+  void* frame_paddr = (void*) vtop (page_vaddr);
+
+  // Store frame in frametable    
+  struct frame* frame = malloc (sizeof (struct frame));
+  frame->page_vaddr = page_vaddr;
+  frame->frame_paddr = frame_paddr;
+  frame->next = hand->next;
+  frame->referenced = 1;
+
+  hand->next = frame;
+
   return page_vaddr;
 }
 
-void 
+void
 frametable_free_page (void* page_vaddr)
 {
-  struct frame f;
-  struct frame* pFrame;
-  struct hash_elem* e;
+  // Remove from frametable
+  struct frame* p = &frametable;
+  while (p->next->page_vaddr != page_vaddr)
+    p = p->next;
   
-  f.page_vaddr = page_vaddr;
-  f.frame_paddr = vtop (page_vaddr);
-  
-  // Delete frame pointing to that page address
-  lock_acquire (&frametable_lock);
-  e = hash_delete (&frametable, &f.elem);
-  lock_release (&frametable_lock);
-  
-  if (e != NULL)
-    {
-      pFrame = hash_entry (e, struct frame, elem); 
-      free (pFrame);
-    }  
-  
-  palloc_free_page (page_vaddr);    
-}
+  struct frame* frame_to_free = p->next;
+  p->next = p->next->next;
+  free (frame_to_free);
 
-unsigned
-frame_hash (const struct hash_elem* p_, void* aux UNUSED)
-{  
-  const struct frame* p = hash_entry (p_, struct frame, elem);
-  int hash = hash_int ((int)p->frame_paddr);
-  return hash;
-}
-
-bool
-frame_equals (const struct hash_elem* a_, const struct hash_elem* b_,
-            void* aux UNUSED)
-{            
-  struct frame* a = hash_entry (a_, struct frame, elem);
-  struct frame* b = hash_entry (b_, struct frame, elem);
-
-  if (a->frame_paddr == b->frame_paddr && a->page_vaddr == b->page_vaddr)
-    return 0;
-  else
-    return 1;
+  palloc_free_page (page_vaddr);
 }

@@ -500,8 +500,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         }
       
       /* Add entry to supplemental page table */
-      //suppl_set (upage, file, ofs + file->pos - page_read_bytes, 
-      //           page_read_bytes, page_zero_bytes, writable);
+      suppl_set (upage, file, ofs + file->pos - page_read_bytes, 
+                 page_read_bytes, page_zero_bytes, writable);
 
       /* Advance. */
       read_bytes -= page_read_bytes;
