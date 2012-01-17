@@ -593,7 +593,7 @@ thread_schedule_tail (struct thread *prev)
      initial_thread because its memory was not obtained via
      palloc().) */
   if (prev != NULL && prev->status == THREAD_DYING && prev != initial_thread) 
-    {
+    {            
       ASSERT (prev != cur);
       palloc_free_page (prev);
       //frametable_free_page (prev);

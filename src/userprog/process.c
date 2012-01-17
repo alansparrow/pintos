@@ -480,7 +480,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       uint8_t *kpage = frametable_get_page ();
       
       if (kpage == NULL)
-        {          
+        {                    
           return false;
         }
 

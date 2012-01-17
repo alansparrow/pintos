@@ -1024,6 +1024,525 @@
           </incDir>
         </cTool>
       </item>
+      <item path="../src/tests/userprog/args.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/bad-jump.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/bad-jump2.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/bad-read.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/bad-read2.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/bad-write.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/bad-write2.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/boundary.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/child-bad.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/child-close.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/child-rox.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/child-simple.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/close-bad-fd.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/close-normal.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/close-stdin.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/close-stdout.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/close-twice.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/create-bad-ptr.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/create-bound.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/create-empty.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/create-exists.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/create-long.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/create-normal.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/create-null.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/exec-arg.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/exec-bad-ptr.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/exec-missing.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/exec-multiple.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/exec-once.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/exit.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/halt.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/multi-child-fd.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/multi-recurse.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/open-bad-ptr.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/open-boundary.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/open-empty.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/open-missing.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/open-normal.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/open-null.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/open-twice.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/read-bad-fd.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/read-bad-ptr.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/read-boundary.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/read-normal.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/read-stdout.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/read-zero.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/rox-child.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/rox-multichild.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/rox-simple.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/sc-bad-arg.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/sc-bad-sp.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/sc-boundary-2.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/sc-boundary.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/wait-bad-pid.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/wait-killed.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/wait-simple.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/wait-twice.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/write-bad-fd.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/write-bad-ptr.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/write-boundary.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/write-normal.c"
+            ex="false"
+            tool="0"
+            flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/write-stdin.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/tests/userprog/write-zero.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
       <item path="../src/threads/init.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
@@ -1060,8 +1579,11 @@
       <item path="../src/threads/palloc.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../src/threads/start.S" ex="true" tool="4" flavor="0">
@@ -1210,8 +1732,8 @@
       <folder path="src/tests/filesys">
         <cTool>
           <incDir>
+            <pElem>../src/vm/build</pElem>
             <pElem>../src/lib/user</pElem>
-            <pElem>../src/userprog/build</pElem>
           </incDir>
         </cTool>
       </folder>
@@ -1227,6 +1749,12 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/user</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="src/tests/userprog/no-vm">
+        <cTool>
+          <incDir>
             <pElem>../src/userprog/build</pElem>
           </incDir>
         </cTool>

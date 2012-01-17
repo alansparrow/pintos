@@ -152,20 +152,20 @@ page_fault (struct intr_frame *f)
   /* Determine cause. */
   not_present = (f->error_code & PF_P) == 0;
   write = (f->error_code & PF_W) != 0;
-  user = (f->error_code & PF_U) != 0;
+  user = (f->error_code & PF_U) != 0;    
 
   /* terminate user process if read/write to kernel or page not present */
-  if (user && is_kernel_vaddr (fault_addr))
-    {          
-      printf("read/write to kernel page not allowed\n");
-      exit (-1);
+  if ((user && is_kernel_vaddr (fault_addr)) || (write && !not_present))
+    {               
+      exit (-1);     
     }
   else if (not_present)
-    {
-      if (fault_addr >= f->esp - 32 && fault_addr >= PHYS_BASE - MAX_STACK_SIZE_BYTES)
-        {
+    {      
+      if (fault_addr >= f->esp - 32)
+        {                    
           // Assume that this is a stack access and grow it accordingly
           void* kpage = frametable_get_page ();
+          ASSERT (kpage != NULL);
           memset (kpage, 0, PGSIZE);
           
           struct thread* thread = thread_current ();
@@ -186,9 +186,15 @@ page_fault (struct intr_frame *f)
       struct page_suppl* spte = suppl_get (fault_addr);
 
       if (!swap_read (fault_addr) && spte != NULL)
-        {
+        {          
           if (process_load_segment (spte))
             return;
+          else
+            exit (-1);
+        }
+      else
+        {
+          exit (-1);
         }
     }
   

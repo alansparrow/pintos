@@ -57,6 +57,28 @@ syscall_init (void)
   lock_init (&file_lock);
 }
 
+void release_files (struct thread* cur) 
+{
+    /* close all owned files */
+    struct list_elem *e;
+    struct file_descriptor *fds;
+
+    lock_acquire(&file_lock);
+    for (e = list_begin(&open_files); e != list_tail(&open_files); e = list_next(e)) 
+    {
+        fds = list_entry(e, struct file_descriptor, elem);
+        if (fds->owner == cur->tid) 
+        {
+            e = list_prev(e);
+            list_remove(&fds->elem);
+            file_close(fds->file);
+            free(fds->exec_name);
+            free(fds);
+        }
+    }
+    lock_release(&file_lock);    
+}
+
 static void
 syscall_handler (struct intr_frame *f) 
 {
@@ -181,26 +203,9 @@ exit (int status)
 
   p_name = strtok_r (cur->name, " ", &aux);
   printf ("%s: exit(%d)\n", p_name, status);
-  	
-  /* close all owned files */
-  struct list_elem *e;
-  struct file_descriptor *fds; 
-
-  lock_acquire (&file_lock);
-  for(e = list_begin (&open_files); e != list_tail (&open_files); 
-      e = list_next (e))
-    {
-      fds = list_entry (e, struct file_descriptor, elem);
-      if (fds->owner == cur->tid)
-        {
-          e = list_prev (e);
-          list_remove (&fds->elem);
-          file_close (fds->file);	
-          free (fds->exec_name);
-          free (fds);
-       }
-    }
-  lock_release (&file_lock);
+  
+  release_files (cur);
+  	  
   if (cur->parent != NULL && cur->own_exit_status != NULL)
     {
       cur->own_exit_status->status = status;
