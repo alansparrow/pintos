@@ -155,23 +155,47 @@ page_fault (struct intr_frame *f)
   user = (f->error_code & PF_U) != 0;
 
   /* terminate user process if read/write to kernel or page not present */
-  if ( (user && is_kernel_vaddr (fault_addr)) || not_present)
-    {
-      if (not_present && false) 
-        {          
-          // Load data into page
-          struct page_suppl* spte = suppl_get (fault_addr);
-          
-          if (!swap_read (fault_addr))
-            process_load_segment (spte);
-        }
-              
+  if (user && is_kernel_vaddr (fault_addr))
+    {          
+      printf("read/write to kernel page not allowed\n");
       exit (-1);
+    }
+  else if (not_present)
+    {
+      if (fault_addr >= f->esp - 32 && fault_addr >= PHYS_BASE - MAX_STACK_SIZE_BYTES)
+        {
+          // Assume that this is a stack access and grow it accordingly
+          void* kpage = frametable_get_page ();
+          memset (kpage, 0, PGSIZE);
+          
+          struct thread* thread = thread_current ();
+          void *upage = pg_round_down (fault_addr);
+          
+          if (!(pagedir_get_page (thread->pagedir, upage) == NULL
+                && pagedir_set_page (thread->pagedir, upage, kpage, true)))
+            {
+              frametable_free_page (kpage);
+              goto page_fault;
+            }
+          
+          thread->num_stack_pages++;
+          return;
+        }
+
+      // Load data into page
+      struct page_suppl* spte = suppl_get (fault_addr);
+
+      if (!swap_read (fault_addr) && spte != NULL)
+        {
+          if (process_load_segment (spte))
+            return;
+        }
     }
   
   /* To implement virtual memory, delete the rest of the function
      body, and replace it with code that brings in the page to
      which fault_addr refers. */
+page_fault:
   printf ("Page fault at %p: %s error %s page in %s context.\n",
           fault_addr,
           not_present ? "not present" : "rights violation",

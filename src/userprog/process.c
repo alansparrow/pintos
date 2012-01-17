@@ -87,7 +87,7 @@ start_process (void *file_name_)
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
   
-  success = load (file_name, &if_.eip, &if_.esp);
+  success = load (file_name, &if_.eip, &if_.esp);  
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
@@ -95,11 +95,11 @@ start_process (void *file_name_)
   /* Set process sucessful started info and wake waiting parent. */
   struct thread *t = thread_current ();
   if (!success)
-    {
+    {      
       t->own_exit_status->started = -1;
       sema_up (&t->parent->wait_for_child);     
       thread_exit ();
-    }
+    }  
     t->own_exit_status->started = 1;
     sema_up (&t->parent->wait_for_child);     
  
@@ -371,8 +371,8 @@ load (const char *file_name, void (**eip) (void), void **esp)
                   zero_bytes = ROUND_UP (page_offset + phdr.p_memsz, PGSIZE);
                 }
               if (!load_segment (file, file_page, (void *) mem_page,
-                                 read_bytes, zero_bytes, writable))
-                goto done;
+                                 read_bytes, zero_bytes, writable))                                  
+                goto done;               
             }
           else
             goto done;
@@ -382,7 +382,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
     
   /* Set up stack. */
   if (!setup_stack (esp, (char *) file_name))
-    goto done;
+    goto done;           
 
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
@@ -480,11 +480,13 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       uint8_t *kpage = frametable_get_page ();
       
       if (kpage == NULL)
-        return false;
+        {          
+          return false;
+        }
 
       /* Load this page. */
       if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
-        {
+        {                    
           //palloc_free_page (kpage);
           frametable_free_page (kpage);
           return false; 
@@ -493,15 +495,15 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
       /* Add the page to the process's address space. */
       if (!install_page (upage, kpage, writable)) 
-        {
+        {          
           //palloc_free_page (kpage);
           frametable_free_page (kpage);
           return false; 
-        }
+        }           
       
       /* Add entry to supplemental page table */
       suppl_set (upage, file, ofs + file->pos - page_read_bytes, 
-                 page_read_bytes, page_zero_bytes, writable);
+                 page_read_bytes, page_zero_bytes, writable);           
 
       /* Advance. */
       read_bytes -= page_read_bytes;
@@ -526,7 +528,9 @@ setup_stack (void **esp, char* command)
   uint8_t *kpage;
   bool success = false;
   
-  kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+  //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+  kpage = frametable_get_page ();
+  
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
@@ -610,8 +614,9 @@ setup_stack (void **esp, char* command)
         
       }
     else
-      {
-        palloc_free_page (kpage);
+      {          
+        //palloc_free_page (kpage);
+        frametable_free_page (kpage);
       }
     }
   return success;

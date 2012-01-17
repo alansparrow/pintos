@@ -46,22 +46,47 @@ swap_init ()
 
   // Bitmap to map each page in swap as free (0) / occupied (1)
   int swap_size_bytes = BLOCK_SECTOR_SIZE * block_size (swap);
-  //swap_slots = bitmap_create (swap_size_bytes / PGSIZE);
+  swap_slots = bitmap_create (swap_size_bytes / PGSIZE);
 
-  //hash_init (&swap_map, swap_hash, swap_equals, NULL);
+  hash_init (&swap_map, swap_hash, swap_equals, NULL);
 }
 
 bool
 swap_write (void* page_vaddr) 
 {
   ASSERT (swap != NULL);
+  ASSERT (swap_slots != NULL);
   
-  return false;
+  // Find free swap slot  
+  int slot = bitmap_scan_and_flip (swap_slots, 0, 1, false);  
+  if (slot == BITMAP_ERROR)
+    PANIC("#############\nOMAGAWD SWAP IS FULL\n###########");
+  
+  // Write content from page into swap
+  int baseSector = slot * SECTORS_PER_SLOT;
+  int i;
+  
+  for (i = 0; i < SECTORS_PER_SLOT; i++)
+    {      
+      block_write (swap, baseSector + i, page_vaddr + (i * BLOCK_SECTOR_SIZE));
+    }  
+  
+  // Create entry in swap map
+  struct swap_mapping* entry = malloc(sizeof(struct swap_mapping));
+  ASSERT (entry != NULL);
+  
+  entry->page_vaddr = page_vaddr;
+  entry->slot = slot;
+  entry->thread = thread_current ();
+  
+  hash_insert (&swap_map, &entry->elem);
+  
+  return true;
 }
 
 bool
 swap_read (void* page_vaddr)
-{
+{    
   if (!swap_available ()) return false;
   
   struct swap_mapping p;
@@ -94,7 +119,7 @@ swap_read (void* page_vaddr)
   
   if (!(pagedir_get_page (thread->pagedir, page_vaddr) == NULL
           && pagedir_set_page (thread->pagedir, page_vaddr, kpage, spte->writable)))
-    {      
+    {            
       frametable_free_page (kpage);
       return false;
     }

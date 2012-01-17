@@ -517,6 +517,7 @@ init_thread (struct thread *t, const char *name, int priority)
   sema_init (&t->wait_for_child, 0);
   t->parent = NULL;
   t->own_exit_status = NULL;    
+  t->num_stack_pages = 1;
   
   // Create supplemental page table for every thread, but the main thread
   if (strcmp(name, "main") != 0)

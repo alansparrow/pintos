@@ -1,0 +1,2 @@
+pintos --gdb -v -k -T 60 --qemu  --filesys-size=2 -p build/tests/vm/pt-grow-stk-sc -a pt-grow-stk-sc --swap-size=4 -- -q  -f run pt-grow-stk-sc
+

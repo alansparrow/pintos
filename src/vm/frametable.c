@@ -33,9 +33,12 @@ frametable_get_page ()
   // Try to allocate page
   void* page_vaddr = palloc_get_page (PAL_USER);
   if (page_vaddr == NULL)
-    {
+    {                  
       if (!swap_available ()) 
-        return NULL;
+        {
+          PANIC("NO SWAP AVAILABLE");
+          return NULL;
+        }
       
       // Search for a frame to evict (Clock algorithm)
       hand = hand->next;
@@ -52,7 +55,7 @@ frametable_get_page ()
       if (pagedir_is_dirty (thread->pagedir, hand->page_vaddr))
         {
           // Write to swap
-          swap_write (hand->page_vaddr);
+          swap_write (hand->page_vaddr);          
         }
       else
         {
@@ -111,8 +114,14 @@ frametable_free_page (void* page_vaddr)
   
   // Remove from frametable    
   struct frame* p = &frametable;
+  int infinite_loop = 0;  
+  
   while (p->next->frame_paddr != kpage && p->next->referenced != -1)
-    p = p->next;
+    {
+      p = p->next;
+      if (p->next->referenced == -1) infinite_loop++;
+      ASSERT (infinite_loop < 2);
+    }
   
   struct frame* frame_to_free = p->next;
   if (frame_to_free != NULL && p->next->frame_paddr == kpage)

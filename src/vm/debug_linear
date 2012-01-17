@@ -1,0 +1,1 @@
+pintos --gdb -v -k -T 300 --qemu  --filesys-size=2 -p build/tests/vm/page-linear -a page-linear --swap-size=4 -- -q  -f run page-linear

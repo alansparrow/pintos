@@ -21,6 +21,9 @@ enum thread_status
 typedef int tid_t;
 #define TID_ERROR ((tid_t) -1)          /* Error value for tid_t. */
 
+// Max stack size is 4 MB
+#define MAX_STACK_SIZE_BYTES (4096 * 1024)
+
 /* Thread priorities. */
 #define PRI_MIN 0                       /* Lowest priority. */
 #define PRI_DEFAULT 31                  /* Default priority. */
@@ -105,6 +108,7 @@ struct thread
     enum thread_status status;          /* Thread state. */
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
+    uint16_t num_stack_pages;           /* Number of pages the stack uses */
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
 
