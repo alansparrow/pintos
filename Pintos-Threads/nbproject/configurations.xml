@@ -343,23 +343,6 @@
         <in>main.h</in>
       </df>
       <df name="threads">
-        <df name="build">
-          <df name="devices">
-          </df>
-          <df name="lib">
-            <df name="kernel">
-            </df>
-            <df name="user">
-            </df>
-          </df>
-          <df name="tests">
-            <df name="threads">
-            </df>
-          </df>
-          <df name="threads">
-            <in>kernel.lds.s</in>
-          </df>
-        </df>
         <in>flags.h</in>
         <in>init.c</in>
         <in>init.h</in>
@@ -386,33 +369,6 @@
         <in>vaddr.h</in>
       </df>
       <df name="userprog">
-        <df name="build">
-          <df name="devices">
-          </df>
-          <df name="filesys">
-          </df>
-          <df name="lib">
-            <df name="kernel">
-            </df>
-            <df name="user">
-            </df>
-          </df>
-          <df name="tests">
-            <df name="filesys">
-              <df name="base">
-              </df>
-            </df>
-            <df name="userprog">
-              <df name="no-vm">
-              </df>
-            </df>
-          </df>
-          <df name="threads">
-            <in>kernel.lds.s</in>
-          </df>
-          <df name="userprog">
-          </df>
-        </df>
         <in>exception.c</in>
         <in>exception.h</in>
         <in>gdt.c</in>
@@ -529,6 +485,8 @@
         <in>frametable.h</in>
         <in>suppl_page_table.c</in>
         <in>suppl_page_table.h</in>
+        <in>swaptable.c</in>
+        <in>swaptable.h</in>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -1066,11 +1024,6 @@
           </incDir>
         </cTool>
       </item>
-      <item path="../src/threads/build/threads/kernel.lds.s"
-            ex="true"
-            tool="4"
-            flavor="0">
-      </item>
       <item path="../src/threads/init.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
@@ -1134,11 +1087,6 @@
             <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
-      </item>
-      <item path="../src/userprog/build/threads/kernel.lds.s"
-            ex="true"
-            tool="4"
-            flavor="0">
       </item>
       <item path="../src/userprog/exception.c" ex="false" tool="0" flavor="0">
         <cTool>

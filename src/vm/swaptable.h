@@ -5,6 +5,7 @@
 
 void swap_init (void);
 
+bool swap_available (void);
 bool swap_write (void* page_vaddr);
 bool swap_read (void* page_vaddr);
 

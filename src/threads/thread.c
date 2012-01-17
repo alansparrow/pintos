@@ -594,8 +594,8 @@ thread_schedule_tail (struct thread *prev)
   if (prev != NULL && prev->status == THREAD_DYING && prev != initial_thread) 
     {
       ASSERT (prev != cur);
-      //palloc_free_page (prev);
-      frametable_free_page (prev);
+      palloc_free_page (prev);
+      //frametable_free_page (prev);
       suppl_destroy ();
     }
 }

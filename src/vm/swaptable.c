@@ -13,8 +13,8 @@
 #define SECTORS_PER_SLOT (PGSIZE / BLOCK_SECTOR_SIZE)
 
 static struct hash swap_map;
-static struct bitmap* swap_slots;
-static struct block* swap;
+static struct bitmap* swap_slots = NULL;
+static struct block* swap = NULL;
 
 struct swap_mapping
 {
@@ -30,27 +30,40 @@ unsigned swap_hash (const struct hash_elem* p_, void* aux UNUSED);
 bool swap_equals (const struct hash_elem* a_, const struct hash_elem* b_,
                   void* aux UNUSED);
 
+bool 
+swap_available ()
+{
+  return swap != NULL;
+}
+
 void
 swap_init ()
 {
   swap = block_get_role (BLOCK_SWAP);
+  if (swap == NULL)
+    // No Swap Partition available
+    return;
 
   // Bitmap to map each page in swap as free (0) / occupied (1)
   int swap_size_bytes = BLOCK_SECTOR_SIZE * block_size (swap);
-  swap_slots = bitmap_create (swap_size_bytes / PGSIZE);
+  //swap_slots = bitmap_create (swap_size_bytes / PGSIZE);
 
-  hash_init (&swap_map, swap_hash, swap_equals, NULL);
+  //hash_init (&swap_map, swap_hash, swap_equals, NULL);
 }
 
 bool
 swap_write (void* page_vaddr) 
 {
+  ASSERT (swap != NULL);
+  
   return false;
 }
 
 bool
 swap_read (void* page_vaddr)
 {
+  if (!swap_available ()) return false;
+  
   struct swap_mapping p;
   struct hash_elem* e;
   struct thread* thread = thread_current ();

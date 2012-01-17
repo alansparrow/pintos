@@ -1,0 +1,3 @@
+#!/bin/sh
+
+pintos --filesys-size=2 -p build/tests/userprog/args-many -a args-many -- -f -q run 'args-many abc 123 edf 456'
