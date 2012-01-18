@@ -5,6 +5,7 @@
 #include "../lib/kernel/hash.h"
 #include "../filesys/off_t.h"
 #include "debug.h"
+#include "threads/thread.h"
 
 enum page_origin 
 { 
@@ -31,6 +32,8 @@ struct page_suppl
 /* Get the supplemental page table entry for page_vaddr, or NULL if it doesn't exist. */
 struct page_suppl* suppl_get (void* page_vaddr);
 
+struct page_suppl* suppl_get_other (void* page_vaddr, struct thread* thread);
+
 /* Sets the supplemental page table entry for page_vaddr */
 void suppl_set (void* page_vaddr, struct file* file, off_t ofs, 
                 uint32_t read_bytes, uint32_t zero_bytes, bool writable,
@@ -38,6 +41,8 @@ void suppl_set (void* page_vaddr, struct file* file, off_t ofs,
 
 /* Removes the supplemental page table entry for page_vaddr */
 void suppl_free (void* page_vaddr);
+
+void suppl_free_other (void* page_vaddr, struct thread* thread);
 
 /* Destroys the suppl. page table of the current thread */
 void suppl_destroy (void);

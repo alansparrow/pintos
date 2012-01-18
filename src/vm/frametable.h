@@ -10,6 +10,7 @@ struct frame
     int referenced;
     void* page_vaddr;
     void* frame_paddr;
+    struct thread* owner;
 };
 
 void frametable_init (void);

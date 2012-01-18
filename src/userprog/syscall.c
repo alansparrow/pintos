@@ -413,7 +413,7 @@ bool is_mapping_possible (void* vaddr, int length)
   struct page_suppl* spte = suppl_get (vaddr);
   if (spte != NULL && spte->origin == from_executable)
     {      
-      return false;
+      return false; 
     }
   
   return true;

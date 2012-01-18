@@ -175,11 +175,14 @@ page_fault (struct intr_frame *f)
           struct thread* thread = thread_current ();
           void *upage = pg_round_down (fault_addr);
           
-          if (!(pagedir_get_page (thread->pagedir, upage) == NULL
-                && pagedir_set_page (thread->pagedir, upage, kpage, true)))
+          if (is_user_vaddr (upage))
             {
-              frametable_free_page (kpage, false);
-              goto page_fault;
+              if (!(pagedir_get_page (thread->pagedir, upage) == NULL
+                    && pagedir_set_page (thread->pagedir, upage, kpage, true)))
+                {
+                  frametable_free_page (kpage, false);
+                  goto page_fault;
+                }
             }
           
           thread->num_stack_pages++;

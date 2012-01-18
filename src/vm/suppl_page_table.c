@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "threads/malloc.h"
 #include "threads/thread.h"
+#include "userprog/pagedir.h"
 
 struct hash* get_suppl_page_table (void);
 void free_entry (struct hash_elem* e, void* aux);
@@ -70,10 +71,15 @@ suppl_set (void* page_vaddr, struct file* file, off_t ofs,
 void 
 suppl_free (void* page_vaddr)
 {    
+  suppl_free_other (page_vaddr, thread_current());
+}
+
+void suppl_free_other (void* page_vaddr, struct thread* thread)
+{
   struct page_suppl p;
   struct page_suppl* entry;
   struct hash_elem* e; 
-  struct hash* table = get_suppl_page_table ();
+  struct hash* table = &thread->suppl_page_table;
   
   p.page_vaddr = page_vaddr;
   e = hash_delete (table, &p.elem);  
@@ -81,16 +87,23 @@ suppl_free (void* page_vaddr)
   if (e != NULL)
     {
       entry = hash_entry (e, struct page_suppl, elem);
+      pagedir_clear_page (thread->pagedir, entry->page_vaddr);
       free (entry);
-    }
+    }  
 }
 
 struct page_suppl* 
 suppl_get (void* page_vaddr)
 {
+  return suppl_get_other (page_vaddr, thread_current());
+}
+
+struct page_suppl* 
+suppl_get_other (void* page_vaddr, struct thread* thread)
+{
   struct page_suppl p;
   struct hash_elem* e;
-  struct hash* table = get_suppl_page_table ();
+  struct hash* table = &thread->suppl_page_table;
   
   p.page_vaddr = page_vaddr;
   e = hash_find (table, &p.elem);
