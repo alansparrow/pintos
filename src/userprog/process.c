@@ -391,7 +391,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
  done:
   /* We arrive here whether the load is successful or not. */
-  file_close (file);
+  //file_close (file);
   return success;
 }
 
@@ -464,7 +464,13 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 {
   ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
   ASSERT (pg_ofs (upage) == 0);
+  if (ofs % PGSIZE != 0) printf("WARNING, LOAD_SEGMENT(OFFSET=%d)\n", ofs);
   ASSERT (ofs % PGSIZE == 0);
+  
+  //printf("\nLOAD_SEGMENT(ofs=%d,read_bytes=%d, zero_bytes=%d,lazy=%d)\n", 
+  //       ofs, read_bytes, zero_bytes, lazy);
+  
+  int read_offset = 0;
 
   file_seek (file, ofs);
   while (read_bytes > 0 || zero_bytes > 0) 
@@ -474,8 +480,10 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
          and zero the final PAGE_ZERO_BYTES bytes. */
       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
       size_t page_zero_bytes = PGSIZE - page_read_bytes;      
+      
+      //printf("LOAD PAGE (read=%d, zero=%d)\n", page_read_bytes, page_zero_bytes);
 
-      if (lazy)
+      if (!lazy)
         {
           /* Get a page of memory. */          
           uint8_t *kpage = frametable_get_page ();
@@ -506,13 +514,17 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
             }      
         }
             
-      /* Add entry to supplemental page table */
-      suppl_set (upage, file, ofs + file->pos - page_read_bytes, 
-                 page_read_bytes, page_zero_bytes, writable);           
+      /* Remember where this page's content can be obtained from.
+         Can be used for lazy loading. */
+      suppl_set (upage, file, ofs + read_offset, 
+                 page_read_bytes, page_zero_bytes, writable); 
+      
+      //printf("ADDED SUPPL. PG. TABLE ENTRY FOR %p, OFS = %d\n", upage, ofs + read_offset);
 
       /* Advance. */
       read_bytes -= page_read_bytes;
       zero_bytes -= page_zero_bytes;
+      read_offset += PGSIZE;
       upage += PGSIZE;
     }
   return true;

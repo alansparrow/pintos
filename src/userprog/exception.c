@@ -165,7 +165,7 @@ page_fault (struct intr_frame *f)
     }
   else if (not_present)
     {      
-      if (fault_addr >= f->esp - 32)
+      if (fault_addr >= f->esp - 32 && fault_addr >= PHYS_BASE - MAX_STACK_SIZE_BYTES)
         {                              
           // Assume that this is a stack access and grow it accordingly
           void* kpage = frametable_get_page ();
@@ -187,12 +187,16 @@ page_fault (struct intr_frame *f)
         }
 
       // Load data into page      
-      struct page_suppl* spte = suppl_get (fault_addr);
+      void* upage = pg_round_down (fault_addr);
+      struct page_suppl* spte = suppl_get (upage);
       
-      if (!swap_read (fault_addr) && spte != NULL)
+      if (!swap_read (upage) && spte != NULL)
         {          
           if (process_load_segment (spte))
-            return;
+            {
+              //printf("LOADED SEGMENT LAZILY (fault_addr=%p)\n", fault_addr);
+              return;
+            }
           else
             {
               if (explain) 
@@ -202,8 +206,14 @@ page_fault (struct intr_frame *f)
         }
       else if (spte == NULL)
         {
+          if (upage == 0)
+            {
+              if (explain) 
+                printf("Weird address %p, after %d page_faults\n", fault_addr, (int)page_fault_cnt);
+              exit (-1);
+            }
           if (explain) 
-            printf("No Supplemental Page Table entry found for %p\n", fault_addr);          
+            printf("No Supplemental Page Table entry found for %p\n", upage);          
           exit (-1);
         }
     }

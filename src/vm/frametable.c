@@ -43,8 +43,8 @@ frametable_get_pages (size_t pg_count)
   int infinite_loop = 0;
   
   while ((page_vaddr = palloc_get_multiple (PAL_USER, pg_count)) == NULL)
-    {                  
-      PANIC ("FUNZT NICH SO RICHTIG...\n");
+    {                        
+      //printf("EVICTION COMING UP...");
       ASSERT (infinite_loop++ < 2);      
       
       if (!swap_available ()) 

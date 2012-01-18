@@ -17,9 +17,9 @@ test_main (void)
   size_t i;
 
   /* Initialize to 0x5a. */
-  msg ("initialize");
-  memset (buf, 0x5a, sizeof buf);
-
+  msg ("initialize");  
+  memset (buf, 0x5a, sizeof buf);     
+  
   /* Check that it's all 0x5a. */
   msg ("read pass");
   for (i = 0; i < SIZE; i++)

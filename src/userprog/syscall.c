@@ -400,18 +400,25 @@ void munmap (int mmap_id)
   //seek (mapping->fd, pos_before);
 }
 
-int mmap (int fd, void* vaddr)
+int mmap (int fd, void* vaddr) 
 {  
-  if (fd < 2 || vaddr == NULL || pg_ofs (vaddr) > 0)
-    exit (-1);  
+  struct thread* thread = thread_current ();
+  int stack_bottom = PHYS_BASE - thread->num_stack_pages * PGSIZE;
+  
+  // Check for valid file and valid page-aligned address
+  if (fd < 2 || vaddr == NULL || pg_ofs (vaddr) > 0 || vaddr >= stack_bottom)
+    return -1;
     
   int length = filesize (fd);
   int num_pages = length / PGSIZE + 1;
   int i;  
   
+  // Don't overlap with stack
+  if (vaddr + length >= stack_bottom)
+    return -1;
+  
   void* pages = frametable_get_pages (num_pages);
-  int bytes_left = length;
-  struct thread* thread = thread_current ();
+  int bytes_left = length;  
   int pos_before = tell (fd);
   
   for (i = 0; i < num_pages; i++)
@@ -420,8 +427,8 @@ int mmap (int fd, void* vaddr)
       void* upage = vaddr + PGSIZE * i;
       int read_bytes = bytes_left >= PGSIZE ? PGSIZE : (length % PGSIZE);           
       
-      bool success = pagedir_get_page (thread->pagedir, upage) == NULL &&
-                     pagedir_set_page (thread->pagedir, upage, kpage, true);
+      bool success = /*pagedir_get_page (thread->pagedir, upage) == NULL &&*/
+                     pagedir_set_page (thread->pagedir, upage, kpage, true);            
       
       if (!success)
         PANIC ("Could not install Page");

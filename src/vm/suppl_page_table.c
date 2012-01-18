@@ -40,24 +40,28 @@ suppl_set (void* page_vaddr, struct file* file, off_t ofs,
   p.page_vaddr = page_vaddr;
   e = hash_find (table, &p.elem);
   
+  struct page_suppl* entry = NULL;
+  
   if (e == NULL)
     {
       // Create supplemental page table entry
-      struct page_suppl* entry = malloc (sizeof(struct page_suppl));
-      entry->page_vaddr = page_vaddr;
-      entry->file = file;
-      entry->ofs = ofs;
-      entry->read_bytes = read_bytes;
-      entry->zero_bytes = zero_bytes;
-      entry->writable = writable;
-      
-      hash_insert (table, &entry->elem);
+      entry = malloc (sizeof(struct page_suppl));      
     }
   else
     {
-      // Entry should not already exist
-      ASSERT (false);      
+      // Use existing entry for overwrite
+      entry = hash_entry (e, struct page_suppl, elem);
     }
+
+  entry->page_vaddr = page_vaddr;
+  entry->file = file;
+  entry->ofs = ofs;
+  entry->read_bytes = read_bytes;
+  entry->zero_bytes = zero_bytes;
+  entry->writable = writable;
+
+  if (e == NULL)
+    hash_insert (table, &entry->elem);
 }
 
 /* Removes the supplemental page table entry for page_vaddr */
