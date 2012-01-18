@@ -524,6 +524,7 @@ init_thread (struct thread *t, const char *name, int priority)
   if (strcmp(name, "main") != 0)
     {
         hash_init (&t->suppl_page_table, suppl_hash, suppl_equals, NULL);
+        list_init (&t->mmappings);
     }
 }
 

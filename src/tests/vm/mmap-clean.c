@@ -33,7 +33,7 @@ test_main (void)
   munmap (map);
 
   /* Read file back. */
-  msg ("seek \"sample.txt\"");
+  msg ("seek \"sample.txt\""); 
   seek (handle, 0);
   CHECK (read (handle, buffer, sizeof buffer) == sizeof buffer,
          "read \"sample.txt\"");

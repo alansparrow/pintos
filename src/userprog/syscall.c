@@ -355,10 +355,49 @@ filesize (int fd)
 
 void munmap (int mmap_id)
 {
-  if (mmap_id < 2) 
-    exit (-1);
+  struct thread* thread = thread_current ();
+  int i;
   
-  // TODO: Unmap
+  if (mmap_id < 0 || mmap_id > list_size (&thread->mmappings) - 1) 
+    exit (-1);
+    
+  /*
+  struct mmapping* mapping = list_get (&thread->mmappings, mmap_id);
+  ASSERT (mapping != NULL && mapping->fd > 1);
+  
+  int bytes_left = mapping->length;
+  int pos_before = tell (mapping->fd);
+  int num_pages = (mapping->length % PGSIZE) + 1;
+  
+  // Write back modified pages
+  while (bytes_left > 0)
+    {
+      int read_bytes = bytes_left >= PGSIZE ? PGSIZE : (bytes_left % PGSIZE);
+      void* kpage = mapping->kpage + i * PGSIZE;
+      void* vaddr = mapping->vaddr + i * PGSIZE;
+      
+      if (pagedir_is_dirty (&thread->pagedir, vaddr))
+        {
+          // write back to file, if page was written into
+          seek (mapping->fd, mapping->length - bytes_left);
+          write (mapping->fd, vaddr, read_bytes);                    
+        }
+            
+      bytes_left -= read_bytes;                  
+    }
+  */
+  // Free used pages
+  //frametable_free_pages (mapping->kpage, num_pages, false);
+  
+  // Don't use this mapping any more (can be replaced by a new one)
+  //mapping->fd = -1;
+  //mapping->kpage = NULL;
+  //mapping->length = 0;
+  //mapping->mmap_id = -1;
+  //mapping->vaddr = NULL;
+  
+  // Reset file pointer
+  //seek (mapping->fd, pos_before);
 }
 
 int mmap (int fd, void* vaddr)
@@ -373,6 +412,7 @@ int mmap (int fd, void* vaddr)
   void* pages = frametable_get_pages (num_pages);
   int bytes_left = length;
   struct thread* thread = thread_current ();
+  int pos_before = tell (fd);
   
   for (i = 0; i < num_pages; i++)
     {
@@ -387,11 +427,28 @@ int mmap (int fd, void* vaddr)
         PANIC ("Could not install Page");
       
       read (fd, upage, read_bytes);      
-      length -= read_bytes;                        
-    }   
+      bytes_left -= read_bytes;
+      
+      if (bytes_left == 0 && length % PGSIZE > 0)
+        {
+          // fill the rest of the last page with zeroes
+          memset (upage + read_bytes, 0, length % PGSIZE);
+        }
+    }       
   
-  // TODO: Return MMap ID
-  return 2;
+  seek (fd, pos_before);
+  
+  // Create Memory Mapping entry
+  struct mmapping* mapping = malloc (sizeof(struct mmapping));
+  mapping->fd = fd;
+  mapping->length = length;
+  mapping->mmap_id = list_size (&thread->mmappings);
+  mapping->vaddr = vaddr;
+  mapping->kpage = pages;
+  
+  list_push_back (&thread->mmappings, &mapping->elem);
+  
+  return mapping->mmap_id;
 }
 
 /* Reads size bytes from the file open as fd into buffer. 

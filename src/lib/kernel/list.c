@@ -85,6 +85,22 @@ list_next (struct list_elem *elem)
   return elem->next;
 }
 
+struct list_elem* list_traverse (struct list_elem* elem, int depth)
+{
+  if (depth > 0)
+    return list_traverse (&elem->next, depth - 1);
+  else
+    return elem;
+}
+
+struct list_elem *list_get (struct list *list, int index)
+{
+  ASSERT (index >= 0 && index < list_size (list) && list_size (list) > 0);
+  return list_traverse (list_begin (list), index);
+}
+
+
+
 /* Returns LIST's tail.
 
    list_end() is often used in iterating through a list from

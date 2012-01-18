@@ -94,6 +94,15 @@ struct exit_status
                                            >0 if so <0 otherwise */
   };
 
+struct mmapping 
+{
+    struct list_elem elem;
+    int mmap_id;
+    int fd;
+    int length;
+    void* vaddr;
+    void* kpage;
+};
 
 /* The `elem' member has a dual purpose.  It can be an element in
    the run queue (thread.c), or it can be an element in a
@@ -131,6 +140,8 @@ struct thread
 #endif
     
     struct hash suppl_page_table;       /* Supplemental Page Table */
+    
+    struct list mmappings;              /* Memory Mappings */
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
