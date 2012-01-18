@@ -1,0 +1,340 @@
+	 	 +---------------------------+
+		 |		CS 140		|
+		 | PROJECT 3: VIRTUAL MEMORY	|
+		 |	 DESIGN DOCUMENT	|
+		 +---------------------------+
+
+---- GROUP ----
+
+Mathias Kahl <mathias.kahl@googlemail.com>
+Alexander Bach <alexbach@zedat.fu-berlin.de>
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please give them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+
+			PAGE TABLE MANAGEMENT
+			=====================
+
+---- DATA STRUCTURES ----
+
+>> A1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration. Identify the purpose of each in 25 words or less.
+
+struct frame
+{
+    struct frame* next; /* Next list element in ring buffer */
+    int referenced; /* Referenced Bit for Clock algorithm */
+    void* page_vaddr;  /* Kernel virtual address */    
+    struct thread* owner; /* Owning thread */
+};
+
+Element eines Ringbuffers, der benutzt wird, um belegte Kernel-Frames mit dem 
+Clock-Algorithmus zu finden, die ausgelagert werden können.
+
+
+struct frame_mapping
+{
+    struct hash_elem elem;    /* Hash element */
+    void* kpage;     /* kernel virtual address of the frame */
+    void* upage;     /* user virtual address of the page */
+    struct thread* owner; /* Owning thread */
+};
+
+Speichert welche user page einem frame gerade zugeordnet ist. Wird benutzt um 
+bei Eviction die Page aus der jeweiligen pagedir zu entfernen.
+
+
+static struct frame frametable;
+- Speichert den Ringbuffer der belegten Frames.
+
+static struct frame* hand;
+- Position der “Hand” des Clock-Algorithmus
+
+static struct lock frametable_lock;
+- Lock für Synchronisierung des Frametable-Zugriffs
+
+static struct hash frame_mappings;
+- Hash-Map für Abbildung von Kernel pages auf user pages
+
+enum page_origin 
+{ 
+    from_executable, /* Page loaded through load_segment... */
+    from_swap,       /* Page loaded from swap slot */
+    from_file        /* Page loaded from file for memory mapping */
+}; 
+
+Enumeration für Quellen von Page-Inhalten (Ausf. Datei, Swap, MMap-Datei).
+
+struct page_suppl
+{
+    struct hash_elem elem;      /* hash element */
+    int* page_vaddr;            /* user page address */
+    struct file *file;   /* file that the page was loaded from */
+    off_t ofs;                  /* offset in file */
+    uint32_t read_bytes;        /* number of bytes read from file */
+    uint32_t zero_bytes;        /* number of zero bytes */
+    bool writable;              /* if page should be writable */
+    
+    enum page_origin origin;    /* where the page came from */
+};
+
+Eintrag der “Supplemental Page Table”, der angibt, wo der Inhalt der page geholt 
+werden kann für Lazy-Loading bzw. Nachladen bei page faults.
+
+struct thread 
+{
+ //...
+ struct hash suppl_page_table;       /* Supplemental Page Table */
+}
+
+Jeder Thread besitzt seine eigene Supplemental-Page-Table in Form einer Hashmap.
+
+static struct hash swap_map;             
+- Hashmap für Zuordnung von User-Pages zu Swap-Slots
+
+static struct bitmap* swap_slots;  
+- Bitmap zur Verwaltung freier und belegter Slots
+
+static struct block* swap;
+- Swap-Block-Device, das benutzt wird zum Swappen
+
+
+struct swap_mapping
+{
+  struct hash_elem elem;        /* hash element */
+  void* page_vaddr;             /* User virtual page address */
+  struct thread* thread;        /* Owning thread */  
+  int slot;                  /* swap slot = page index (0...1000+) */
+};
+
+Zuordnung einer User-Page zu einem Swap-Slot. Ein Swap-Slot hat die gleiche 
+Größe wie eine Page.
+
+---- ALGORITHMS ----
+
+>> A2: In a few paragraphs, describe your code for locating the frame,
+>> if any, that contains the data of a given page.
+
+Wir benutzen Lazy-Loading. D.h. beim Laden eines Prozesses werden Einträge in 
+der Supplemental-Page-Table erstellt, welche benutzt werden können, um später 
+den Inhalt für eine Page aus einer Datei zu laden.
+
+Bei einem Page-Fault wird dann in der SPT nach einem Eintrag gesucht, mit 
+dessen Hilfe der Inhalt der Page in einen neuen Frame geladen wird, welcher 
+dann zur pagedir des aktuellen Threads hinzugefügt wird, sodass schließlich 
+auf den erwarteten Inhalt zugegriffen werden kann.
+
+Sollte ein Frame für “Eviction” ausgelagert werden, wird der Inhalt des Frames 
+bzw. der Page wenn nötig in den Swap geschrieben und der Eintrag aus der 
+pagedir entfernt, sodass beim nächsten Zugriff wieder ein Page-Fault ausgelöst 
+wird. Beim nächsten Page-Fault wird dann der Inhalt je nach Situation entweder 
+aus dem Swap oder der ursprünglichen Datei zurückgeladen und die Page wieder 
+in die pagedir eingefügt.
+
+
+>> A3: How does your code coordinate accessed and dirty bits between
+>> kernel and user virtual addresses that alias a single frame, or
+>> alternatively how do you avoid the issue?
+Zum Behandeln von Page-Aliasing sind wir noch nicht gekommen.
+
+---- SYNCHRONIZATION ----
+
+>> A4: When two user processes both need a new frame at the same time,
+>> how are races avoided?
+
+Wir benutzen ein Lock, sodass nur ein Prozess gleichzeitig einen neuen Frame 
+allozieren kann.
+
+---- RATIONALE ----
+
+>> A5: Why did you choose the data structure(s) that you did for
+>> representing virtual-to-physical mappings?
+
+Wir haben für die Frametable einen Ringbuffer gewählt um die Eviction darauf 
+zu beschleunigen. Damit kann leicht das nächste Element für den Clock-
+Algorithmus gefunden werden. 
+
+Die Hashmaps der Supplemental Page Table, Frame Table und Swap Table ermöglichen 
+direkten Zugriff auf die benötigten Informationen nur anhand der User-Page-Adresse. 
+
+		 PAGING TO AND FROM DISK
+		 =======================
+
+---- DATA STRUCTURES ----
+
+>> B1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration. Identify the purpose of each in 25 words or less.
+
+(Bereits oben bei Page-Table-Management gelistet:)
+
+static struct hash swap_map;             
+- Hashmap für Zuordnung von User-Pages zu Swap-Slots
+
+static struct bitmap* swap_slots;  
+- Bitmap zur Verwaltung freier und belegter Slots
+
+static struct block* swap;
+- Swap-Block-Device, das benutzt wird zum Swappen
+
+
+struct swap_mapping
+{
+  struct hash_elem elem;        /* hash element */
+  void* page_vaddr;             /* User virtual page address */
+  struct thread* thread;        /* Owning thread */  
+  int slot;                  /* swap slot = page index (0...1000+) */
+};
+
+Zuordnung einer User-Page zu einem Swap-Slot. Ein Swap-Slot hat die gleiche 
+Größe wie eine Page.
+
+---- ALGORITHMS ----
+
+>> B2: When a frame is required but none is free, some frame must be
+>> evicted. Describe your code for choosing a frame to evict.
+
+Mit Hilfe des Ringbuffers kann der Clock-Algorithmus leicht auf die Frames 
+angewendet werden. Zunächst wird der Hand-Pointer um ein Element weiter 
+geschoben und dort das referenced-Bit überprüft. Ist es 1 wird es 0 gesetzt 
+und das nächste Element wird übrprüft. Wenn ein Element gefunden wird, dessen 
+referenced-Bit 0 ist wird es für die Eviction ausgewählt. Daraufhin wird das 
+dirty Bit überprüft. Wurde der Frame nicht verändert, so wird er entfernt und 
+der neue Frame an seiner Stelle eingefügt. Wurde der Frame verändert, so wird 
+er zunächst in den Swap geschrieben und dann aus der Frametable entfernt und 
+durch den neuen Frame ersetzt.
+
+>> B3: When a process P obtains a frame that was previously used by a
+>> process Q, how do you adjust the page table (and any other data
+>> structures) to reflect the frame Q no longer has?
+
+Die Zuordnung in des “frame_mapping[s]” wird aktualisiert, um darzustellen, 
+dass ein frame jetzt einer anderen user page zugeordnet ist. Damit Q nicht 
+mehr auf die Page zugreifen kann, wird außerdem der Eintrag aus Qs pagedir 
+entfernt, und dementsprechend ein Eintrag zu Ps pagedir hinzugefügt.
+
+>> B4: Explain your heuristic for deciding whether a page fault for an
+>> invalid virtual address should cause the stack to be extended into
+>> the page that faulted.
+
+Wenn der page_fault um höchstens 32 Bytes unter dem Stack Pointer passiert 
+und dabei nicht die maximale Stackgrösse “übersteigt” wird davon ausgegangen, 
+das der Stack nicht gross genug gewesen ist und eine weitere page wird 
+hinzugefügt.
+
+---- SYNCHRONIZATION ----
+
+>> B5: Explain the basics of your VM synchronization design. In
+>> particular, explain how it prevents deadlock. (Refer to the
+>> textbook for an explanation of the necessary conditions for
+>> deadlock.)
+
+Soweit, dass wir uns um Synchronisierung überhaupt Gedanken machen konnten, 
+sind wir noch nicht mal gekommen...
+
+>> B6: A page fault in process P can cause another process Q's frame
+>> to be evicted. How do you ensure that Q cannot access or modify
+>> the page during the eviction process? How do you avoid a race
+>> between P evicting Q's frame and Q faulting the page back in?
+
+s.o.
+
+>> B7: Suppose a page fault in process P causes a page to be read from
+>> the file system or swap. How do you ensure that a second process Q
+>> cannot interfere by e.g. attempting to evict the frame while it is
+>> still being read in?
+
+s.o. (Wir hätten ein Flag zur Frametable hinzugefügt, um dies zu verhindern)
+
+>> B8: Explain how you handle access to paged-out pages that occur
+>> during system calls. Do you use page faults to bring in pages (as
+>> in user programs), or do you have a mechanism for "locking" frames
+>> into physical memory, or do you use some other design? How do you
+>> gracefully handle attempted accesses to invalid virtual addresses?
+
+Wir sind nicht dazu gekommen diesen Fall zu behandeln.
+
+---- RATIONALE ----
+
+>> B9: A single lock for the whole VM system would make
+>> synchronization easy, but limit parallelism. On the other hand,
+>> using many locks complicates synchronization and raises the
+>> possibility for deadlock but allows for high parallelism. Explain
+>> where your design falls along this continuum and why you chose to
+>> design it this way.
+
+Beim aktuellen Stand haben wir nur ein Lock für Synchronisierung der Frametable 
+beim Allokieren von kernel pages.
+
+			 MEMORY MAPPED FILES
+			 ===================
+
+---- DATA STRUCTURES ----
+
+>> C1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration. Identify the purpose of each in 25 words or less.
+
+struct mmapping 
+{
+    struct list_elem elem;      /* list element */
+    int mmap_id;                /* memory map id (index of mapping) */
+    int fd;                     /* file descriptor of file to map */
+    int length;                 /* length of file to map */
+    void* vaddr;           /* target user page address for mapping */
+    void* kpage;                /* kernel page address */
+};
+
+Beschreibung eine Abbildung eine Datei auf einen User-Speicherbereich. Wird 
+pro Thread verwaltet.
+
+struct thread { //...
+    struct list mmappings;              /* Memory Mappings */
+}
+
+Speichert die Memory-Mappings des Threads.
+
+---- ALGORITHMS ----
+
+>> C2: Describe how memory mapped files integrate into your virtual
+>> memory subsystem. Explain how the page fault and eviction
+>> processes differ between swap pages and other pages.
+
+Jeder Thread verwaltet seine eigenen Memory Mapped Files, sofern vorhanden. 
+Im virtuellen Speicher werden sie durch konsekutive Pages bzw. Frames realisiert. 
+Wir unterscheiden bei Eviction nicht zwischen swap und anderen Pages.
+
+Bei page faults werden Swap-Seiten aus dem Swap geladen, und andere Seiten wenn 
+möglich aus der entsprechenden (ausführbaren) Datei.
+
+D.h. wir haben das Zurückschreiben von MMaped-Dateien noch nicht implementiert. 
+Prinzipiell hätte man natürllich solche Pages nicht in den Swap, sondern in die 
+gemappte Datei zurückschreiben sollen.
+
+>> C3: Explain how you determine whether a new file mapping overlaps
+>> any existing segment.
+
+Zuerst wird überprüft ob die Startadresse des Mappings + dessen Länge nicht mit 
+dem Ende des Stacks kollidiert. Desweiteren wird überprüft, ob das Mapping nicht 
+in eine aus der ausführbaren Datei geladenen Page zeigt. Schließlich werden noch 
+Kollisionen mit anderen bekannten Mappings gegengeprüft, indem einfach die 
+Startadressen und Längen der jeweiligen Mappings verglichen werden.
+
+---- RATIONALE ----
+
+>> C4: Mappings created with "mmap" have similar semantics to those of
+>> data demand-paged from executables, except that "mmap" mappings are
+>> written back to their original files, not to swap. This implies
+>> that much of their implementation can be shared. Explain why your
+>> implementation either does or does not share much of the code for
+>> the two situations.
+
+Wir verwenden für beide Fälle dieselben Funktionen, da wir das Schreiben von
+MMap-Dateien noch nicht implementiert hatten

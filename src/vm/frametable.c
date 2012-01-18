@@ -163,6 +163,8 @@ void* get_free_pages (size_t count)
 void*
 frametable_get_pages (size_t pg_count)
 {
+  lock_acquire (&frametable_lock);
+  
   int i;  
   void* page_vaddr = get_free_pages (pg_count);   
   
@@ -182,6 +184,8 @@ frametable_get_pages (size_t pg_count)
       hand->next = frame;
       hand = frame;              
     }
+  
+  lock_release (&frametable_lock);
    
   return page_vaddr;
 }
