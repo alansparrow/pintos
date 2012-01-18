@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "threads/thread.h"
 
+/* enumeration for possible page origins */
 enum page_origin 
 { 
     from_executable,    /* Page loaded through load_segment from executable */
@@ -15,36 +16,29 @@ enum page_origin
 }; 
 
 /* Entry of the supplemental page table that stores information on what 
-   data should be in a page. */
+   data should be in a page. Each process has its own SPT. */
 struct page_suppl
 {
-    struct hash_elem elem;
-    int* page_vaddr;
-    struct file *file;
-    off_t ofs;
-    uint32_t read_bytes;
-    uint32_t zero_bytes;
-    bool writable;
+    struct hash_elem elem;      /* hash element */
+    int* page_vaddr;            /* user page address */
+    struct file *file;          /* file that the page was loaded from */
+    off_t ofs;                  /* offset in file */
+    uint32_t read_bytes;        /* number of bytes read from file */
+    uint32_t zero_bytes;        /* number of zero bytes */
+    bool writable;              /* if page should be writable */
     
-    enum page_origin origin;
+    enum page_origin origin;    /* where the page came from */
 };
 
-/* Get the supplemental page table entry for page_vaddr, or NULL if it doesn't exist. */
 struct page_suppl* suppl_get (void* page_vaddr);
-
 struct page_suppl* suppl_get_other (void* page_vaddr, struct thread* thread);
 
-/* Sets the supplemental page table entry for page_vaddr */
 void suppl_set (void* page_vaddr, struct file* file, off_t ofs, 
                 uint32_t read_bytes, uint32_t zero_bytes, bool writable,
                 enum page_origin from);
 
-/* Removes the supplemental page table entry for page_vaddr */
 void suppl_free (void* page_vaddr);
-
 void suppl_free_other (void* page_vaddr, struct thread* thread);
-
-/* Destroys the suppl. page table of the current thread */
 void suppl_destroy (void);
 
 unsigned suppl_hash (const struct hash_elem* p_, void* aux UNUSED);

@@ -10,32 +10,35 @@
 #include "userprog/pagedir.h"
 #include "threads/malloc.h"
 
+// Number of swap sectors per page / swap slot
 #define SECTORS_PER_SLOT (PGSIZE / BLOCK_SECTOR_SIZE)
 
-static struct hash swap_map;
-static struct bitmap* swap_slots = NULL;
-static struct block* swap = NULL;
+static struct hash swap_map;              /* Swap mappings (s.b.) */
+static struct bitmap* swap_slots = NULL;  /* Bitmap for finding free slots */
+static struct block* swap = NULL;         /* The swap block device */
 
+/* Mapping of a user page to a swap slot */
 struct swap_mapping
 {
-  struct hash_elem elem;
-  void* page_vaddr;
-  struct thread* thread;
-
-  /* swap slot = page index (0...1000+) */
-  int slot;
+  struct hash_elem elem;        /* hash element */
+  void* page_vaddr;             /* User virtual page address */
+  struct thread* thread;        /* Owning thread */  
+  int slot;                     /* swap slot = page index (0...1000+) */
 };
 
 unsigned swap_hash (const struct hash_elem* p_, void* aux UNUSED);
 bool swap_equals (const struct hash_elem* a_, const struct hash_elem* b_,
                   void* aux UNUSED);
 
+/* Determines if the swap block device is available */
 bool 
 swap_available ()
 {
   return swap != NULL;
 }
 
+/* Acquires the swap block device and performs necessary initializations for
+   swap management structures. */
 void
 swap_init ()
 {
@@ -51,6 +54,10 @@ swap_init ()
   hash_init (&swap_map, swap_hash, swap_equals, NULL);
 }
 
+/* Writes the contents of given user page into an available swap slot. The 
+   content can be retrieved later by using swap_read only by the same thread.
+   Returns always true, or else panics the kernel currently, if the swap is
+   full. */
 bool
 swap_write (void* page_vaddr) 
 {
@@ -60,7 +67,7 @@ swap_write (void* page_vaddr)
   // Find free swap slot  
   int slot = bitmap_scan_and_flip (swap_slots, 0, 1, false);  
   if (slot == BITMAP_ERROR)
-    PANIC("#############\nOMAGAWD SWAP IS FULL\n###########");
+    PANIC("#############\nOMAGAWD SWAP IS FULL. NEED MOAR! \n###########");
   
   // Write content from page into swap
   int baseSector = slot * SECTORS_PER_SLOT;
@@ -84,6 +91,11 @@ swap_write (void* page_vaddr)
   return true;
 }
 
+/* Reads the contents of a swapped out user page back into the same page.
+   Additionally the page is added to the current process's page dir. 
+   This may only be called by the same thread that wrote the page to swap.
+   Returns true on success.
+ */
 bool
 swap_read (void* page_vaddr)
 {    
@@ -131,6 +143,7 @@ swap_read (void* page_vaddr)
   return true;
 }
 
+/* Hashes a swap_mapping using the user page address */
 unsigned
 swap_hash (const struct hash_elem* p_, void* aux UNUSED)
 {
@@ -139,6 +152,7 @@ swap_hash (const struct hash_elem* p_, void* aux UNUSED)
   return hash;
 }
 
+/* Compares two swap_mappings using the user page address */
 bool
 swap_equals (const struct hash_elem* a_, const struct hash_elem* b_,
              void* aux UNUSED)

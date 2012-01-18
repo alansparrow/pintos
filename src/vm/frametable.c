@@ -10,21 +10,28 @@
 #include "userprog/pagedir.h"
 #include <string.h>
 
+/* Ring Buffer of allocated frames */
 static struct frame frametable;
+
+/* Hand pointing at current frame for Clock algorithm */
 static struct frame* hand;
+
+/* Lock for accessing the frame table*/
 static struct lock frametable_lock;
+
+/* Hash table for mappings of kernel frames to user pages */
 static struct hash frame_mappings;
 
 struct frame* find_frame (void* frame_paddr, struct frame** out_prev);
 
+/* Performs necessary initializations for frame table */
 void
 frametable_init (void)
 {
   lock_init (&frametable_lock);
 
   frametable.next = &frametable;
-  frametable.page_vaddr = NULL;
-  frametable.frame_paddr = NULL;
+  frametable.page_vaddr = NULL;  
   frametable.referenced = -1;
 
   hand = &frametable;
@@ -32,8 +39,11 @@ frametable_init (void)
   hash_init (&frame_mappings, frame_hash, frame_equals, NULL);
 }
 
+/* Maps a kernel page to a user page, and updates the owner threads pagedir
+   accordingly. Returns true on success, false otherwise. */
 bool frame_map (void* upage, void* kpage, struct thread* owner, bool writable)
 {
+  // Add to page dir
   bool success = pagedir_get_page (owner->pagedir, upage) == NULL && 
                  pagedir_set_page (owner->pagedir, upage, kpage, writable);
   
@@ -53,6 +63,7 @@ bool frame_map (void* upage, void* kpage, struct thread* owner, bool writable)
   return true;
 }
 
+/* Removes any mapping from a user page to this kernel page */
 bool frame_unmap (void* kpage)
 {
   struct hash_elem* e;
@@ -61,6 +72,7 @@ bool frame_unmap (void* kpage)
   
   f.kpage = kpage;
   
+  // Find a mapping to this kernel page
   e = hash_find (&frame_mappings, &f.elem);
   if (e == NULL)
     return false;
@@ -78,6 +90,7 @@ bool frame_unmap (void* kpage)
   return true;
 }
 
+/* Hash function for frame mappings, hashing the kernel page address */
 unsigned frame_hash (const struct hash_elem* p_, void* aux UNUSED)
 {
   const struct frame_mapping* p = hash_entry (p_, struct frame_mapping, elem);
@@ -85,6 +98,7 @@ unsigned frame_hash (const struct hash_elem* p_, void* aux UNUSED)
   return hash;
 }
 
+/* Compare function for frame mappings, uses the kernel page address */
 bool frame_equals (const struct hash_elem* a_, const struct hash_elem* b_,
             void* aux UNUSED)
 {
@@ -97,23 +111,25 @@ bool frame_equals (const struct hash_elem* a_, const struct hash_elem* b_,
     return 1;  
 }
 
+/* Gets one new kernel page */
 void*
 frametable_get_page()
 {
   return frametable_get_pages(1);
 }
 
-/* Returns a pointer to the start page of count consecutive free pages.
-  If required, existing pages a free'd. */
+/* Returns a pointer to the start page of $count consecutive free pages.
+  If required, existing pages are evicted. Only for internal usage. */
 void* get_free_pages (size_t count)
 {
   // Try to allocate pages
   void* page_vaddr = NULL;
   int infinite_loop = 0;
 
+  // Get new pages
   while ((page_vaddr = palloc_get_multiple (PAL_USER, count)) == NULL)
-    {
-      //PANIC("EVICTION DOESN'T WORK PROPERLY YET");
+    {      
+      // Start eviction process
       ASSERT (infinite_loop++ < 2);
 
       if (!swap_available ())
@@ -143,6 +159,7 @@ void* get_free_pages (size_t count)
   return page_vaddr;
 }
 
+/* Gets a number of new kernel pages */
 void*
 frametable_get_pages (size_t pg_count)
 {
@@ -169,6 +186,7 @@ frametable_get_pages (size_t pg_count)
   return page_vaddr;
 }
 
+/* Frees a number of pages. Optionally evicts them. */
 void frametable_free_pages (void* page_vaddr, size_t count, bool evict)
 {
   void* p = NULL;
@@ -178,6 +196,9 @@ void frametable_free_pages (void* page_vaddr, size_t count, bool evict)
     }
 }
 
+/* Searches for a frametable entry with given kernel page address. Returns
+   the entry or NULL if none was found. If an entry was found and out_prev
+   is not NULL; a pointer to the previous element is stored in out_prev. */
 struct frame* find_frame (void* page_vaddr, struct frame** out_prev)
 {
   struct frame* p = &frametable;
@@ -202,14 +223,13 @@ struct frame* find_frame (void* page_vaddr, struct frame** out_prev)
   return p->next;
 }
 
+/* Frees a single kernel page and optionally evicts it. */
 void
 frametable_free_page (void* page_vaddr, bool evict)
 {    
   // Find frame table entry  
   struct frame* p = NULL;
-  struct frame* frame_to_free = find_frame (page_vaddr, &p);    
-
-  struct page_suppl* spte = suppl_get_other (frame_to_free->page_vaddr, frame_to_free->owner);    
+  struct frame* frame_to_free = find_frame (page_vaddr, &p);         
   
   // Remove frame from frame table
   if (frame_to_free != NULL && frame_to_free->page_vaddr == page_vaddr)

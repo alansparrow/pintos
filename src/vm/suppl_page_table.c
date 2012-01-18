@@ -7,6 +7,7 @@
 struct hash* get_suppl_page_table (void);
 void free_entry (struct hash_elem* e, void* aux);
 
+/* Compares two SPT (suppl. page table) entries for equality using the user page addresses */
 bool
 suppl_equals (const struct hash_elem* a_, const struct hash_elem* b_,
             void* aux UNUSED)
@@ -20,7 +21,7 @@ suppl_equals (const struct hash_elem* a_, const struct hash_elem* b_,
     return 1;
 }
 
-
+/* Hashes a SPT entry using the user page address */
 unsigned
 suppl_hash (const struct hash_elem* p_, void* aux UNUSED)
 {  
@@ -29,7 +30,8 @@ suppl_hash (const struct hash_elem* p_, void* aux UNUSED)
   return hash;
 }
 
-/* Sets the supplemental page table entry for page_vaddr */
+/* Sets the supplemental page table entry for page_vaddr. See comment of
+   page_suppl for descriptions of the parameters. */
 void 
 suppl_set (void* page_vaddr, struct file* file, off_t ofs, 
            uint32_t read_bytes, uint32_t zero_bytes, bool writable,
@@ -74,6 +76,7 @@ suppl_free (void* page_vaddr)
   suppl_free_other (page_vaddr, thread_current());
 }
 
+/* Removes the supplemental page table entry for page_vaddr of given thread. */
 void suppl_free_other (void* page_vaddr, struct thread* thread)
 {
   struct page_suppl p;
@@ -86,18 +89,21 @@ void suppl_free_other (void* page_vaddr, struct thread* thread)
   
   if (e != NULL)
     {
-      entry = hash_entry (e, struct page_suppl, elem);
-      //pagedir_clear_page (thread->pagedir, entry->page_vaddr);
+      entry = hash_entry (e, struct page_suppl, elem);      
       free (entry);
     }  
 }
 
+/* Gets the SPT entry for given user page address of the current thread, 
+   or NULL if none exists */ 
 struct page_suppl* 
 suppl_get (void* page_vaddr)
 {
   return suppl_get_other (page_vaddr, thread_current());
 }
 
+/* Gets the SPT entry for given user page address of a specific thread,
+   or NULL if none exists */
 struct page_suppl* 
 suppl_get_other (void* page_vaddr, struct thread* thread)
 {
@@ -118,6 +124,7 @@ suppl_get_other (void* page_vaddr, struct thread* thread)
     }
 }
 
+/* Gets a pointer to the SPT of the current thread */
 struct hash* 
 get_suppl_page_table ()
 {
@@ -125,12 +132,14 @@ get_suppl_page_table ()
   return &cur->suppl_page_table;
 }
 
+/* Frees given SPT entry */
 void free_entry (struct hash_elem* e, void* aux UNUSED)
 {
   struct page_suppl* entry = hash_entry (e, struct page_suppl, elem);
   free (entry);
 }
 
+/* Destroys all SPT entries of the current thread */
 void 
 suppl_destroy ()
 {

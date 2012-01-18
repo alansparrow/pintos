@@ -483,8 +483,6 @@
         </df>
         <in>frametable.c</in>
         <in>frametable.h</in>
-        <in>mmap.c</in>
-        <in>mmap.h</in>
         <in>suppl_page_table.c</in>
         <in>suppl_page_table.h</in>
         <in>swaptable.c</in>
