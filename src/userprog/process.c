@@ -504,8 +504,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
             }
           memset (kpage + page_read_bytes, 0, page_zero_bytes);
 
-          // Add the page to the process's address space. 
-          if (!install_page (upage, kpage, writable))
+          // Add the page to the process's address space.           
+          if (!frame_map (upage, kpage, thread_current(), writable))
             {
               printf ("INSTALL_PAGE FAILED\n");
               //palloc_free_page (kpage);

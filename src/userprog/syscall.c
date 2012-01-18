@@ -15,6 +15,7 @@
 #include "filesys/file.h"
 #include "filesys/filesys.h"
 #include "devices/shutdown.h"
+#include "lib/kernel/list.h"
 
 struct file_descriptor {
   int fd_id;            /* FD unique identifier */
@@ -416,6 +417,27 @@ bool is_mapping_possible (void* vaddr, int length)
       return false; 
     }
   
+  // Don't overlap other mappings
+  int i;
+  int num_mappings = list_size (&thread->mmappings);
+  
+  for (i = 0; i < num_mappings; i++)
+    {
+      struct list_elem* e = list_get (&thread->mmappings, i);
+      struct mmapping* m = (struct mmapping*) e;
+      
+      int start1 = vaddr;
+      int end1 = vaddr + length;
+      int start2 = m->vaddr;
+      int end2 = m->vaddr + m->length;
+      
+      if (start1 < start2 && start2 - start1 < length)
+        return false;
+      
+      if (start1 > start2 && start1 - start2 < m->length)
+        return false;
+    }
+  
   return true;
 }
 
@@ -638,7 +660,7 @@ is_valid_uaddr (const void *upointer)
 {
   struct thread *cur = thread_current ();
   if (upointer != NULL && is_user_vaddr (upointer))
-    {
+    {      
       return (pagedir_get_page (cur->pagedir, upointer)) != NULL;
     }
   return false; 

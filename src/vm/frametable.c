@@ -13,6 +13,7 @@
 static struct frame frametable;
 static struct frame* hand;
 static struct lock frametable_lock;
+static struct hash frame_mappings;
 
 struct frame* find_frame (void* frame_paddr, struct frame** out_prev);
 
@@ -27,6 +28,73 @@ frametable_init (void)
   frametable.referenced = -1;
 
   hand = &frametable;
+  
+  hash_init (&frame_mappings, frame_hash, frame_equals, NULL);
+}
+
+bool frame_map (void* upage, void* kpage, struct thread* owner, bool writable)
+{
+  bool success = pagedir_get_page (owner->pagedir, upage) == NULL && 
+                 pagedir_set_page (owner->pagedir, upage, kpage, writable);
+  
+  if (!success)
+    return false;
+  
+  // Remember this mapping
+  struct frame_mapping* m = malloc(sizeof(struct frame_mapping));
+  m->kpage = kpage;
+  m->upage = upage;
+  m->owner = owner;
+  
+  struct hash_elem* e = NULL;
+  e = hash_insert (&frame_mappings, &m->elem);
+  ASSERT (e == NULL);
+  
+  return true;
+}
+
+bool frame_unmap (void* kpage)
+{
+  struct hash_elem* e;
+  struct frame_mapping f;
+  struct frame_mapping* m;
+  
+  f.kpage = kpage;
+  
+  e = hash_find (&frame_mappings, &f.elem);
+  if (e == NULL)
+    return false;
+  
+  m = hash_entry (e, struct frame_mapping, elem);
+  ASSERT (m != NULL);
+  
+  // Remove mapping from pagedir 
+  pagedir_clear_page (m->owner->pagedir, m->upage);
+  
+  // Delete mapping entry
+  hash_delete (&frame_mappings, &m->elem);
+  free (m);
+  
+  return true;
+}
+
+unsigned frame_hash (const struct hash_elem* p_, void* aux UNUSED)
+{
+  const struct frame_mapping* p = hash_entry (p_, struct frame_mapping, elem);
+  int hash = hash_int ((int)p->kpage);
+  return hash;
+}
+
+bool frame_equals (const struct hash_elem* a_, const struct hash_elem* b_,
+            void* aux UNUSED)
+{
+  struct frame_mapping* a = hash_entry (a_, struct frame_mapping, elem);
+  struct frame_mapping* b = hash_entry (b_, struct frame_mapping, elem);
+
+  if (a->kpage == b->kpage)
+    return 0;
+  else
+    return 1;  
 }
 
 void*
@@ -141,11 +209,11 @@ frametable_free_page (void* page_vaddr, bool evict)
   struct frame* p = NULL;
   struct frame* frame_to_free = find_frame (page_vaddr, &p);    
 
-  struct page_suppl* spte = suppl_get_other (frame_to_free->page_vaddr, frame_to_free->owner);
+  struct page_suppl* spte = suppl_get_other (frame_to_free->page_vaddr, frame_to_free->owner);    
   
   // Remove frame from frame table
-  if (frame_to_free != NULL && frame_to_free->frame_paddr == page_vaddr)
-    {                  
+  if (frame_to_free != NULL && frame_to_free->page_vaddr == page_vaddr)
+    {      
       // Remove from linked list
       p->next = frame_to_free->next;
       if (hand == frame_to_free) 
@@ -153,7 +221,7 @@ frametable_free_page (void* page_vaddr, bool evict)
       frame_to_free->referenced = 0;      
       
       if (evict)
-        {                    
+        {                 
           // Evict page at hand
           struct thread* thread = frame_to_free->owner;
           if (pagedir_is_dirty (thread->pagedir, frame_to_free->page_vaddr))
@@ -163,11 +231,15 @@ frametable_free_page (void* page_vaddr, bool evict)
             }          
         }
       
-      // Remove from suppl. page table of thread
+      // Remove from suppl. page table of thread      
       suppl_free_other (frame_to_free->page_vaddr, frame_to_free->owner);
       
       free (frame_to_free);
     }      
+  
+  // Unmap from user address space
+  frame_unmap (page_vaddr);
    
+  // Release the memory so it can be used for consecutive palloc_get_page calls
   palloc_free_page (page_vaddr);  
 }

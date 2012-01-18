@@ -87,7 +87,7 @@ void suppl_free_other (void* page_vaddr, struct thread* thread)
   if (e != NULL)
     {
       entry = hash_entry (e, struct page_suppl, elem);
-      pagedir_clear_page (thread->pagedir, entry->page_vaddr);
+      //pagedir_clear_page (thread->pagedir, entry->page_vaddr);
       free (entry);
     }  
 }

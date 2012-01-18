@@ -176,9 +176,8 @@ page_fault (struct intr_frame *f)
           void *upage = pg_round_down (fault_addr);
           
           if (is_user_vaddr (upage))
-            {
-              if (!(pagedir_get_page (thread->pagedir, upage) == NULL
-                    && pagedir_set_page (thread->pagedir, upage, kpage, true)))
+            {              
+              if (!frame_map (upage, kpage, thread, true))
                 {
                   frametable_free_page (kpage, false);
                   goto page_fault;
@@ -194,10 +193,10 @@ page_fault (struct intr_frame *f)
       struct page_suppl* spte = suppl_get (upage);
       
       if (!swap_read (upage) && spte != NULL)
-        {          
+        {    
+          // Try to load from executable
           if (process_load_segment (spte))
-            {
-              //printf("LOADED SEGMENT LAZILY (fault_addr=%p)\n", fault_addr);
+            {              
               return;
             }
           else

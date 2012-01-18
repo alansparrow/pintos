@@ -115,10 +115,9 @@ swap_read (void* page_vaddr)
   
   // Add page to the process's address space
   struct page_suppl* spte = suppl_get (page_vaddr);
-  ASSERT (spte != NULL);
+  ASSERT (spte != NULL);  
   
-  if (!(pagedir_get_page (thread->pagedir, page_vaddr) == NULL
-          && pagedir_set_page (thread->pagedir, page_vaddr, kpage, spte->writable)))
+  if (!frame_map (page_vaddr, kpage, thread, spte->writable))
     {            
       frametable_free_page (kpage, false);
       return false;
