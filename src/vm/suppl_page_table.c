@@ -31,7 +31,8 @@ suppl_hash (const struct hash_elem* p_, void* aux UNUSED)
 /* Sets the supplemental page table entry for page_vaddr */
 void 
 suppl_set (void* page_vaddr, struct file* file, off_t ofs, 
-           uint32_t read_bytes, uint32_t zero_bytes, bool writable)
+           uint32_t read_bytes, uint32_t zero_bytes, bool writable,
+           enum page_origin from)
 {
   struct page_suppl p;
   struct hash_elem* e;
@@ -59,6 +60,7 @@ suppl_set (void* page_vaddr, struct file* file, off_t ofs,
   entry->read_bytes = read_bytes;
   entry->zero_bytes = zero_bytes;
   entry->writable = writable;
+  entry->origin = from;
 
   if (e == NULL)
     hash_insert (table, &entry->elem);

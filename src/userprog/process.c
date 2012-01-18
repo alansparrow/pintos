@@ -517,7 +517,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
       /* Remember where this page's content can be obtained from.
          Can be used for lazy loading. */
       suppl_set (upage, file, ofs + read_offset, 
-                 page_read_bytes, page_zero_bytes, writable); 
+                 page_read_bytes, page_zero_bytes, writable, from_executable); 
       
       //printf("ADDED SUPPL. PG. TABLE ENTRY FOR %p, OFS = %d\n", upage, ofs + read_offset);
 

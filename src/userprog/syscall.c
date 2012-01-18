@@ -400,6 +400,25 @@ void munmap (int mmap_id)
   //seek (mapping->fd, pos_before);
 }
 
+bool is_mapping_possible (void* vaddr, int length)
+{
+  struct thread* thread = thread_current ();
+  int stack_bottom = PHYS_BASE - thread->num_stack_pages * PGSIZE;
+  
+  // Don't overlap stack
+  if (vaddr + length >= stack_bottom)
+    return false;
+  
+  // Don't overlap code
+  struct page_suppl* spte = suppl_get (vaddr);
+  if (spte != NULL && spte->origin == from_executable)
+    {      
+      return false;
+    }
+  
+  return true;
+}
+
 int mmap (int fd, void* vaddr) 
 {  
   struct thread* thread = thread_current ();
@@ -413,8 +432,8 @@ int mmap (int fd, void* vaddr)
   int num_pages = length / PGSIZE + 1;
   int i;  
   
-  // Don't overlap with stack
-  if (vaddr + length >= stack_bottom)
+  // Check for overlaps etc.
+  if (!is_mapping_possible (vaddr, length))
     return -1;
   
   void* pages = frametable_get_pages (num_pages);
