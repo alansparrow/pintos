@@ -1,0 +1,1208 @@
+TOTAL TESTING SCORE: 64.6%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY BY TEST SET
+
+Test Set                                      Pts Max  % Ttl  % Max
+--------------------------------------------- --- --- ------ ------
+tests/vm/Rubric.functionality                  25/ 55  22.7%/ 50.0%
+tests/vm/Rubric.robustness                     24/ 28  12.9%/ 15.0%
+tests/userprog/Rubric.functionality           103/108   9.5%/ 10.0%
+tests/userprog/Rubric.robustness               85/ 88   4.8%/  5.0%
+tests/filesys/base/Rubric                      22/ 30  14.7%/ 20.0%
+--------------------------------------------- --- --- ------ ------
+Total                                                  64.6%/100.0%
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+SUMMARY OF INDIVIDUAL TESTS
+
+Functionality of virtual memory subsystem (tests/vm/Rubric.functionality):
+	- Test stack growth.
+	     3/ 3 tests/vm/pt-grow-stack
+	  ** 0/ 3 tests/vm/pt-grow-stk-sc
+	     3/ 3 tests/vm/pt-big-stk-obj
+	     3/ 3 tests/vm/pt-grow-pusha
+
+	- Test paging behavior.
+	  ** 0/ 3 tests/vm/page-linear
+	  ** 0/ 3 tests/vm/page-parallel
+	     3/ 3 tests/vm/page-shuffle
+	  ** 0/ 4 tests/vm/page-merge-seq
+	  ** 0/ 4 tests/vm/page-merge-par
+	  ** 0/ 4 tests/vm/page-merge-mm
+	  ** 0/ 4 tests/vm/page-merge-stk
+
+	- Test "mmap" system call.
+	     2/ 2 tests/vm/mmap-read
+	  ** 0/ 2 tests/vm/mmap-write
+	     2/ 2 tests/vm/mmap-shuffle
+
+	     2/ 2 tests/vm/mmap-twice
+
+	  ** 0/ 2 tests/vm/mmap-unmap
+	  ** 0/ 1 tests/vm/mmap-exit
+
+	     3/ 3 tests/vm/mmap-clean
+
+	     2/ 2 tests/vm/mmap-close
+	     2/ 2 tests/vm/mmap-remove
+
+	- Section summary.
+	     10/ 20 tests passed
+	     25/ 55 points subtotal
+
+Robustness of virtual memory subsystem (tests/vm/Rubric.robustness):
+	- Test robustness of page table support.
+	     2/ 2 tests/vm/pt-bad-addr
+	     3/ 3 tests/vm/pt-bad-read
+	     2/ 2 tests/vm/pt-write-code
+	  ** 0/ 3 tests/vm/pt-write-code2
+	     4/ 4 tests/vm/pt-grow-bad
+
+	- Test robustness of "mmap" system call.
+	     1/ 1 tests/vm/mmap-bad-fd
+	     1/ 1 tests/vm/mmap-inherit
+	     1/ 1 tests/vm/mmap-null
+	  ** 0/ 1 tests/vm/mmap-zero
+
+	     2/ 2 tests/vm/mmap-misalign
+
+	     2/ 2 tests/vm/mmap-over-code
+	     2/ 2 tests/vm/mmap-over-data
+	     2/ 2 tests/vm/mmap-over-stk
+	     2/ 2 tests/vm/mmap-overlap
+
+
+	- Section summary.
+	     12/ 14 tests passed
+	     24/ 28 points subtotal
+
+Functionality of system calls (tests/userprog/Rubric.functionality):
+	- Test argument passing on Pintos command line.
+	     3/ 3 tests/userprog/args-none
+	     3/ 3 tests/userprog/args-single
+	     3/ 3 tests/userprog/args-multiple
+	     3/ 3 tests/userprog/args-many
+	     3/ 3 tests/userprog/args-dbl-space
+
+	- Test "create" system call.
+	     3/ 3 tests/userprog/create-empty
+	     3/ 3 tests/userprog/create-long
+	     3/ 3 tests/userprog/create-normal
+	     3/ 3 tests/userprog/create-exists
+
+	- Test "open" system call.
+	     3/ 3 tests/userprog/open-missing
+	     3/ 3 tests/userprog/open-normal
+	     3/ 3 tests/userprog/open-twice
+
+	- Test "read" system call.
+	     3/ 3 tests/userprog/read-normal
+	     3/ 3 tests/userprog/read-zero
+
+	- Test "write" system call.
+	     3/ 3 tests/userprog/write-normal
+	     3/ 3 tests/userprog/write-zero
+
+	- Test "close" system call.
+	     3/ 3 tests/userprog/close-normal
+
+	- Test "exec" system call.
+	     5/ 5 tests/userprog/exec-once
+	  ** 0/ 5 tests/userprog/exec-multiple
+	     5/ 5 tests/userprog/exec-arg
+
+	- Test "wait" system call.
+	     5/ 5 tests/userprog/wait-simple
+	     5/ 5 tests/userprog/wait-twice
+
+	- Test "exit" system call.
+	     5/ 5 tests/userprog/exit
+
+	- Test "halt" system call.
+	     3/ 3 tests/userprog/halt
+
+	- Test recursive execution of user programs.
+	    15/15 tests/userprog/multi-recurse
+
+	- Test read-only executable feature.
+	     3/ 3 tests/userprog/rox-simple
+	     3/ 3 tests/userprog/rox-child
+	     3/ 3 tests/userprog/rox-multichild
+
+	- Section summary.
+	     27/ 28 tests passed
+	    103/108 points subtotal
+
+Robustness of system calls (tests/userprog/Rubric.robustness):
+	- Test robustness of file descriptor handling.
+	     2/ 2 tests/userprog/close-stdin
+	     2/ 2 tests/userprog/close-stdout
+	     2/ 2 tests/userprog/close-bad-fd
+	     2/ 2 tests/userprog/close-twice
+	     2/ 2 tests/userprog/read-bad-fd
+	     2/ 2 tests/userprog/read-stdout
+	     2/ 2 tests/userprog/write-bad-fd
+	     2/ 2 tests/userprog/write-stdin
+	     2/ 2 tests/userprog/multi-child-fd
+
+	- Test robustness of pointer handling.
+	     3/ 3 tests/userprog/create-bad-ptr
+	     3/ 3 tests/userprog/exec-bad-ptr
+	     3/ 3 tests/userprog/open-bad-ptr
+	     3/ 3 tests/userprog/read-bad-ptr
+	     3/ 3 tests/userprog/write-bad-ptr
+
+	- Test robustness of buffer copying across page boundaries.
+	     3/ 3 tests/userprog/create-bound
+	     3/ 3 tests/userprog/open-boundary
+	  ** 0/ 3 tests/userprog/read-boundary
+	     3/ 3 tests/userprog/write-boundary
+
+	- Test handling of null pointer and empty strings.
+	     2/ 2 tests/userprog/create-null
+	     2/ 2 tests/userprog/open-null
+	     2/ 2 tests/userprog/open-empty
+
+	- Test robustness of system call implementation.
+	     3/ 3 tests/userprog/sc-bad-arg
+	     3/ 3 tests/userprog/sc-bad-sp
+	     5/ 5 tests/userprog/sc-boundary
+	     5/ 5 tests/userprog/sc-boundary-2
+
+	- Test robustness of "exec" and "wait" system calls.
+	     5/ 5 tests/userprog/exec-missing
+	     5/ 5 tests/userprog/wait-bad-pid
+	     5/ 5 tests/userprog/wait-killed
+
+	- Test robustness of exception handling.
+	     1/ 1 tests/userprog/bad-read
+	     1/ 1 tests/userprog/bad-write
+	     1/ 1 tests/userprog/bad-jump
+	     1/ 1 tests/userprog/bad-read2
+	     1/ 1 tests/userprog/bad-write2
+	     1/ 1 tests/userprog/bad-jump2
+
+	- Section summary.
+	     33/ 34 tests passed
+	     85/ 88 points subtotal
+
+Functionality of base file system (tests/filesys/base/Rubric):
+	- Test basic support for small files.
+	     1/ 1 tests/filesys/base/sm-create
+	     2/ 2 tests/filesys/base/sm-full
+	     2/ 2 tests/filesys/base/sm-random
+	     2/ 2 tests/filesys/base/sm-seq-block
+	     3/ 3 tests/filesys/base/sm-seq-random
+
+	- Test basic support for large files.
+	     1/ 1 tests/filesys/base/lg-create
+	     2/ 2 tests/filesys/base/lg-full
+	     2/ 2 tests/filesys/base/lg-random
+	     2/ 2 tests/filesys/base/lg-seq-block
+	     3/ 3 tests/filesys/base/lg-seq-random
+
+	- Test synchronized multiprogram access to files.
+	  ** 0/ 4 tests/filesys/base/syn-read
+	  ** 0/ 4 tests/filesys/base/syn-write
+	     2/ 2 tests/filesys/base/syn-remove
+
+	- Section summary.
+	     11/ 13 tests passed
+	     22/ 30 points subtotal
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/pt-grow-stk-sc FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (pt-grow-stk-sc) begin
+  (pt-grow-stk-sc) create "sample.txt"
+  (pt-grow-stk-sc) open "sample.txt"
+  (pt-grow-stk-sc) write "sample.txt"
+  (pt-grow-stk-sc) 2nd open "sample.txt"
+  (pt-grow-stk-sc) read "sample.txt"
+  (pt-grow-stk-sc) compare written data against read data
+  (pt-grow-stk-sc) end
+Differences in `diff -u' format:
+  (pt-grow-stk-sc) begin
+  (pt-grow-stk-sc) create "sample.txt"
+  (pt-grow-stk-sc) open "sample.txt"
+  (pt-grow-stk-sc) write "sample.txt"
+  (pt-grow-stk-sc) 2nd open "sample.txt"
+  (pt-grow-stk-sc) read "sample.txt"
+- (pt-grow-stk-sc) compare written data against read data
+- (pt-grow-stk-sc) end
+
+(Process exit codes are excluded for matching purposes.)
+
+OUTPUT FROM tests/vm/pt-grow-stk-sc:
+
+Copying tests/vm/pt-grow-stk-sc to scratch partition...
+qemu -hda /dev/shm/BRpfPgypLf.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run pt-grow-stk-sc
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 87 sectors (43 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'pt-grow-stk-sc' into the file system...
+Erasing ustar archive...
+Executing 'pt-grow-stk-sc':
+(pt-grow-stk-sc) begin
+(pt-grow-stk-sc) create "sample.txt"
+(pt-grow-stk-sc) open "sample.txt"
+(pt-grow-stk-sc) write "sample.txt"
+(pt-grow-stk-sc) 2nd open "sample.txt"
+(pt-grow-stk-sc) read "sample.txt"
+pt-grow-stk-sc: exit(-1)
+Execution of 'pt-grow-stk-sc' complete.
+Timer: 58 ticks
+Thread: 0 idle ticks, 56 kernel ticks, 2 user ticks
+hda2 (filesys): 96 reads, 186 writes
+hda3 (scratch): 86 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1174 characters output
+Keyboard: 0 keys pressed
+Exception: 6 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/page-linear FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (page-linear) begin
+  (page-linear) initialize
+  (page-linear) read pass
+  (page-linear) read/modify/write pass one
+  (page-linear) read/modify/write pass two
+  (page-linear) read pass
+  (page-linear) end
+Differences in `diff -u' format:
+  (page-linear) begin
+  (page-linear) initialize
+- (page-linear) read pass
+- (page-linear) read/modify/write pass one
+- (page-linear) read/modify/write pass two
+- (page-linear) read pass
+- (page-linear) end
+
+(Process exit codes are excluded for matching purposes.)
+
+OUTPUT FROM tests/vm/page-linear:
+
+Copying tests/vm/page-linear to scratch partition...
+qemu -hda /dev/shm/KdhDqezkdH.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run page-linear
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  30,208,000 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 89 sectors (44 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'page-linear' into the file system...
+Erasing ustar archive...
+Executing 'page-linear':
+(page-linear) begin
+(page-linear) initialize
+page-linear: exit(-1)
+Execution of 'page-linear' complete.
+Timer: 78 ticks
+Thread: 0 idle ticks, 63 kernel ticks, 15 user ticks
+hda2 (filesys): 67 reads, 182 writes
+hda3 (scratch): 88 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1000 characters output
+Keyboard: 0 keys pressed
+Exception: 384 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/page-parallel FAILURE:
+
+Kernel panic in run: PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e236 0xc002e3d7 0xc002f562 0xc002225e 0xc00224bb 0x8048313 0x8048112 0x8048ac0
+Translation of call stack:
+In kernel.o:
+0xc002a6af: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002d19d: frametable_get_pages (...../../vm/frametable.c:178)
+0xc002cfd5: frametable_get_page (...../../vm/frametable.c:119)
+0xc002e236: load_segment (...../userprog/process.c:488)
+0xc002e3d7: process_load_segment (...../userprog/process.c:535)
+0xc002f562: page_fault (.../userprog/exception.c:201)
+0xc002225e: intr_handler (..../threads/interrupt.c:367)
+0xc00224bb: intr_entry (threads/intr-stubs.S:38)
+In tests/vm/page-parallel:
+0x08048313: swap (...uild/../../tests/lib.c:61)
+0x08048112: test_main (...sts/vm/page-parallel.c:20)
+0x08048ac0: vsnprintf (...uild/../../lib/stdio.c:30)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/vm/page-parallel:
+
+Copying tests/vm/page-parallel to scratch partition...
+Copying tests/vm/child-linear to scratch partition...
+qemu -hda /dev/shm/NO0VZJBnDw.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run page-parallel
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 169 sectors (84 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'page-parallel' into the file system...
+Putting 'child-linear' into the file system...
+Erasing ustar archive...
+Executing 'page-parallel':
+(page-parallel) begin
+(page-parallel) exec "child-linear"
+(page-parallel) exec "child-linear"
+(page-parallel) exec "child-linear"
+(page-parallel) exec "child-linear"
+child-linear: exit(-1)
+Kernel PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e236 0xc002e3d7 0xc002f562 0xc002225e 0xc00224bb 0x8048313 0x8048112 0x8048ac0.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 108 ticks
+Thread: 0 idle ticks, 59 kernel ticks, 49 user ticks
+hda2 (filesys): 185 reads, 344 writes
+hda3 (scratch): 168 reads, 2 writes
+hda4 (swap): 0 reads, 880 writes
+Console: 1532 characters output
+Keyboard: 0 keys pressed
+Exception: 493 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/page-merge-seq FAILURE:
+
+run: wait for child-sort: FAILED
+
+OUTPUT FROM tests/vm/page-merge-seq:
+
+Copying tests/vm/page-merge-seq to scratch partition...
+Copying tests/vm/child-sort to scratch partition...
+qemu -hda /dev/shm/FpAd4haqnl.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run page-merge-seq
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 174 sectors (87 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'page-merge-seq' into the file system...
+Putting 'child-sort' into the file system...
+Erasing ustar archive...
+Executing 'page-merge-seq':
+(page-merge-seq) begin
+(page-merge-seq) init
+(page-merge-seq) sort chunk 0
+child-sort: exit(-1)
+(page-merge-seq) wait for child-sort: FAILED
+page-merge-seq: exit(1)
+Execution of 'page-merge-seq' complete.
+Timer: 86 ticks
+Thread: 0 idle ticks, 59 kernel ticks, 27 user ticks
+hda2 (filesys): 156 reads, 610 writes
+hda3 (scratch): 173 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1158 characters output
+Keyboard: 0 keys pressed
+Exception: 262 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/page-merge-par FAILURE:
+
+Kernel panic in run: PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e3f0 0xc002e006 0xc002db4a 0xc002143f
+Translation of call stack:
+0xc002a6af: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002d19d: frametable_get_pages (...../../vm/frametable.c:178)
+0xc002cfd5: frametable_get_page (...../../vm/frametable.c:119)
+0xc002e3f0: setup_stack (...../userprog/process.c:545)
+0xc002e006: load (...../userprog/process.c:384)
+0xc002db4a: start_process (.../../userprog/process.c:90)
+0xc002143f: kernel_thread (..../../threads/thread.c:477)
+
+OUTPUT FROM tests/vm/page-merge-par:
+
+Copying tests/vm/page-merge-par to scratch partition...
+Copying tests/vm/child-sort to scratch partition...
+qemu -hda /dev/shm/BtetQAt0XZ.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run page-merge-par
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 176 sectors (88 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'page-merge-par' into the file system...
+Putting 'child-sort' into the file system...
+Erasing ustar archive...
+Executing 'page-merge-par':
+(page-merge-par) begin
+(page-merge-par) init
+(page-merge-par) sort chunk 0
+child-sort: exit(-1)
+(page-merge-par) sort chunk 1
+Kernel PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e3f0 0xc002e006 0xc002db4a 0xc002143f.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 86 ticks
+Thread: 0 idle ticks, 56 kernel ticks, 30 user ticks
+hda2 (filesys): 195 reads, 1390 writes
+hda3 (scratch): 175 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1427 characters output
+Keyboard: 0 keys pressed
+Exception: 266 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/page-merge-mm FAILURE:
+
+Kernel panic in run: PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002f419 0xc002225e 0xc00224bb 0xc002d3b9 0xc002c883 0xc002c464 0xc002d422 0xc002e349 0xc002dfd8 0xc002db4a 0xc002143f
+Translation of call stack:
+0xc002a6af: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002d19d: frametable_get_pages (...../../vm/frametable.c:178)
+0xc002cfd5: frametable_get_page (...../../vm/frametable.c:119)
+0xc002f419: page_fault (.../userprog/exception.c:173)
+0xc002225e: intr_handler (..../threads/interrupt.c:367)
+0xc00224bb: intr_entry (threads/intr-stubs.S:38)
+0xc002d3b9: suppl_equals (.../vm/suppl_page_table.c:18)
+0xc002c883: find_elem (.../../lib/kernel/hash.c:322)
+0xc002c464: hash_find (.../../lib/kernel/hash.c:135)
+0xc002d422: suppl_set (.../vm/suppl_page_table.c:45)
+0xc002e349: load_segment (...../userprog/process.c:520)
+0xc002dfd8: load (...../userprog/process.c:373)
+0xc002db4a: start_process (.../../userprog/process.c:90)
+0xc002143f: kernel_thread (..../../threads/thread.c:477)
+
+OUTPUT FROM tests/vm/page-merge-mm:
+
+Copying tests/vm/page-merge-mm to scratch partition...
+Copying tests/vm/child-qsort-mm to scratch partition...
+qemu -hda /dev/shm/zV_KcX7UwR.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run page-merge-mm
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  32,716,800 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 181 sectors (90 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'page-merge-mm' into the file system...
+Putting 'child-qsort-mm' into the file system...
+Erasing ustar archive...
+Executing 'page-merge-mm':
+(page-merge-mm) begin
+(page-merge-mm) init
+(page-merge-mm) sort chunk 0
+(page-merge-mm) sort chunk 1
+(page-merge-mm) sort chunk 2
+child-qsort-mm: exit(80)
+Kernel PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002f419 0xc002225e 0xc00224bb 0xc002d3b9 0xc002c883 0xc002c464 0xc002d422 0xc002e349 0xc002dfd8 0xc002db4a 0xc002143f.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 105 ticks
+Thread: 0 idle ticks, 57 kernel ticks, 48 user ticks
+hda2 (filesys): 773 reads, 1916 writes
+hda3 (scratch): 180 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1535 characters output
+Keyboard: 0 keys pressed
+Exception: 270 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/page-merge-stk FAILURE:
+
+Kernel panic in run: PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e3f0 0xc002e006 0xc002db4a 0xc002143f
+Translation of call stack:
+0xc002a6af: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002d19d: frametable_get_pages (...../../vm/frametable.c:178)
+0xc002cfd5: frametable_get_page (...../../vm/frametable.c:119)
+0xc002e3f0: setup_stack (...../userprog/process.c:545)
+0xc002e006: load (...../userprog/process.c:384)
+0xc002db4a: start_process (.../../userprog/process.c:90)
+0xc002143f: kernel_thread (..../../threads/thread.c:477)
+
+OUTPUT FROM tests/vm/page-merge-stk:
+
+Copying tests/vm/page-merge-stk to scratch partition...
+Copying tests/vm/child-qsort to scratch partition...
+qemu -hda /dev/shm/w8CdpPEsQw.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run page-merge-stk
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 181 sectors (90 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'page-merge-stk' into the file system...
+Putting 'child-qsort' into the file system...
+Erasing ustar archive...
+Executing 'page-merge-stk':
+(page-merge-stk) begin
+(page-merge-stk) init
+(page-merge-stk) sort chunk 0
+child-qsort: exit(-1)
+(page-merge-stk) sort chunk 1
+Kernel PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e3f0 0xc002e006 0xc002db4a 0xc002143f.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 86 ticks
+Thread: 0 idle ticks, 57 kernel ticks, 29 user ticks
+hda2 (filesys): 196 reads, 1400 writes
+hda3 (scratch): 180 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1429 characters output
+Keyboard: 0 keys pressed
+Exception: 267 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/mmap-write FAILURE:
+
+run: compare read data against written data: FAILED
+
+OUTPUT FROM tests/vm/mmap-write:
+
+Copying tests/vm/mmap-write to scratch partition...
+qemu -hda /dev/shm/nOR3W8mgb_.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run mmap-write
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 87 sectors (43 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'mmap-write' into the file system...
+Erasing ustar archive...
+Executing 'mmap-write':
+(mmap-write) begin
+(mmap-write) create "sample.txt"
+(mmap-write) open "sample.txt"
+(mmap-write) mmap "sample.txt"
+(mmap-write) compare read data against written data
+(mmap-write) compare read data against written data: FAILED
+mmap-write: exit(1)
+Execution of 'mmap-write' complete.
+Timer: 62 ticks
+Thread: 0 idle ticks, 59 kernel ticks, 3 user ticks
+hda2 (filesys): 95 reads, 184 writes
+hda3 (scratch): 86 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1174 characters output
+Keyboard: 0 keys pressed
+Exception: 5 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/mmap-unmap FAILURE:
+
+run: unmapped memory is readable (540884285): FAILED
+
+OUTPUT FROM tests/vm/mmap-unmap:
+
+Copying tests/vm/mmap-unmap to scratch partition...
+Copying ../../tests/vm/sample.txt to scratch partition...
+qemu -hda /dev/shm/plHfKly3Gw.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run mmap-unmap
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 89 sectors (44 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'mmap-unmap' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'mmap-unmap':
+(mmap-unmap) begin
+(mmap-unmap) open "sample.txt"
+(mmap-unmap) mmap "sample.txt"
+(mmap-unmap) unmapped memory is readable (540884285): FAILED
+mmap-unmap: exit(1)
+Execution of 'mmap-unmap' complete.
+Timer: 58 ticks
+Thread: 0 idle ticks, 56 kernel ticks, 2 user ticks
+hda2 (filesys): 96 reads, 184 writes
+hda3 (scratch): 88 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1135 characters output
+Keyboard: 0 keys pressed
+Exception: 5 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/mmap-exit FAILURE:
+
+run: 512 bytes read starting at offset 0 in "sample.txt" differ from expected: FAILED
+
+OUTPUT FROM tests/vm/mmap-exit:
+
+Copying tests/vm/mmap-exit to scratch partition...
+Copying tests/vm/child-mm-wrt to scratch partition...
+qemu -hda /dev/shm/GiV_kL1zkL.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run mmap-exit
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 170 sectors (85 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'mmap-exit' into the file system...
+Putting 'child-mm-wrt' into the file system...
+Erasing ustar archive...
+Executing 'mmap-exit':
+(mmap-exit) begin
+(child-mm-wrt) begin
+(child-mm-wrt) create "sample.txt"
+(child-mm-wrt) open "sample.txt"
+(child-mm-wrt) mmap "sample.txt"
+(child-mm-wrt) end
+child-mm-wrt: exit(0)
+(mmap-exit) open "sample.txt" for verification
+(mmap-exit) 512 bytes read starting at offset 0 in "sample.txt" differ from expected.
+(mmap-exit) Showing first differing 64 bytes.
+(mmap-exit) Data actually read:
+00000000  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+00000010  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+00000020  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+00000030  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+(mmap-exit) Expected data:
+00000000  3d 3d 3d 20 20 41 4c 4c-20 55 53 45 52 53 20 50 |===  ALL USERS P|
+00000010  4c 45 41 53 45 20 4e 4f-54 45 20 20 3d 3d 3d 3d |LEASE NOTE  ====|
+00000020  3d 3d 3d 3d 3d 3d 3d 3d-3d 3d 3d 3d 3d 3d 3d 3d |================|
+00000030  3d 3d 3d 3d 0a 0a 43 41-52 20 61 6e 64 20 43 44 |====..CAR and CD|
+(mmap-exit) 512 bytes read starting at offset 0 in "sample.txt" differ from expected: FAILED
+mmap-exit: exit(1)
+Execution of 'mmap-exit' complete.
+Timer: 67 ticks
+Thread: 0 idle ticks, 58 kernel ticks, 9 user ticks
+hda2 (filesys): 168 reads, 352 writes
+hda3 (scratch): 169 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 2121 characters output
+Keyboard: 0 keys pressed
+Exception: 10 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/pt-write-code2 FAILURE:
+
+Kernel panic in run: PANIC at ../../threads/synch.c:197 in lock_acquire(): assertion `!lock_held_by_current_thread (lock)' failed.
+Call stack: 0xc002a6af 0xc0023435 0xc002f6d2 0xc002fa90 0xc002f3eb 0xc002225e 0xc00224bb 0xc002921f 0xc0031d1f 0xc00310ab 0xc00302ba 0xc002f950 0xc002225e 0xc00224bb 0x804aa4c 0x80480e2 0x8048850 0x804887c
+Translation of call stack:
+In kernel.o:
+0xc002a6af: debug_panic (.../../lib/kernel/debug.c:38)
+0xc0023435: lock_acquire (...../../threads/synch.c:199)
+0xc002f6d2: release_files (.../../userprog/syscall.c:71)
+0xc002fa90: exit (...../userprog/syscall.c:222)
+0xc002f3eb: page_fault (.../userprog/exception.c:167)
+0xc002225e: intr_handler (..../threads/interrupt.c:367)
+0xc00224bb: intr_entry (threads/intr-stubs.S:38)
+0xc002921f: memcpy (...ild/../../lib/string.c:16)
+0xc0031d1f: inode_read_at (...../../filesys/inode.c:243)
+0xc00310ab: file_read (...d/../../filesys/file.c:64)
+0xc00302ba: read (...../userprog/syscall.c:552)
+0xc002f950: syscall_handler (...../userprog/syscall.c:176)
+0xc002225e: intr_handler (..../threads/interrupt.c:367)
+0xc00224bb: intr_entry (threads/intr-stubs.S:38)
+In tests/vm/pt-write-code2:
+0x0804aa4c: read (...../lib/user/syscall.c:117)
+0x080480e2: test_main (...s/vm/pt-write-code-2.c:14)
+0x08048850: main (...ild/../../tests/main.c:13)
+0x0804887c: _start (.../../../lib/user/entry.c:9)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.
+
+OUTPUT FROM tests/vm/pt-write-code2:
+
+Copying tests/vm/pt-write-code2 to scratch partition...
+Copying ../../tests/vm/sample.txt to scratch partition...
+qemu -hda /dev/shm/GztbBYZrA0.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run pt-write-code2
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 87 sectors (43 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'pt-write-code2' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'pt-write-code2':
+(pt-write-code2) begin
+(pt-write-code2) open "sample.txt"
+pt-write-code2: exit(-1)
+Kernel PANIC at ../../threads/synch.c:197 in lock_acquire(): assertion `!lock_held_by_current_thread (lock)' failed.
+Call stack: 0xc002a6af 0xc0023435 0xc002f6d2 0xc002fa90 0xc002f3eb 0xc002225e 0xc00224bb 0xc002921f 0xc0031d1f 0xc00310ab 0xc00302ba 0xc002f950 0xc002225e 0xc00224bb 0x804aa4c 0x80480e2 0x8048850 0x804887c.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 57 ticks
+Thread: 0 idle ticks, 56 kernel ticks, 1 user ticks
+hda2 (filesys): 93 reads, 180 writes
+hda3 (scratch): 86 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1510 characters output
+Keyboard: 0 keys pressed
+Exception: 6 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/vm/mmap-zero FAILURE:
+
+run: unmapped memory is readable (0): FAILED
+
+OUTPUT FROM tests/vm/mmap-zero:
+
+Copying tests/vm/mmap-zero to scratch partition...
+qemu -hda /dev/shm/8O4WvvgVWE.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run mmap-zero
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 84 sectors (42 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'mmap-zero' into the file system...
+Erasing ustar archive...
+Executing 'mmap-zero':
+(mmap-zero) begin
+(mmap-zero) create empty file "empty"
+(mmap-zero) open "empty"
+(mmap-zero) mmap "empty"
+(mmap-zero) unmapped memory is readable (0): FAILED
+mmap-zero: exit(1)
+Execution of 'mmap-zero' complete.
+Timer: 57 ticks
+Thread: 0 idle ticks, 55 kernel ticks, 2 user ticks
+hda2 (filesys): 88 reads, 176 writes
+hda3 (scratch): 83 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1101 characters output
+Keyboard: 0 keys pressed
+Exception: 5 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/exec-multiple FAILURE:
+
+Kernel panic in run: PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e3f0 0xc002e006 0xc002db4a 0xc002143f
+Translation of call stack:
+0xc002a6af: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002d19d: frametable_get_pages (...../../vm/frametable.c:178)
+0xc002cfd5: frametable_get_page (...../../vm/frametable.c:119)
+0xc002e3f0: setup_stack (...../userprog/process.c:545)
+0xc002e006: load (...../userprog/process.c:384)
+0xc002db4a: start_process (.../../userprog/process.c:90)
+0xc002143f: kernel_thread (..../../threads/thread.c:477)
+
+OUTPUT FROM tests/userprog/exec-multiple:
+
+Copying tests/userprog/exec-multiple to scratch partition...
+Copying tests/userprog/child-simple to scratch partition...
+qemu -hda /dev/shm/1IsLMf7QmZ.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run exec-multiple
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 165 sectors (82 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'exec-multiple' into the file system...
+Putting 'child-simple' into the file system...
+Erasing ustar archive...
+Executing 'exec-multiple':
+(exec-multiple) begin
+(child-simple) run
+child-simple: exit(81)
+Kernel PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e3f0 0xc002e006 0xc002db4a 0xc002143f.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 58 ticks
+Thread: 0 idle ticks, 57 kernel ticks, 1 user ticks
+hda2 (filesys): 139 reads, 336 writes
+hda3 (scratch): 164 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1362 characters output
+Keyboard: 0 keys pressed
+Exception: 10 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/userprog/read-boundary FAILURE:
+
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (read-boundary) begin
+  (read-boundary) open "sample.txt"
+  (read-boundary) end
+  read-boundary: exit(0)
+Differences in `diff -u' format:
+  (read-boundary) begin
+  (read-boundary) open "sample.txt"
+- (read-boundary) end
+- read-boundary: exit(0)
++ read-boundary: exit(-1)
+
+OUTPUT FROM tests/userprog/read-boundary:
+
+Copying tests/userprog/read-boundary to scratch partition...
+Copying ../../tests/userprog/sample.txt to scratch partition...
+qemu -hda /dev/shm/3cjaAUb22i.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run read-boundary
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  32,716,800 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 89 sectors (44 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'read-boundary' into the file system...
+Putting 'sample.txt' into the file system...
+Erasing ustar archive...
+Executing 'read-boundary':
+(read-boundary) begin
+(read-boundary) open "sample.txt"
+read-boundary: exit(-1)
+Execution of 'read-boundary' complete.
+Timer: 60 ticks
+Thread: 0 idle ticks, 59 kernel ticks, 1 user ticks
+hda2 (filesys): 90 reads, 184 writes
+hda3 (scratch): 88 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1065 characters output
+Keyboard: 0 keys pressed
+Exception: 5 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/syn-read FAILURE:
+
+Kernel panic in run: PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002f419 0xc002225e 0xc00224bb 0xc002d3b9 0xc002c883 0xc002c464 0xc002d422 0xc002e349 0xc002dfd8 0xc002db4a 0xc002143f
+Translation of call stack:
+0xc002a6af: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002d19d: frametable_get_pages (...../../vm/frametable.c:178)
+0xc002cfd5: frametable_get_page (...../../vm/frametable.c:119)
+0xc002f419: page_fault (.../userprog/exception.c:173)
+0xc002225e: intr_handler (..../threads/interrupt.c:367)
+0xc00224bb: intr_entry (threads/intr-stubs.S:38)
+0xc002d3b9: suppl_equals (.../vm/suppl_page_table.c:18)
+0xc002c883: find_elem (.../../lib/kernel/hash.c:322)
+0xc002c464: hash_find (.../../lib/kernel/hash.c:135)
+0xc002d422: suppl_set (.../vm/suppl_page_table.c:45)
+0xc002e349: load_segment (...../userprog/process.c:520)
+0xc002dfd8: load (...../userprog/process.c:373)
+0xc002db4a: start_process (.../../userprog/process.c:90)
+0xc002143f: kernel_thread (..../../threads/thread.c:477)
+
+OUTPUT FROM tests/filesys/base/syn-read:
+
+Copying tests/filesys/base/syn-read to scratch partition...
+Copying tests/filesys/base/child-syn-read to scratch partition...
+qemu -hda /dev/shm/RhMFvgRNBN.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run syn-read
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  39,270,400 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 182 sectors (91 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'syn-read' into the file system...
+Putting 'child-syn-read' into the file system...
+Erasing ustar archive...
+Executing 'syn-read':
+(syn-read) begin
+(syn-read) create "data"
+(syn-read) open "data"
+(syn-read) write "data"
+(syn-read) close "data"
+(syn-read) exec child 1 of 10: "child-syn-read 0"
+(syn-read) exec child 2 of 10: "child-syn-read 1"
+child-syn-read: exit(0)
+(syn-read) exec child 3 of 10: "child-syn-read 2"
+child-syn-read: exit(1)
+Kernel PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002f419 0xc002225e 0xc00224bb 0xc002d3b9 0xc002c883 0xc002c464 0xc002d422 0xc002e349 0xc002dfd8 0xc002db4a 0xc002143f.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 74 ticks
+Thread: 0 idle ticks, 57 kernel ticks, 17 user ticks
+hda2 (filesys): 2281 reads, 378 writes
+hda3 (scratch): 181 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1675 characters output
+Keyboard: 0 keys pressed
+Exception: 19 page faults
+Powering off...
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+DETAILS OF tests/filesys/base/syn-write FAILURE:
+
+Kernel panic in run: PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e3f0 0xc002e006 0xc002db4a 0xc002143f
+Translation of call stack:
+0xc002a6af: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002d19d: frametable_get_pages (...../../vm/frametable.c:178)
+0xc002cfd5: frametable_get_page (...../../vm/frametable.c:119)
+0xc002e3f0: setup_stack (...../userprog/process.c:545)
+0xc002e006: load (...../userprog/process.c:384)
+0xc002db4a: start_process (.../../userprog/process.c:90)
+0xc002143f: kernel_thread (..../../threads/thread.c:477)
+
+OUTPUT FROM tests/filesys/base/syn-write:
+
+Copying tests/filesys/base/syn-write to scratch partition...
+Copying tests/filesys/base/child-syn-wrt to scratch partition...
+qemu -hda /dev/shm/VuvpyQabdE.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..............
+Kernel command line: -q -f extract run syn-write
+Pintos booting with 4,096 kB RAM...
+383 pages available in kernel pool.
+383 pages available in user pool.
+Calibrating timer...  26,188,800 loops/s.
+hda: 13,104 sectors (6 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 225 sectors (112 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 182 sectors (91 kB), Pintos scratch (22)
+hda4: 8,192 sectors (4 MB), Pintos swap (23)
+filesys: using hda2
+scratch: using hda3
+swap: using hda4
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'syn-write' into the file system...
+Putting 'child-syn-wrt' into the file system...
+Erasing ustar archive...
+Executing 'syn-write':
+(syn-write) begin
+(syn-write) create "stuff"
+(syn-write) exec child 1 of 10: "child-syn-wrt 0"
+child-syn-wrt: exit(0)
+(syn-write) exec child 2 of 10: "child-syn-wrt 1"
+Kernel PANIC at ../../vm/frametable.c:175 in frametable_get_pages(): assertion `frame == NULL' failed.
+Call stack: 0xc002a6af 0xc002d19d 0xc002cfd5 0xc002e3f0 0xc002e006 0xc002db4a 0xc002143f.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 58 ticks
+Thread: 0 idle ticks, 55 kernel ticks, 3 user ticks
+hda2 (filesys): 169 reads, 385 writes
+hda3 (scratch): 181 reads, 2 writes
+hda4 (swap): 0 reads, 0 writes
+Console: 1455 characters output
+Keyboard: 0 keys pressed
+Exception: 12 page faults
+Powering off...
