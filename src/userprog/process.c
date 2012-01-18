@@ -455,6 +455,10 @@ validate_segment (const struct Elf32_Phdr *phdr, struct file *file)
 
    The pages initialized by this function must be writable by the
    user process if WRITABLE is true, read-only otherwise.
+  
+   If the lazy parameter is true, the segment is not loaded directly. Instead
+   only an entry is added to the supplemental page table entry, so that the
+   upage can be loaded lazily upon a page fault. 
 
    Return true if successful, false if a memory allocation error
    or disk read error occurs. */
@@ -464,11 +468,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 {
   ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
   ASSERT (pg_ofs (upage) == 0);
-  if (ofs % PGSIZE != 0) printf("WARNING, LOAD_SEGMENT(OFFSET=%d)\n", ofs);
   ASSERT (ofs % PGSIZE == 0);
-  
-  //printf("\nLOAD_SEGMENT(ofs=%d,read_bytes=%d, zero_bytes=%d,lazy=%d)\n", 
-  //       ofs, read_bytes, zero_bytes, lazy);
   
   int read_offset = 0;
 
@@ -479,10 +479,9 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
          We will read PAGE_READ_BYTES bytes from FILE
          and zero the final PAGE_ZERO_BYTES bytes. */
       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-      size_t page_zero_bytes = PGSIZE - page_read_bytes;      
-      
-      //printf("LOAD PAGE (read=%d, zero=%d)\n", page_read_bytes, page_zero_bytes);
+      size_t page_zero_bytes = PGSIZE - page_read_bytes;          
 
+      // Only load the page into memory if required
       if (!lazy)
         {
           /* Get a page of memory. */          
@@ -498,7 +497,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
           if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
             {
               printf ("FILE_READ FAILED\n");
-              //palloc_free_page (kpage);
               frametable_free_page (kpage, false);
               return false;
             }
@@ -508,7 +506,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
           if (!frame_map (upage, kpage, thread_current(), writable))
             {
               printf ("INSTALL_PAGE FAILED\n");
-              //palloc_free_page (kpage);
               frametable_free_page (kpage, false);
               return false;
             }      
@@ -518,8 +515,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
          Can be used for lazy loading. */
       suppl_set (upage, file, ofs + read_offset, 
                  page_read_bytes, page_zero_bytes, writable, from_executable); 
-      
-      //printf("ADDED SUPPL. PG. TABLE ENTRY FOR %p, OFS = %d\n", upage, ofs + read_offset);
 
       /* Advance. */
       read_bytes -= page_read_bytes;
@@ -530,6 +525,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   return true;
 }
 
+/* Load the page using information given by the supplemental page table entry,
+   i.e. the page contents are loaded from the described executable segment. */
 bool 
 process_load_segment (struct page_suppl* spte)
 {
@@ -544,8 +541,7 @@ setup_stack (void **esp, char* command)
 {
   uint8_t *kpage;
   bool success = false;
-  
-  //kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+
   kpage = frametable_get_page ();
   
   if (kpage != NULL) 
@@ -632,7 +628,6 @@ setup_stack (void **esp, char* command)
       }
     else
       {          
-        //palloc_free_page (kpage);
         frametable_free_page (kpage, false);
       }
     }

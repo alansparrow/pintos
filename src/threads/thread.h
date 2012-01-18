@@ -94,14 +94,15 @@ struct exit_status
                                            >0 if so <0 otherwise */
   };
 
+/* memory mapping */
 struct mmapping 
 {
-    struct list_elem elem;
-    int mmap_id;
-    int fd;
-    int length;
-    void* vaddr;
-    void* kpage;
+    struct list_elem elem;      /* list element */
+    int mmap_id;                /* memory map id (index of mapping) */
+    int fd;                     /* file descriptor of file to map */
+    int length;                 /* length of file to map */
+    void* vaddr;                /* target user page address for mapping */
+    void* kpage;                /* kernel page address */
 };
 
 /* The `elem' member has a dual purpose.  It can be an element in

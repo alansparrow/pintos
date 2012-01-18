@@ -60,6 +60,7 @@ syscall_init (void)
   lock_init (&file_lock);
 }
 
+/* Closes all files of the given thread. */
 void release_files (struct thread* cur) 
 {
     /* close all owned files */
@@ -354,6 +355,7 @@ filesize (int fd)
   return ret;
 }
 
+/* Unmaps a file to RAM mapping described by given id */
 void munmap (int mmap_id)
 {
   struct thread* thread = thread_current ();
@@ -362,7 +364,7 @@ void munmap (int mmap_id)
   if (mmap_id < 0 || mmap_id > list_size (&thread->mmappings) - 1) 
     exit (-1);
     
-  /*
+  /* THERE'S SOME BUG IN HERE TO FIND...
   struct mmapping* mapping = list_get (&thread->mmappings, mmap_id);
   ASSERT (mapping != NULL && mapping->fd > 1);
   
@@ -401,6 +403,9 @@ void munmap (int mmap_id)
   //seek (mapping->fd, pos_before);
 }
 
+/* Determines whether a memory mapping at vaddr and of given length is possible.
+   It is checked for overlaps with stack, code or other mappings. Returns true
+   if the mapping is allowed, false otherwise. */
 bool is_mapping_possible (void* vaddr, int length)
 {
   struct thread* thread = thread_current ();
@@ -441,6 +446,8 @@ bool is_mapping_possible (void* vaddr, int length)
   return true;
 }
 
+/* Maps the file described by fd to the user space starting at vaddr.
+   Returns the memory map id (>= 0) on success, -1 otherwise. */
 int mmap (int fd, void* vaddr) 
 {  
   struct thread* thread = thread_current ();
@@ -458,32 +465,37 @@ int mmap (int fd, void* vaddr)
   if (!is_mapping_possible (vaddr, length))
     return -1;
   
+  // Allocate pages for the file content
   void* pages = frametable_get_pages (num_pages);
   int bytes_left = length;  
   int pos_before = tell (fd);
   
+  // Read file content into pages
   for (i = 0; i < num_pages; i++)
     {
       void* kpage = pages + PGSIZE * i;
       void* upage = vaddr + PGSIZE * i;
       int read_bytes = bytes_left >= PGSIZE ? PGSIZE : (length % PGSIZE);           
       
-      bool success = /*pagedir_get_page (thread->pagedir, upage) == NULL &&*/
+      // Add frame to page dir of thread
+      bool success = pagedir_get_page (thread->pagedir, upage) == NULL &&
                      pagedir_set_page (thread->pagedir, upage, kpage, true);            
       
       if (!success)
         PANIC ("Could not install Page");
       
+      // read file content into page
       read (fd, upage, read_bytes);      
       bytes_left -= read_bytes;
       
+      // fill the rest of the last page with zeroes
       if (bytes_left == 0 && length % PGSIZE > 0)
-        {
-          // fill the rest of the last page with zeroes
+        {          
           memset (upage + read_bytes, 0, length % PGSIZE);
         }
     }       
   
+  // reset file position
   seek (fd, pos_before);
   
   // Create Memory Mapping entry

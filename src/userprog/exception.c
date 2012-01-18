@@ -129,7 +129,7 @@ kill (struct intr_frame *f)
 static void
 page_fault (struct intr_frame *f) 
 {  
-  bool explain = false;
+  bool explain = false; /* True: Print error information, false: don't */
   bool not_present;  /* True: not-present page, false: writing r/o page. */
   bool write;        /* True: access was write, false: access was read. */
   bool user;         /* True: access by user, false: access by kernel. */
@@ -160,11 +160,13 @@ page_fault (struct intr_frame *f)
   if ((user && is_kernel_vaddr (fault_addr)) || (write && !not_present))
     {     
       if (explain) 
-        printf("User tried to access kernel space, or someone tried to write r/o memory\n");
+        printf("User tried to access kernel space, or write to r/o memory\n");
       exit (-1);     
     }
+  /* Try to load a page that is not present */
   else if (not_present)
     {      
+      // Check for a stack access and grow the stack if necessary
       if (fault_addr >= f->esp - 32 && fault_addr >= PHYS_BASE - MAX_STACK_SIZE_BYTES)
         {                              
           // Assume that this is a stack access and grow it accordingly
@@ -188,10 +190,11 @@ page_fault (struct intr_frame *f)
           return;
         }
 
-      // Load data into page      
+      // Load data into page (check supplemental page table)    
       void* upage = pg_round_down (fault_addr);
       struct page_suppl* spte = suppl_get (upage);
       
+      // First try reading from swap, or read from executable again if possible
       if (!swap_read (upage) && spte != NULL)
         {    
           // Try to load from executable
@@ -211,7 +214,8 @@ page_fault (struct intr_frame *f)
           if (upage == 0)
             {
               if (explain) 
-                printf("Weird address %p, after %d page_faults\n", fault_addr, (int)page_fault_cnt);
+                printf("Weird address %p, after %d page_faults\n", fault_addr, 
+                       (int)page_fault_cnt);
               exit (-1);
             }
           if (explain) 
