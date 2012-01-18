@@ -46,6 +46,8 @@ int filesize (int);
 int read (int, void *, unsigned);
 int write (int, const void *, unsigned);
 void seek (int, unsigned);
+int mmap (int fd, void* vaddr);
+void munmap (int mmap_id);
 unsigned tell (int);
 void close (int);
 
@@ -108,6 +110,8 @@ syscall_handler (struct intr_frame *f)
       case SYS_SEEK:
       case SYS_TELL:
       case SYS_CLOSE:
+      case SYS_MMAP:
+      case SYS_MUNMAP:
         if (!is_valid_uaddr (esp + 1))
           {
             exit (-1);
@@ -121,6 +125,7 @@ syscall_handler (struct intr_frame *f)
       case SYS_READ:
       case SYS_WRITE:
       case SYS_SEEK:
+      case SYS_MMAP:
         if (!is_valid_uaddr (esp + 2))
           {
             exit (-1);
@@ -180,6 +185,12 @@ syscall_handler (struct intr_frame *f)
       case SYS_CLOSE:
         close (* (esp + 1));
         break;
+      case SYS_MMAP:
+        f->eax = mmap (*(esp + 1), *(esp + 2));
+        break;
+      case SYS_MUNMAP:
+        munmap (*(esp + 1));
+        break;
       default:
         exit (-1);
     }
@@ -211,6 +222,7 @@ exit (int status)
       cur->own_exit_status->status = status;
       /* thread_exit wakes waiting process if existing. */
     }
+  
   thread_exit ();
 }
 
@@ -341,6 +353,47 @@ filesize (int fd)
   return ret;
 }
 
+void munmap (int mmap_id)
+{
+  if (mmap_id < 2) 
+    exit (-1);
+  
+  // TODO: Unmap
+}
+
+int mmap (int fd, void* vaddr)
+{  
+  if (fd < 2 || vaddr == NULL || pg_ofs (vaddr) > 0)
+    exit (-1);  
+    
+  int length = filesize (fd);
+  int num_pages = length / PGSIZE + 1;
+  int i;  
+  
+  void* pages = frametable_get_pages (num_pages);
+  int bytes_left = length;
+  struct thread* thread = thread_current ();
+  
+  for (i = 0; i < num_pages; i++)
+    {
+      void* kpage = pages + PGSIZE * i;
+      void* upage = vaddr + PGSIZE * i;
+      int read_bytes = bytes_left >= PGSIZE ? PGSIZE : (length % PGSIZE);           
+      
+      bool success = pagedir_get_page (thread->pagedir, upage) == NULL &&
+                     pagedir_set_page (thread->pagedir, upage, kpage, true);
+      
+      if (!success)
+        PANIC ("Could not install Page");
+      
+      read (fd, upage, read_bytes);      
+      length -= read_bytes;                        
+    }   
+  
+  // TODO: Return MMap ID
+  return 2;
+}
+
 /* Reads size bytes from the file open as fd into buffer. 
 Returns the number of bytes actually read (0 at end of file), 
 or -1 if the file could not be read (due to a condition other 
@@ -349,7 +402,7 @@ int
 read (int fd, void *buffer, unsigned length) 
 {
   if (!are_valid_uaddrs (buffer, length))
-    {
+    {      
       exit (-1);
     }
   int status = 0;

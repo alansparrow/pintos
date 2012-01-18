@@ -10,6 +10,7 @@
 #include "userprog/pagedir.h"
 #include "vm/frametable.h"
 #include "vm/swaptable.h"
+#include <string.h>
 
 /* Number of page faults processed. */
 static long long page_fault_cnt;
@@ -127,7 +128,8 @@ kill (struct intr_frame *f)
    [IA32-v3a] section 5.15 "Exception and Interrupt Reference". */
 static void
 page_fault (struct intr_frame *f) 
-{
+{  
+  bool explain = true;
   bool not_present;  /* True: not-present page, false: writing r/o page. */
   bool write;        /* True: access was write, false: access was read. */
   bool user;         /* True: access by user, false: access by kernel. */
@@ -156,13 +158,15 @@ page_fault (struct intr_frame *f)
 
   /* terminate user process if read/write to kernel or page not present */
   if ((user && is_kernel_vaddr (fault_addr)) || (write && !not_present))
-    {               
+    {     
+      if (explain) 
+        printf("User tried to access kernel space, or someone tried to write r/o memory\n");
       exit (-1);     
     }
   else if (not_present)
     {      
       if (fault_addr >= f->esp - 32)
-        {                    
+        {                              
           // Assume that this is a stack access and grow it accordingly
           void* kpage = frametable_get_page ();
           ASSERT (kpage != NULL);
@@ -174,7 +178,7 @@ page_fault (struct intr_frame *f)
           if (!(pagedir_get_page (thread->pagedir, upage) == NULL
                 && pagedir_set_page (thread->pagedir, upage, kpage, true)))
             {
-              frametable_free_page (kpage);
+              frametable_free_page (kpage, false);
               goto page_fault;
             }
           
@@ -182,18 +186,24 @@ page_fault (struct intr_frame *f)
           return;
         }
 
-      // Load data into page
+      // Load data into page      
       struct page_suppl* spte = suppl_get (fault_addr);
-
+      
       if (!swap_read (fault_addr) && spte != NULL)
         {          
           if (process_load_segment (spte))
             return;
           else
-            exit (-1);
+            {
+              if (explain) 
+                printf("load_segment failed\n");
+              exit (-1);
+            }
         }
-      else
+      else if (spte == NULL)
         {
+          if (explain) 
+            printf("No Supplemental Page Table entry found for %p\n", fault_addr);          
           exit (-1);
         }
     }

@@ -120,7 +120,7 @@ swap_read (void* page_vaddr)
   if (!(pagedir_get_page (thread->pagedir, page_vaddr) == NULL
           && pagedir_set_page (thread->pagedir, page_vaddr, kpage, spte->writable)))
     {            
-      frametable_free_page (kpage);
+      frametable_free_page (kpage, false);
       return false;
     }
   

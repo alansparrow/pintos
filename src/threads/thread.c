@@ -312,7 +312,7 @@ thread_exit (void)
 
 #ifdef USERPROG
   process_exit ();
-#endif
+#endif  
 
   /* Remove thread from all threads list, set our status to dying,
      and schedule another process.  That process will destroy us
@@ -329,8 +329,8 @@ thread_exit (void)
       s->child->parent = NULL;
       list_remove (e);
       free (s);
-    }
-
+    }  
+  
   if (t->parent != NULL && t->parent->wait_child != NULL &&
       t->parent->wait_child->child_tid == t->tid)
     {
@@ -341,8 +341,9 @@ thread_exit (void)
     {
       t->own_exit_status->finished = true; 
     }
-  list_remove (&thread_current ()->allelem);
-  thread_current ()->status = THREAD_DYING;
+  list_remove (&thread_current ()->allelem);   
+  
+  thread_current ()->status = THREAD_DYING;  
   schedule ();
   NOT_REACHED ();
 }
@@ -614,7 +615,7 @@ schedule (void)
   struct thread *cur = running_thread ();
   struct thread *next = next_thread_to_run ();
   struct thread *prev = NULL;
-
+  
   ASSERT (intr_get_level () == INTR_OFF);
   ASSERT (cur->status != THREAD_RUNNING);
   ASSERT (is_thread (next));

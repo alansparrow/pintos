@@ -15,7 +15,9 @@ struct frame
 void frametable_init (void);
 
 void* frametable_get_page (void);
-void frametable_free_page (void* page_vaddr);
+void* frametable_get_pages (size_t pg_count);
+void frametable_free_page (void* page_vaddr, bool evict);
+void frametable_free_pages (void* page_vaddr, size_t count, bool evict);
 
 #endif	/* FRAMETABLE_H */
 

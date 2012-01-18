@@ -274,7 +274,7 @@ static bool setup_stack (void **esp, char* command);
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
-                          bool writable);
+                          bool writable, bool lazy);
 
 /* Loads an ELF executable from FILE_NAME into the current thread.
    Stores the executable's entry point into *EIP
@@ -371,7 +371,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
                   zero_bytes = ROUND_UP (page_offset + phdr.p_memsz, PGSIZE);
                 }
               if (!load_segment (file, file_page, (void *) mem_page,
-                                 read_bytes, zero_bytes, writable))                                  
+                                 read_bytes, zero_bytes, writable, true))                                  
                 goto done;               
             }
           else
@@ -460,7 +460,7 @@ validate_segment (const struct Elf32_Phdr *phdr, struct file *file)
    or disk read error occurs. */
 static bool
 load_segment (struct file *file, off_t ofs, uint8_t *upage,
-              uint32_t read_bytes, uint32_t zero_bytes, bool writable) 
+              uint32_t read_bytes, uint32_t zero_bytes, bool writable, bool lazy) 
 {
   ASSERT ((read_bytes + zero_bytes) % PGSIZE == 0);
   ASSERT (pg_ofs (upage) == 0);
@@ -473,34 +473,39 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
          We will read PAGE_READ_BYTES bytes from FILE
          and zero the final PAGE_ZERO_BYTES bytes. */
       size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
-      size_t page_zero_bytes = PGSIZE - page_read_bytes;
+      size_t page_zero_bytes = PGSIZE - page_read_bytes;      
 
-      /* Get a page of memory. */
-      //uint8_t *kpage = palloc_get_page (PAL_USER);
-      uint8_t *kpage = frametable_get_page ();
-      
-      if (kpage == NULL)
-        {                    
-          return false;
+      if (lazy)
+        {
+          /* Get a page of memory. */          
+          uint8_t *kpage = frametable_get_page ();
+
+          if (kpage == NULL)
+            {
+              printf ("FRAMETABLE_GET_PAGE failed\n");
+              return false;
+            }
+          
+          /* Load this page. */
+          if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
+            {
+              printf ("FILE_READ FAILED\n");
+              //palloc_free_page (kpage);
+              frametable_free_page (kpage, false);
+              return false;
+            }
+          memset (kpage + page_read_bytes, 0, page_zero_bytes);
+
+          // Add the page to the process's address space. 
+          if (!install_page (upage, kpage, writable))
+            {
+              printf ("INSTALL_PAGE FAILED\n");
+              //palloc_free_page (kpage);
+              frametable_free_page (kpage, false);
+              return false;
+            }      
         }
-
-      /* Load this page. */
-      if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes)
-        {                    
-          //palloc_free_page (kpage);
-          frametable_free_page (kpage);
-          return false; 
-        }
-      memset (kpage + page_read_bytes, 0, page_zero_bytes);
-
-      /* Add the page to the process's address space. */
-      if (!install_page (upage, kpage, writable)) 
-        {          
-          //palloc_free_page (kpage);
-          frametable_free_page (kpage);
-          return false; 
-        }           
-      
+            
       /* Add entry to supplemental page table */
       suppl_set (upage, file, ofs + file->pos - page_read_bytes, 
                  page_read_bytes, page_zero_bytes, writable);           
@@ -517,7 +522,7 @@ bool
 process_load_segment (struct page_suppl* spte)
 {
   return load_segment (spte->file, spte->ofs, (void*)spte->page_vaddr, spte->read_bytes, 
-                spte->zero_bytes, spte->writable);
+                spte->zero_bytes, spte->writable, false);
 }
 
 /* Create a minimal stack by mapping a zeroed page at the top of
@@ -616,7 +621,7 @@ setup_stack (void **esp, char* command)
     else
       {          
         //palloc_free_page (kpage);
-        frametable_free_page (kpage);
+        frametable_free_page (kpage, false);
       }
     }
   return success;

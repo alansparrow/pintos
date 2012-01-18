@@ -483,6 +483,8 @@
         </df>
         <in>frametable.c</in>
         <in>frametable.h</in>
+        <in>mmap.c</in>
+        <in>mmap.h</in>
         <in>suppl_page_table.c</in>
         <in>suppl_page_table.h</in>
         <in>swaptable.c</in>
@@ -524,22 +526,31 @@
       <item path="../src/devices/block.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../src/devices/ide.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../src/devices/input.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../src/devices/intq.c" ex="false" tool="0" flavor="0">
@@ -555,29 +566,41 @@
       <item path="../src/devices/kbd.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../src/devices/partition.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../src/devices/pit.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../src/devices/rtc.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../src/devices/serial.c" ex="false" tool="0" flavor="0">
@@ -620,8 +643,11 @@
       <item path="../src/devices/vga.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../src/examples/bubsort.c" ex="true" tool="0" flavor="0">
@@ -660,60 +686,6 @@
       </item>
       <item path="../src/examples/shell.c" ex="true" tool="0" flavor="0">
       </item>
-      <item path="../src/filesys/directory.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/filesys/file.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/filesys/filesys.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/filesys/free-map.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/filesys/fsutil.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/filesys/inode.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
       <item path="../src/lib/arithmetic.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
@@ -730,64 +702,25 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/lib/kernel/bitmap.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
             <Elem>VM</Elem>
           </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/lib/kernel/console.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/lib/kernel/debug.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/lib/kernel/hash.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/lib/kernel/list.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
         </cTool>
       </item>
       <item path="../src/lib/random.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -795,11 +728,12 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -807,11 +741,12 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -819,23 +754,53 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
           </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/lib/user/console.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/lib/user/debug.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/lib/user/entry.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/userprog/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/lib/user/syscall.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
         </cTool>
       </item>
       <item path="../src/lib/ustar.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/userprog/build</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -1011,16 +976,16 @@
       <item path="../src/tests/lib.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
+            <pElem>../src/vm/build</pElem>
             <pElem>../src/lib/user</pElem>
-            <pElem>../src/userprog/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/main.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
+            <pElem>../src/vm/build</pElem>
             <pElem>../src/lib/user</pElem>
-            <pElem>../src/userprog/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1543,126 +1508,15 @@
           </incDir>
         </cTool>
       </item>
-      <item path="../src/threads/init.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/threads/interrupt.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
       <item path="../src/threads/intr-stubs.S" ex="true" tool="4" flavor="0">
       </item>
       <item path="../src/threads/kernel.lds.S" ex="true" tool="4" flavor="0">
       </item>
       <item path="../src/threads/loader.S" ex="true" tool="4" flavor="0">
       </item>
-      <item path="../src/threads/malloc.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/threads/palloc.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
       <item path="../src/threads/start.S" ex="true" tool="4" flavor="0">
       </item>
       <item path="../src/threads/switch.S" ex="true" tool="4" flavor="0">
-      </item>
-      <item path="../src/threads/synch.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/threads/thread.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/userprog/exception.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/userprog/gdt.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/userprog/pagedir.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/userprog/process.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/userprog/syscall.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/userprog/tss.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../src/utils/setitimer-helper.c" ex="true" tool="0" flavor="0">
       </item>
@@ -1703,10 +1557,12 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </folder>
@@ -1714,10 +1570,12 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </folder>
@@ -1725,7 +1583,6 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/user</pElem>
-            <pElem>../src/userprog/build</pElem>
           </incDir>
         </cTool>
       </folder>
@@ -1771,10 +1628,12 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </folder>
@@ -1782,10 +1641,12 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
+            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </folder>
