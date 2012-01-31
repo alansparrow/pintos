@@ -103,6 +103,8 @@
           </df>
           <in>Makefile</in>
         </df>
+        <in>cache.c</in>
+        <in>cache.h</in>
         <in>directory.c</in>
         <in>directory.h</in>
         <in>file.c</in>
@@ -884,6 +886,78 @@
       <item path="../src/examples/rm.c" ex="true" tool="0" flavor="0">
       </item>
       <item path="../src/examples/shell.c" ex="true" tool="0" flavor="0">
+      </item>
+      <item path="../src/filesys/build/threads/kernel.lds.s"
+            ex="true"
+            tool="4"
+            flavor="0">
+      </item>
+      <item path="../src/filesys/cache.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/filesys/build</pElem>
+          </incDir>
+        </cTool>
+      </item>
+      <item path="../src/filesys/directory.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/filesys/file.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/filesys/filesys.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/filesys/free-map.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/filesys/fsutil.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../src/filesys/inode.c" ex="false" tool="0" flavor="0">
+        <cTool>
+          <incDir>
+            <pElem>../src/vm/build</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>VM</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../src/lib/arithmetic.c" ex="false" tool="0" flavor="0">
         <cTool>
@@ -1707,6 +1781,11 @@
           </incDir>
         </cTool>
       </item>
+      <item path="../src/threads/build/threads/kernel.lds.s"
+            ex="true"
+            tool="4"
+            flavor="0">
+      </item>
       <item path="../src/threads/intr-stubs.S" ex="true" tool="4" flavor="0">
       </item>
       <item path="../src/threads/kernel.lds.S" ex="true" tool="4" flavor="0">
@@ -1716,6 +1795,11 @@
       <item path="../src/threads/start.S" ex="true" tool="4" flavor="0">
       </item>
       <item path="../src/threads/switch.S" ex="true" tool="4" flavor="0">
+      </item>
+      <item path="../src/userprog/build/threads/kernel.lds.s"
+            ex="true"
+            tool="4"
+            flavor="0">
       </item>
       <item path="../src/utils/setitimer-helper.c" ex="true" tool="0" flavor="0">
       </item>
@@ -1756,12 +1840,10 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
-            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </folder>
