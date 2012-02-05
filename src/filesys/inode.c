@@ -10,14 +10,25 @@
 /* Identifies an inode. */
 #define INODE_MAGIC 0x494e4f44
 
+#define INDEX_SIZE 122
+
 /* On-disk inode.
-   Must be exactly BLOCK_SECTOR_SIZE bytes long. */
+   Must be exactly BLOCK_SECTOR_SIZE (512) bytes long. */
 struct inode_disk
   {
-    block_sector_t start;               /* First data sector. */
     off_t length;                       /* File size in bytes. */
     unsigned magic;                     /* Magic number. */
-    uint32_t unused[125];               /* Not used. */
+    
+    //===== ^^ 12 Bytes ^^ =====
+    
+    int num_sectors;                    /* Number of referenced sectors */
+    block_sector_t sectors[INDEX_SIZE]; /* References to used sectors */
+    struct inode_disk* prev;            /* Previous inode belong to this file */
+    struct inode_disk* next;            /* Next inode belonging to this file */
+    
+    //===== ^^ 500 Bytes ^^ ====
+    
+    //uint32_t unused[125];               /* Not used. */
   };
 
 /* Returns the number of sectors to allocate for an inode SIZE
@@ -47,10 +58,34 @@ static block_sector_t
 byte_to_sector (const struct inode *inode, off_t pos) 
 {
   ASSERT (inode != NULL);
+  
+  if (pos > inode->data.length)
+    return -1;
+  
+  // Each inode can point to INDEX_SIZE sectors. If this number is reached,
+  // a new inode is referenced as "next" that contains the following sector 
+  // indices, etc.
+  int bytes_per_inode = BLOCK_SECTOR_SIZE * INDEX_SIZE;
+  int inode_offset = pos / bytes_per_inode;
+  pos -= inode_offset * bytes_per_inode;
+  int index = pos / BLOCK_SECTOR_SIZE;
+  
+  struct inode_disk* data = inode->data;
+  while (inode_offset > 0)
+    {
+      ASSERT (data->next != NULL);
+      data = data->next;
+      inode_offset--;
+    }
+    
+  return data->sectors[index];
+  
+  /*
   if (pos < inode->data.length)
     return inode->data.start + pos / BLOCK_SECTOR_SIZE;
   else
     return -1;
+  */
 }
 
 /* List of open inodes, so that opening a single inode twice
@@ -62,6 +97,41 @@ void
 inode_init (void) 
 {
   list_init (&open_inodes);
+}
+
+bool
+inode_append_sector (struct inode_disk* inode, const void* buffer)
+{
+  // Allocate sector for the data
+  int sector = -1;  
+  if (!free_map_allocate (1, &sector))
+    return false;
+  
+  if (inode->num_sectors < INDEX_SIZE)
+    {
+      inode->sectors[inode->num_sectors++] = sector;
+    }
+  else
+    {
+      // Allocate new inode to store more sector indices
+      struct inode_disk* next = calloc (1, sizeof(inode_disk));
+      if (next == NULL)
+        {
+          free_map_release (sector, 1);
+          return false;
+        }
+      
+      next->length = length;
+      next->magic = INODE_MAGIC;
+      next->prev = NULL;
+      next->next = NULL;
+      next->num_sectors = 0;
+      
+    }
+  disk_inode->sectors[tableIndex] = index;
+  block_write (fs_device, index, zeros);
+  
+  return true;
 }
 
 /* Initializes an inode with LENGTH bytes of data and
@@ -87,6 +157,27 @@ inode_create (block_sector_t sector, off_t length)
       size_t sectors = bytes_to_sectors (length);
       disk_inode->length = length;
       disk_inode->magic = INODE_MAGIC;
+      disk_inode->prev = NULL;
+      disk_inode->next = NULL;
+      disk_inode->num_sectors = 0;
+            
+      // Allocate sectors       
+      static char zeros[BLOCK_SECTOR_SIZE];
+      
+      while (sectors > 0)
+        {
+          if (!inode_append_sector(disk_inode, zeros))
+            {
+              // TODO: Fehlerbehandlung wenn Speicher auf der Festplatte voll ist
+              return PANIC("TODO: free_map_allocate == false behandeln");
+            }
+          sectors--;
+        }
+      
+      block_write (fs_device, sector, disk_inode);
+      success = true;
+      
+      /*
       if (free_map_allocate (sectors, &disk_inode->start)) 
         {
           block_write (fs_device, sector, disk_inode);
@@ -99,7 +190,9 @@ inode_create (block_sector_t sector, off_t length)
                 block_write (fs_device, disk_inode->start + i, zeros);
             }
           success = true; 
-        } 
+        }
+      */
+      
       free (disk_inode);
     }
   return success;
