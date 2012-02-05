@@ -23,8 +23,8 @@ struct inode_disk
     
     int num_sectors;                    /* Number of referenced sectors */
     block_sector_t sectors[INDEX_SIZE]; /* References to used sectors */
-    struct inode_disk* prev;            /* Previous inode belong to this file */
-    struct inode_disk* next;            /* Next inode belonging to this file */
+    block_sector_t prev;                /* Previous inode belong to this file */
+    block_sector_t next;                /* Next inode belonging to this file */
     
     //===== ^^ 500 Bytes ^^ ====
     
@@ -121,11 +121,14 @@ inode_append_sector (struct inode_disk* inode, const void* buffer)
           return false;
         }
       
-      next->length = length;
+      // Remaining length
+      next->length = inode->length - BLOCK_SECTOR_SIZE * INDEX_SIZE;
       next->magic = INODE_MAGIC;
-      next->prev = NULL;
+      next->prev = inode
       next->next = NULL;
       next->num_sectors = 0;
+      
+      
       
     }
   disk_inode->sectors[tableIndex] = index;
