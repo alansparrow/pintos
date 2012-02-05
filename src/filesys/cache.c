@@ -296,8 +296,8 @@ cache_clear ()
 void
 cache_free ()
 {  
-  printf("Freeing cache...\n");
   if (!cache_enabled()) return;
+  printf("Freeing cache...\n");  
   
   if (blocks_cached > 0)
     cache_clear ();
