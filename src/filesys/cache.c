@@ -53,15 +53,14 @@ static bool write_behind = true;
 void
 cache_init ()
 {
-  if (!enable_cache) return;
-  printf("Initializing buffer cache...\n");
+  if (!enable_cache) return;  
   list_init (&block_list);
   hash_init (&block_map, cache_hash, cache_equals, NULL);
   lock_init (&create_lock);
   lock_init (&search_lock);
 
   blocks_cached = 0;
-  hand = NULL;
+  hand = NULL;    
   
   thread_create ("WriteBehind", PRI_DEFAULT, cache_write_behind, NULL);
 }
@@ -271,17 +270,13 @@ void
 cache_flush ()
 {
   if (!cache_enabled ()) return;
-  struct cache_block* p = NULL;
-  
-  printf("flushing cache...\n");
+  struct cache_block* p = NULL;    
   
   while (!list_empty (&block_list))
      {
        p = list_entry (list_begin (&block_list), struct cache_block, list_elem); 
        cache_flush_block (p);
      }
-  
-  printf("Cache was flushed.\n");
 }
 
 /* Clears the whole cache by freeing all cache blocks. The cache is not 
@@ -289,7 +284,6 @@ cache_flush ()
 void
 cache_clear ()
 {
-  printf("Clearing cache...\n");
   struct cache_block* p = NULL;
 
   while (!list_empty (&block_list))
@@ -297,15 +291,12 @@ cache_clear ()
       p = list_entry (list_begin (&block_list), struct cache_block, list_elem);      
       cache_remove (p, false);
     }
-  
-  printf("Cache was cleared (%d)\n", blocks_cached);
 }
 
 /* Releases all dynamically allocated resources used by the cache */
 void
 cache_free ()
 {  
-  printf("Freeing cache...\n");  
   if (!cache_enabled()) return;  
   
   if (blocks_cached > 0)
@@ -316,8 +307,6 @@ cache_free ()
   hash_destroy (&block_map, NULL);  
   blocks_cached = -1;
   hand = NULL;  
-  
-  printf("Cache was free'd.\n");
 }
 
 /* Gets the successor of given block for the clock algorithm, which will always
