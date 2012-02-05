@@ -57,17 +57,6 @@
       <df name="filesys">
         <df name="build">
           <df name="devices">
-            <in>block.d</in>
-            <in>ide.d</in>
-            <in>input.d</in>
-            <in>intq.d</in>
-            <in>kbd.d</in>
-            <in>partition.d</in>
-            <in>pit.d</in>
-            <in>rtc.d</in>
-            <in>serial.d</in>
-            <in>timer.d</in>
-            <in>vga.d</in>
           </df>
           <df name="filesys">
           </df>
@@ -88,16 +77,8 @@
             </df>
           </df>
           <df name="threads">
-            <in>init.d</in>
-            <in>interrupt.d</in>
-            <in>intr-stubs.d</in>
             <in>kernel.lds.s</in>
-            <in>malloc.d</in>
-            <in>palloc.d</in>
             <in>start.d</in>
-            <in>switch.d</in>
-            <in>synch.d</in>
-            <in>thread.d</in>
           </df>
           <df name="userprog">
           </df>
@@ -395,77 +376,19 @@
       <df name="threads">
         <df name="build">
           <df name="devices">
-            <in>block.d</in>
-            <in>ide.d</in>
-            <in>input.d</in>
-            <in>intq.d</in>
-            <in>kbd.d</in>
-            <in>partition.d</in>
-            <in>pit.d</in>
-            <in>rtc.d</in>
-            <in>serial.d</in>
-            <in>shutdown.d</in>
-            <in>speaker.d</in>
-            <in>timer.d</in>
-            <in>vga.d</in>
           </df>
           <df name="lib">
             <df name="kernel">
-              <in>bitmap.d</in>
-              <in>console.d</in>
-              <in>debug.d</in>
-              <in>hash.d</in>
-              <in>list.d</in>
             </df>
             <df name="user">
             </df>
-            <in>arithmetic.d</in>
-            <in>debug.d</in>
-            <in>random.d</in>
-            <in>stdio.d</in>
-            <in>stdlib.d</in>
-            <in>string.d</in>
-            <in>ustar.d</in>
           </df>
           <df name="tests">
             <df name="threads">
-              <in>alarm-negative.d</in>
-              <in>alarm-priority.d</in>
-              <in>alarm-simultaneous.d</in>
-              <in>alarm-wait.d</in>
-              <in>alarm-zero.d</in>
-              <in>mlfqs-block.d</in>
-              <in>mlfqs-fair.d</in>
-              <in>mlfqs-load-1.d</in>
-              <in>mlfqs-load-60.d</in>
-              <in>mlfqs-load-avg.d</in>
-              <in>mlfqs-recent-1.d</in>
-              <in>priority-change.d</in>
-              <in>priority-condvar.d</in>
-              <in>priority-donate-chain.d</in>
-              <in>priority-donate-lower.d</in>
-              <in>priority-donate-multiple.d</in>
-              <in>priority-donate-multiple2.d</in>
-              <in>priority-donate-nest.d</in>
-              <in>priority-donate-one.d</in>
-              <in>priority-donate-sema.d</in>
-              <in>priority-fifo.d</in>
-              <in>priority-preempt.d</in>
-              <in>priority-sema.d</in>
-              <in>tests.d</in>
             </df>
           </df>
           <df name="threads">
-            <in>init.d</in>
-            <in>interrupt.d</in>
-            <in>intr-stubs.d</in>
             <in>kernel.lds.s</in>
-            <in>malloc.d</in>
-            <in>palloc.d</in>
-            <in>start.d</in>
-            <in>switch.d</in>
-            <in>synch.d</in>
-            <in>thread.d</in>
           </df>
           <in>Makefile</in>
         </df>
@@ -495,55 +418,6 @@
         <in>vaddr.h</in>
       </df>
       <df name="userprog">
-        <df name="build">
-          <df name="devices">
-            <in>block.d</in>
-            <in>ide.d</in>
-            <in>input.d</in>
-            <in>intq.d</in>
-            <in>kbd.d</in>
-            <in>partition.d</in>
-            <in>pit.d</in>
-            <in>serial.d</in>
-            <in>timer.d</in>
-            <in>vga.d</in>
-          </df>
-          <df name="filesys">
-          </df>
-          <df name="lib">
-            <df name="kernel">
-            </df>
-            <df name="user">
-            </df>
-          </df>
-          <df name="tests">
-            <df name="filesys">
-              <df name="base">
-              </df>
-            </df>
-            <df name="userprog">
-              <df name="no-vm">
-              </df>
-              <df name="no-vm">
-              </df>
-            </df>
-          </df>
-          <df name="threads">
-            <in>init.d</in>
-            <in>interrupt.d</in>
-            <in>intr-stubs.d</in>
-            <in>kernel.lds.s</in>
-            <in>malloc.d</in>
-            <in>palloc.d</in>
-            <in>start.d</in>
-            <in>switch.d</in>
-            <in>synch.d</in>
-            <in>thread.d</in>
-          </df>
-          <df name="userprog">
-          </df>
-          <in>Makefile</in>
-        </df>
         <df name="build">
           <df name="devices">
           </df>
@@ -597,35 +471,6 @@
         <in>squish-unix.c</in>
       </df>
       <df name="vm">
-        <df name="build">
-          <df name="devices">
-          </df>
-          <df name="filesys">
-          </df>
-          <df name="lib">
-            <df name="kernel">
-            </df>
-            <df name="user">
-            </df>
-          </df>
-          <df name="tests">
-            <df name="filesys">
-              <df name="base">
-              </df>
-            </df>
-            <df name="userprog">
-            </df>
-            <df name="vm">
-            </df>
-          </df>
-          <df name="threads">
-            <in>kernel.lds.s</in>
-          </df>
-          <df name="userprog">
-          </df>
-          <df name="vm">
-          </df>
-        </df>
         <df name="build">
           <df name="devices">
             <in>pit.d</in>
@@ -724,121 +569,6 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="../src/devices/block.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/filesys/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/devices/ide.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/filesys/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/devices/input.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/devices/intq.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/devices/kbd.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/devices/partition.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/filesys/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/devices/pit.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/devices/rtc.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/devices/serial.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/devices/shutdown.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/filesys/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/devices/speaker.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/devices/timer.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/devices/vga.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
       <item path="../src/examples/bubsort.c" ex="true" tool="0" flavor="0">
       </item>
       <item path="../src/examples/cat.c" ex="true" tool="0" flavor="0">
@@ -884,7 +614,6 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/userprog/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
@@ -896,12 +625,10 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
-            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -909,12 +636,10 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
-            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -922,12 +647,10 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
-            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -935,12 +658,10 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
-            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -948,53 +669,21 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
-            <Elem>VM</Elem>
           </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/lib/user/console.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/lib/user/debug.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/lib/user/entry.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/userprog/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/lib/user/syscall.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
         </cTool>
       </item>
       <item path="../src/lib/ustar.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
-            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -1014,109 +703,9 @@
           </incDir>
         </cTool>
       </item>
-      <item path="../src/tests/filesys/extended/child-syn-rw.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-empty-name.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-mk-tree.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-mkdir.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-open.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-over-file.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-rm-cwd.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-rm-parent.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-rm-root.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-rm-tree.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-rmdir.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-under-file.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/dir-vine.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/grow-create.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/grow-dir-lg.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
       <item path="../src/tests/filesys/extended/grow-dir.inc"
             ex="true"
             tool="3"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/grow-file-size.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/grow-root-lg.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/grow-root-sm.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/grow-seq-lg.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/grow-seq-sm.c"
-            ex="true"
-            tool="0"
             flavor="0">
       </item>
       <item path="../src/tests/filesys/extended/grow-seq.inc"
@@ -1124,42 +713,15 @@
             tool="3"
             flavor="0">
       </item>
-      <item path="../src/tests/filesys/extended/grow-sparse.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/grow-tell.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/grow-two-files.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/mk-tree.c"
-            ex="true"
-            tool="0"
-            flavor="0">
-      </item>
       <item path="../src/tests/filesys/extended/mk-tree.h"
             ex="true"
             tool="3"
-            flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/syn-rw.c"
-            ex="true"
-            tool="0"
             flavor="0">
       </item>
       <item path="../src/tests/filesys/extended/syn-rw.h"
             ex="true"
             tool="3"
             flavor="0">
-      </item>
-      <item path="../src/tests/filesys/extended/tar.c" ex="true" tool="0" flavor="0">
       </item>
       <item path="../src/tests/internal/list.c" ex="true" tool="0" flavor="0">
       </item>
@@ -1170,93 +732,93 @@
       <item path="../src/tests/lib.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
             <pElem>../src/lib/user</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/main.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
             <pElem>../src/lib/user</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/args.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/bad-jump.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/bad-jump2.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/bad-read.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/bad-read2.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/bad-write.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/bad-write2.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/boundary.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/child-bad.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/child-close.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/child-rox.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1266,7 +828,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1276,7 +838,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1286,14 +848,14 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/close-stdin.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1303,14 +865,14 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/close-twice.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1320,7 +882,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1330,7 +892,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1340,7 +902,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1350,14 +912,14 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/create-long.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1367,21 +929,21 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/create-null.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/exec-arg.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1391,7 +953,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1401,7 +963,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1411,28 +973,28 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/exec-once.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/exit.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/halt.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1442,7 +1004,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1452,7 +1014,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1462,7 +1024,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1472,14 +1034,14 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/open-empty.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1489,35 +1051,35 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/open-normal.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/open-null.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/open-twice.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/read-bad-fd.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1527,7 +1089,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1537,35 +1099,35 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/read-normal.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/read-stdout.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/read-zero.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/rox-child.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1575,28 +1137,28 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/rox-simple.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/sc-bad-arg.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/sc-bad-sp.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1606,14 +1168,14 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/sc-boundary.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1623,28 +1185,28 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/wait-killed.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/wait-simple.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/wait-twice.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1654,7 +1216,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1664,7 +1226,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1674,7 +1236,7 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1684,21 +1246,21 @@
             flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/write-stdin.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="../src/tests/userprog/write-zero.c" ex="false" tool="0" flavor="0">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </item>
@@ -1707,134 +1269,15 @@
             tool="4"
             flavor="0">
       </item>
-      <item path="../src/threads/init.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/filesys/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/threads/interrupt.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
       <item path="../src/threads/intr-stubs.S" ex="true" tool="4" flavor="0">
       </item>
       <item path="../src/threads/kernel.lds.S" ex="true" tool="4" flavor="0">
       </item>
       <item path="../src/threads/loader.S" ex="true" tool="4" flavor="0">
       </item>
-      <item path="../src/threads/malloc.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/threads/palloc.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
       <item path="../src/threads/start.S" ex="true" tool="4" flavor="0">
       </item>
       <item path="../src/threads/switch.S" ex="true" tool="4" flavor="0">
-      </item>
-      <item path="../src/threads/synch.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/threads/thread.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/userprog/build/threads/kernel.lds.s"
-            ex="true"
-            tool="4"
-            flavor="0">
-      </item>
-      <item path="../src/userprog/exception.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/userprog/gdt.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/userprog/pagedir.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/userprog/process.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/filesys/build</pElem>
-          </incDir>
-        </cTool>
-      </item>
-      <item path="../src/userprog/syscall.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
-      </item>
-      <item path="../src/userprog/tss.c" ex="false" tool="0" flavor="0">
-        <cTool>
-          <incDir>
-            <pElem>../src/vm/build</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>VM</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../src/utils/setitimer-helper.c" ex="true" tool="0" flavor="0">
       </item>
@@ -1852,8 +1295,6 @@
       </item>
       <item path="../src/vm/build/threads/intr-stubs.d" ex="true" tool="3" flavor="0">
       </item>
-      <item path="../src/vm/build/threads/kernel.lds.s" ex="true" tool="4" flavor="0">
-      </item>
       <item path="../src/vm/build/threads/start.d" ex="true" tool="3" flavor="0">
       </item>
       <item path="../src/vm/build/threads/switch.d" ex="true" tool="3" flavor="0">
@@ -1864,6 +1305,7 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
@@ -1883,16 +1325,21 @@
           </preprocessorList>
         </cTool>
       </folder>
+      <folder path="src/lib">
+        <cTool>
+          <incDir>
+            <pElem>../src/filesys/build</pElem>
+          </incDir>
+        </cTool>
+      </folder>
       <folder path="src/lib/kernel">
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
-            <pElem>../src/vm/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
             <Elem>USERPROG</Elem>
-            <Elem>VM</Elem>
           </preprocessorList>
         </cTool>
       </folder>
@@ -1906,8 +1353,8 @@
       <folder path="src/tests/filesys">
         <cTool>
           <incDir>
-            <pElem>../src/vm/build</pElem>
             <pElem>../src/lib/user</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
         </cTool>
       </folder>
@@ -1945,6 +1392,7 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
@@ -1956,6 +1404,7 @@
         <cTool>
           <incDir>
             <pElem>../src/lib/kernel</pElem>
+            <pElem>../src/filesys/build</pElem>
           </incDir>
           <preprocessorList>
             <Elem>FILESYS</Elem>
