@@ -126,15 +126,16 @@ main (void)
   ide_init ();
   locate_block_devices ();
   filesys_init (format_filesys);  
-  //cache_init ();
+  cache_init ();
 #endif  
 
-  printf ("Boot complete.\n");
+  printf ("Boot complete (cache=%d).\n", cache_enabled ());
   
   /* Run actions specified on kernel command line. */
   run_actions (argv);
 
   /* Finish up. */
+  cache_exit ();
   shutdown ();
   thread_exit ();
 }

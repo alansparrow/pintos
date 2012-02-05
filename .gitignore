@@ -7,3 +7,4 @@ squish-unix
 *.d
 .idea
 /Pintos-Threads/nbproject/private/
+/Pintos-Threads/nbproject/configurations.xml

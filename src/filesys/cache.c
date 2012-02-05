@@ -24,10 +24,10 @@ struct cache_block
   bool accessing; /* True if someone is accessing this block right now */
 };
 
-static bool enable_cache = false;
+static bool enable_cache = true;
 
 /* Interval in which the write behind thread is executed to flush the cache to disk */
-static int write_behind_interval_ms = 1000 * 60;
+static int write_behind_interval_ms = 2000;
 
 unsigned cache_hash (const struct hash_elem* p_, void* aux UNUSED);
 bool cache_equals (const struct hash_elem* a_, const struct hash_elem* b_,
@@ -48,6 +48,7 @@ static struct lock create_lock;
 static struct lock search_lock;
 static int blocks_cached = -1; /* Number of blocks in the cache right now */
 static struct cache_block* hand = NULL;
+static bool write_behind = true;
 
 void
 cache_init ()
@@ -66,13 +67,18 @@ cache_init ()
 }
 
 void cache_write_behind (void* aux UNUSED)
-{
-  while (blocks_cached >= 0)
+{  
+  while (blocks_cached >= 0 && write_behind)
     {
       cache_flush ();
       
       timer_msleep (write_behind_interval_ms);
-    }
+    }    
+}
+
+void cache_exit ()
+{
+  write_behind = false;
 }
 
 bool cache_enabled ()
@@ -265,17 +271,17 @@ void
 cache_flush ()
 {
   if (!cache_enabled ()) return;
+  struct cache_block* p = NULL;
   
-  struct cache_block* start = hand;
-  struct cache_block* p = hand;
-
-  // Flushes all blocks ("clean" blocks are not written to disk)
-  do
-    {
-      cache_flush_block (p);
-      p = get_successor (p);
-    }
-  while (p != start);
+  printf("flushing cache...\n");
+  
+  while (!list_empty (&block_list))
+     {
+       p = list_entry (list_begin (&block_list), struct cache_block, list_elem); 
+       cache_flush_block (p);
+     }
+  
+  printf("Cache was flushed.\n");
 }
 
 /* Clears the whole cache by freeing all cache blocks. The cache is not 
@@ -283,6 +289,7 @@ cache_flush ()
 void
 cache_clear ()
 {
+  printf("Clearing cache...\n");
   struct cache_block* p = NULL;
 
   while (!list_empty (&block_list))
@@ -290,14 +297,16 @@ cache_clear ()
       p = list_entry (list_begin (&block_list), struct cache_block, list_elem);      
       cache_remove (p, false);
     }
+  
+  printf("Cache was cleared (%d)\n", blocks_cached);
 }
 
 /* Releases all dynamically allocated resources used by the cache */
 void
 cache_free ()
 {  
-  if (!cache_enabled()) return;
   printf("Freeing cache...\n");  
+  if (!cache_enabled()) return;  
   
   if (blocks_cached > 0)
     cache_clear ();
@@ -306,7 +315,9 @@ cache_free ()
   
   hash_destroy (&block_map, NULL);  
   blocks_cached = -1;
-  hand = NULL;
+  hand = NULL;  
+  
+  printf("Cache was free'd.\n");
 }
 
 /* Gets the successor of given block for the clock algorithm, which will always

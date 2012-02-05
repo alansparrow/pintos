@@ -16,5 +16,7 @@ bool cache_enabled (void);
 void cache_flush (void);
 void cache_free (void);
 
+void cache_exit (void);
+
 #endif	/* CACHE_H */
 
