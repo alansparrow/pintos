@@ -78,11 +78,188 @@
           </df>
           <df name="threads">
             <in>kernel.lds.s</in>
-            <in>start.d</in>
           </df>
           <df name="userprog">
           </df>
-          <in>Makefile</in>
+        </df>
+        <df name="build">
+          <df name="devices">
+          </df>
+          <df name="filesys">
+            <in>cache.d</in>
+            <in>directory.d</in>
+            <in>file.d</in>
+            <in>filesys.d</in>
+            <in>free-map.d</in>
+            <in>fsutil.d</in>
+            <in>inode.d</in>
+          </df>
+          <df name="lib">
+            <df name="kernel">
+            </df>
+            <df name="user">
+            </df>
+          </df>
+          <df name="tests">
+            <df name="filesys">
+              <df name="base">
+              </df>
+              <df name="extended">
+              </df>
+            </df>
+            <df name="userprog">
+              <in>args-dbl-space</in>
+              <in>args-many</in>
+              <in>args-multiple</in>
+              <in>args-none</in>
+              <in>args-none.errors</in>
+              <in>args-single</in>
+              <in>args.d</in>
+              <in>bad-jump</in>
+              <in>bad-jump.d</in>
+              <in>bad-jump2</in>
+              <in>bad-jump2.d</in>
+              <in>bad-read</in>
+              <in>bad-read.d</in>
+              <in>bad-read2</in>
+              <in>bad-read2.d</in>
+              <in>bad-write</in>
+              <in>bad-write.d</in>
+              <in>bad-write2</in>
+              <in>bad-write2.d</in>
+              <in>boundary.d</in>
+              <in>child-args</in>
+              <in>child-bad</in>
+              <in>child-bad.d</in>
+              <in>child-close</in>
+              <in>child-close.d</in>
+              <in>child-rox</in>
+              <in>child-rox.d</in>
+              <in>child-simple</in>
+              <in>child-simple.d</in>
+              <in>close-bad-fd</in>
+              <in>close-bad-fd.d</in>
+              <in>close-normal</in>
+              <in>close-normal.d</in>
+              <in>close-stdin</in>
+              <in>close-stdin.d</in>
+              <in>close-stdout</in>
+              <in>close-stdout.d</in>
+              <in>close-twice</in>
+              <in>close-twice.d</in>
+              <in>create-bad-ptr</in>
+              <in>create-bad-ptr.d</in>
+              <in>create-bound</in>
+              <in>create-bound.d</in>
+              <in>create-empty</in>
+              <in>create-empty.d</in>
+              <in>create-exists</in>
+              <in>create-exists.d</in>
+              <in>create-long</in>
+              <in>create-long.d</in>
+              <in>create-normal</in>
+              <in>create-normal.d</in>
+              <in>create-null</in>
+              <in>create-null.d</in>
+              <in>exec-arg</in>
+              <in>exec-arg.d</in>
+              <in>exec-bad-ptr</in>
+              <in>exec-bad-ptr.d</in>
+              <in>exec-missing</in>
+              <in>exec-missing.d</in>
+              <in>exec-multiple</in>
+              <in>exec-multiple.d</in>
+              <in>exec-once</in>
+              <in>exec-once.d</in>
+              <in>exit</in>
+              <in>exit.d</in>
+              <in>halt</in>
+              <in>halt.d</in>
+              <in>multi-child-fd</in>
+              <in>multi-child-fd.d</in>
+              <in>multi-recurse</in>
+              <in>multi-recurse.d</in>
+              <in>open-bad-ptr</in>
+              <in>open-bad-ptr.d</in>
+              <in>open-boundary</in>
+              <in>open-boundary.d</in>
+              <in>open-empty</in>
+              <in>open-empty.d</in>
+              <in>open-missing</in>
+              <in>open-missing.d</in>
+              <in>open-normal</in>
+              <in>open-normal.d</in>
+              <in>open-null</in>
+              <in>open-null.d</in>
+              <in>open-twice</in>
+              <in>open-twice.d</in>
+              <in>read-bad-fd</in>
+              <in>read-bad-fd.d</in>
+              <in>read-bad-ptr</in>
+              <in>read-bad-ptr.d</in>
+              <in>read-boundary</in>
+              <in>read-boundary.d</in>
+              <in>read-normal</in>
+              <in>read-normal.d</in>
+              <in>read-stdout</in>
+              <in>read-stdout.d</in>
+              <in>read-zero</in>
+              <in>read-zero.d</in>
+              <in>rox-child</in>
+              <in>rox-child.d</in>
+              <in>rox-multichild</in>
+              <in>rox-multichild.d</in>
+              <in>rox-simple</in>
+              <in>rox-simple.d</in>
+              <in>sc-bad-arg</in>
+              <in>sc-bad-arg.d</in>
+              <in>sc-bad-sp</in>
+              <in>sc-bad-sp.d</in>
+              <in>sc-boundary</in>
+              <in>sc-boundary-2</in>
+              <in>sc-boundary-2.d</in>
+              <in>sc-boundary.d</in>
+              <in>wait-bad-pid</in>
+              <in>wait-bad-pid.d</in>
+              <in>wait-killed</in>
+              <in>wait-killed.d</in>
+              <in>wait-simple</in>
+              <in>wait-simple.d</in>
+              <in>wait-twice</in>
+              <in>wait-twice.d</in>
+              <in>write-bad-fd</in>
+              <in>write-bad-fd.d</in>
+              <in>write-bad-ptr</in>
+              <in>write-bad-ptr.d</in>
+              <in>write-boundary</in>
+              <in>write-boundary.d</in>
+              <in>write-normal</in>
+              <in>write-normal.d</in>
+              <in>write-stdin</in>
+              <in>write-stdin.d</in>
+              <in>write-zero</in>
+              <in>write-zero.d</in>
+            </df>
+          </df>
+          <df name="threads">
+            <in>init.d</in>
+            <in>interrupt.d</in>
+            <in>intr-stubs.d</in>
+            <in>malloc.d</in>
+            <in>palloc.d</in>
+            <in>start.d</in>
+            <in>switch.d</in>
+            <in>synch.d</in>
+            <in>thread.d</in>
+          </df>
+          <df name="userprog">
+            <in>exception.d</in>
+            <in>gdt.d</in>
+            <in>pagedir.d</in>
+            <in>process.d</in>
+            <in>syscall.d</in>
+            <in>tss.d</in>
+          </df>
         </df>
         <in>cache.c</in>
         <in>cache.h</in>
@@ -390,7 +567,6 @@
           <df name="threads">
             <in>kernel.lds.s</in>
           </df>
-          <in>Makefile</in>
         </df>
         <in>flags.h</in>
         <in>init.c</in>
@@ -425,16 +601,8 @@
           </df>
           <df name="lib">
             <df name="kernel">
-              <in>bitmap.d</in>
-              <in>console.d</in>
-              <in>debug.d</in>
-              <in>hash.d</in>
-              <in>list.d</in>
             </df>
             <df name="user">
-              <in>debug.d</in>
-              <in>entry.d</in>
-              <in>syscall.d</in>
             </df>
           </df>
           <df name="tests">
@@ -448,9 +616,20 @@
             </df>
           </df>
           <df name="threads">
+            <in>init.d</in>
+            <in>interrupt.d</in>
+            <in>intr-stubs.d</in>
+            <in>kernel.lds.s</in>
+            <in>malloc.d</in>
+            <in>palloc.d</in>
+            <in>start.d</in>
+            <in>switch.d</in>
+            <in>synch.d</in>
+            <in>thread.d</in>
           </df>
           <df name="userprog">
           </df>
+          <in>Makefile</in>
         </df>
         <in>exception.c</in>
         <in>exception.h</in>
@@ -471,70 +650,6 @@
         <in>squish-unix.c</in>
       </df>
       <df name="vm">
-        <df name="build">
-          <df name="devices">
-            <in>pit.d</in>
-          </df>
-          <df name="filesys">
-          </df>
-          <df name="lib">
-            <df name="kernel">
-              <in>debug.d</in>
-            </df>
-            <df name="user">
-            </df>
-          </df>
-          <df name="tests">
-            <df name="filesys">
-              <df name="base">
-              </df>
-            </df>
-            <df name="userprog">
-            </df>
-            <df name="vm">
-            </df>
-          </df>
-          <df name="threads">
-            <in>init.d</in>
-            <in>interrupt.d</in>
-            <in>intr-stubs.d</in>
-            <in>start.d</in>
-            <in>switch.d</in>
-            <in>thread.d</in>
-          </df>
-          <df name="userprog">
-          </df>
-          <df name="vm">
-          </df>
-        </df>
-        <df name="build">
-          <df name="devices">
-          </df>
-          <df name="filesys">
-          </df>
-          <df name="lib">
-            <df name="kernel">
-            </df>
-            <df name="user">
-            </df>
-          </df>
-          <df name="tests">
-            <df name="filesys">
-              <df name="base">
-              </df>
-            </df>
-            <df name="userprog">
-            </df>
-            <df name="vm">
-            </df>
-          </df>
-          <df name="threads">
-          </df>
-          <df name="userprog">
-          </df>
-          <df name="vm">
-          </df>
-        </df>
       </df>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -1284,22 +1399,6 @@
       <item path="../src/utils/squish-pty.c" ex="true" tool="0" flavor="0">
       </item>
       <item path="../src/utils/squish-unix.c" ex="true" tool="0" flavor="0">
-      </item>
-      <item path="../src/vm/build/devices/pit.d" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/vm/build/lib/kernel/debug.d" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/vm/build/threads/init.d" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/vm/build/threads/interrupt.d" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/vm/build/threads/intr-stubs.d" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/vm/build/threads/start.d" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/vm/build/threads/switch.d" ex="true" tool="3" flavor="0">
-      </item>
-      <item path="../src/vm/build/threads/thread.d" ex="true" tool="3" flavor="0">
       </item>
       <folder path="src/devices">
         <cTool>

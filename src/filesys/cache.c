@@ -9,6 +9,7 @@
 #include "../threads/malloc.h"
 #include "filesys.h"
 #include "threads/thread.h"
+#include "devices/timer.h"
 
 struct cache_block
 {
@@ -20,9 +21,13 @@ struct cache_block
   void* content; /* Cached content of the block */
   bool dirty; /* True if block was written while in cache */
   int referenced; /* Reference counter for clock algorithm */
+  bool accessing; /* True if someone is accessing this block right now */
 };
 
 static bool enable_cache = false;
+
+/* Interval in which the write behind thread is executed to flush the cache to disk */
+static int write_behind_interval_ms = 1000 * 60;
 
 unsigned cache_hash (const struct hash_elem* p_, void* aux UNUSED);
 bool cache_equals (const struct hash_elem* a_, const struct hash_elem* b_,
@@ -35,30 +40,39 @@ void cache_flush_block (struct cache_block* block);
 void cache_free (void);
 void cache_remove (struct cache_block* block, bool flush);
 void cache_clear (void);
-void cache_write_behind (void* aux UNUSED);
+void cache_write_behind (void* aux UNUSED); 
 
 static struct list block_list;
 static struct hash block_map;
 static struct lock create_lock;
+static struct lock search_lock;
 static int blocks_cached = -1; /* Number of blocks in the cache right now */
 static struct cache_block* hand = NULL;
 
 void
 cache_init ()
 {
+  if (!enable_cache) return;
+  printf("Initializing buffer cache...\n");
   list_init (&block_list);
   hash_init (&block_map, cache_hash, cache_equals, NULL);
   lock_init (&create_lock);
+  lock_init (&search_lock);
 
   blocks_cached = 0;
   hand = NULL;
   
-  thread_create ("Write-Behind-Thread", PRI_DEFAULT, cache_write_behind, NULL);
+  thread_create ("WriteBehind", PRI_DEFAULT, cache_write_behind, NULL);
 }
 
 void cache_write_behind (void* aux UNUSED)
 {
-  
+  while (blocks_cached >= 0)
+    {
+      cache_flush ();
+      
+      timer_msleep (write_behind_interval_ms);
+    }
 }
 
 bool cache_enabled ()
@@ -90,12 +104,16 @@ cache_equals (const struct hash_elem* a_, const struct hash_elem* b_,
 bool
 cache_read (block_sector_t sector, void* buffer)
 {
+  // Look up a cache block and lock it for eviction
   struct cache_block* block = cache_lookup (sector);
   if (block == NULL)
     return false;
 
   // copy cached content into buffer
   memcpy (buffer, block->content, BLOCK_SECTOR_SIZE);
+  
+  // reset access flag so that cache block can be evicted again
+  block->accessing = false;
 
   return true;
 }
@@ -113,6 +131,7 @@ cache_write (block_sector_t sector, const void* buffer)
       block->dirty = true;
 
       lock_release (&block->access_lock);
+      block->accessing = false;
       return;
     }
 
@@ -124,6 +143,9 @@ cache_write (block_sector_t sector, const void* buffer)
   lock_acquire (&block->access_lock);
   memcpy (block->content, buffer, BLOCK_SECTOR_SIZE);
   lock_release (&block->access_lock);
+  
+  // Reset access flag, so block can be evicted
+  block->accessing = false;
 }
 
 /* Creates a new cache block for given sector. If the maximum number of 
@@ -146,6 +168,7 @@ cache_create (block_sector_t sector)
   struct cache_block* block = calloc (sizeof (struct cache_block), 1);
   if (block == NULL) return NULL;
 
+  block->accessing = true;
   block->dirty = false;
   block->referenced = 1;
   block->sector_index = sector;
@@ -178,8 +201,9 @@ cache_create (block_sector_t sector)
 void
 cache_evict ()
 {
-  // Search for a block to evict (Clock algorithm)
-  while (hand->referenced != 0)
+  // Search for a block to evict (Clock algorithm), skip blocks that are being
+  // accessed right now
+  while (hand->referenced != 0 && !hand->accessing)
     {
       if (hand->referenced == 1)
         hand->referenced = 0;
@@ -200,12 +224,16 @@ cache_evict ()
 void
 cache_remove (struct cache_block* block, bool flush)
 {
+  // Prevent other threads from accessing the cache while this element is removed
+  lock_acquire (&search_lock);
+  lock_acquire (&block->access_lock);
+  
   // Remove evictee from block lists
   list_remove (&block->list_elem);
   hash_delete (&block_map, &block->hash_elem);
   blocks_cached--;
-
-  // TODO: Was ist, wenn gerad einer auf den Block zugreifen will?
+  
+  lock_release (&search_lock);  
 
   // Write back to file system if required
   if (flush)
@@ -236,9 +264,12 @@ cache_flush_block (struct cache_block* block)
 void
 cache_flush ()
 {
+  if (!cache_enabled ()) return;
+  
   struct cache_block* start = hand;
   struct cache_block* p = hand;
 
+  // Flushes all blocks ("clean" blocks are not written to disk)
   do
     {
       cache_flush_block (p);
@@ -265,6 +296,9 @@ cache_clear ()
 void
 cache_free ()
 {  
+  printf("Freeing cache...\n");
+  if (!cache_enabled()) return;
+  
   if (blocks_cached > 0)
     cache_clear ();
   
@@ -289,15 +323,30 @@ get_successor (struct cache_block* block)
   return list_entry (next, struct cache_block, list_elem);
 }
 
-/* Returns the page containing the given virtual address,
-   or a null pointer if no such page exists. */
+
 struct cache_block*
 cache_lookup (block_sector_t sector)
 {
   struct cache_block p;
   struct hash_elem *e;
+  struct cache_block* block;
 
   p.sector_index = sector;
+  
+  lock_acquire (&search_lock);
+  
   e = hash_find (&block_map, &p.hash_elem);
-  return e != NULL ? hash_entry (e, struct cache_block, hash_elem) : NULL;
+  block = e != NULL ? hash_entry (e, struct cache_block, hash_elem) : NULL;
+  
+  if (block == NULL) 
+    {
+      lock_release (&search_lock);
+      return false;
+    }
+  else
+    {
+      block->accessing = true;
+      lock_release (&search_lock);
+      return block;
+    }
 }

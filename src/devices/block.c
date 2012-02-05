@@ -124,7 +124,7 @@ block_read (struct block *block, block_sector_t sector, void *buffer)
   check_sector (block, sector);
     
 #ifdef FILESYS
-  if (cache_enabled () && block->type == BLOCK_FILESYS)
+  if (false && cache_enabled () && block->type == BLOCK_FILESYS)
     {
       // Try reading from cache first (only for file system)
       bool cached = cache_read (sector, buffer);
@@ -134,9 +134,7 @@ block_read (struct block *block, block_sector_t sector, void *buffer)
         {
           block->ops->read (block->aux, sector, buffer);
           cache_write (sector, buffer);
-        }     
-      
-      block->read_cnt++;
+        }          
       return;
     }  
 #endif
@@ -158,11 +156,10 @@ block_write (struct block *block, block_sector_t sector, const void *buffer)
   ASSERT (block->type != BLOCK_FOREIGN);
   
 #ifdef FILESYS
-  if (cache_enabled() && block->type == BLOCK_FILESYS)
+  if (false && cache_enabled() && block->type == BLOCK_FILESYS)
     {
       // file system writes are cached
       cache_write (sector, buffer);
-      block->write_cnt++;
       return;
     }
 #endif  
