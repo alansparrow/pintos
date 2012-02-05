@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include "../threads/malloc.h"
 #include "filesys.h"
+#include "threads/thread.h"
 
 struct cache_block
 {
@@ -21,6 +22,8 @@ struct cache_block
   int referenced; /* Reference counter for clock algorithm */
 };
 
+static bool enable_cache = false;
+
 unsigned cache_hash (const struct hash_elem* p_, void* aux UNUSED);
 bool cache_equals (const struct hash_elem* a_, const struct hash_elem* b_,
                    void* aux UNUSED);
@@ -32,6 +35,7 @@ void cache_flush_block (struct cache_block* block);
 void cache_free (void);
 void cache_remove (struct cache_block* block, bool flush);
 void cache_clear (void);
+void cache_write_behind (void* aux UNUSED);
 
 static struct list block_list;
 static struct hash block_map;
@@ -48,11 +52,18 @@ cache_init ()
 
   blocks_cached = 0;
   hand = NULL;
+  
+  thread_create ("Write-Behind-Thread", PRI_DEFAULT, cache_write_behind, NULL);
+}
+
+void cache_write_behind (void* aux UNUSED)
+{
+  
 }
 
 bool cache_enabled ()
 {
-  return blocks_cached >= 0;
+  return blocks_cached >= 0 && enable_cache;
 }
 
 unsigned
