@@ -11,6 +11,8 @@
 #define INODE_MAGIC 0x494e4f44
 
 #define INDEX_SIZE 122
+#define INVALID_SECTOR 0xFFFFFFFF
+
 
 /* On-disk inode.
    Must be exactly BLOCK_SECTOR_SIZE (512) bytes long. */
@@ -100,7 +102,8 @@ inode_init (void)
 }
 
 bool
-inode_append_sector (struct inode_disk* inode, const void* buffer)
+inode_disk_append_sector (struct inode_disk* inode, block_sector_t inode_sector, 
+                          const void* buffer)
 {
   // Allocate sector for the data
   int sector = -1;  
@@ -109,6 +112,7 @@ inode_append_sector (struct inode_disk* inode, const void* buffer)
   
   if (inode->num_sectors < INDEX_SIZE)
     {
+      block_write (fs_device, sector, buffer);
       inode->sectors[inode->num_sectors++] = sector;
     }
   else
@@ -124,12 +128,11 @@ inode_append_sector (struct inode_disk* inode, const void* buffer)
       // Remaining length
       next->length = inode->length - BLOCK_SECTOR_SIZE * INDEX_SIZE;
       next->magic = INODE_MAGIC;
-      next->prev = inode
+      next->prev = inode_sector;
       next->next = NULL;
-      next->num_sectors = 0;
+      next->num_sectors = 0;    
       
-      
-      
+      if 
     }
   disk_inode->sectors[tableIndex] = index;
   block_write (fs_device, index, zeros);
@@ -160,8 +163,8 @@ inode_create (block_sector_t sector, off_t length)
       size_t sectors = bytes_to_sectors (length);
       disk_inode->length = length;
       disk_inode->magic = INODE_MAGIC;
-      disk_inode->prev = NULL;
-      disk_inode->next = NULL;
+      disk_inode->prev = INVALID_SECTOR;
+      disk_inode->next = INVALID_SECTOR;
       disk_inode->num_sectors = 0;
             
       // Allocate sectors       
