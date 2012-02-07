@@ -9,4 +9,4 @@ squish-unix
 /Pintos-Threads/nbproject/private/
 /Pintos-Threads/nbproject/configurations.xml
 core
-
+*.dsk

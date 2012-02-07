@@ -12,6 +12,9 @@
 
 #define INDEX_SIZE 120
 
+void inode_free_data (struct inode* inode);
+void inode_load_data (struct inode* inode);
+
 /* On-disk inode.
    Must be exactly BLOCK_SECTOR_SIZE (512) bytes long. */
 struct inode_disk
@@ -68,6 +71,7 @@ struct inode
 static block_sector_t
 byte_to_sector (const struct inode *inode, off_t pos) 
 {
+  int orgpos = pos;
   ASSERT (inode != NULL);
   
   if (pos > inode->data[0]->length)
@@ -81,8 +85,10 @@ byte_to_sector (const struct inode *inode, off_t pos)
   pos -= inode_offset * bytes_per_inode;
   int index = pos / BLOCK_SECTOR_SIZE;
   
-  ASSERT (inode_offset < inode->num_disk_inodes);
-  ASSERT (index < inode->data[inode_offset]->num_sectors);
+  if (inode_offset >= inode->num_disk_inodes) 
+    return -1;
+  if (index >= inode->data[inode_offset]->num_sectors)
+    return -1;
     
   return inode->data[inode_offset]->sectors[index];
 }
@@ -144,12 +150,13 @@ inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
           inode->length += BLOCK_SECTOR_SIZE;
           block_write (fs_device, inode->inode_sector, inode);
           free (tail);
-        }
+          tail = NULL;
+        }            
       
       return true;
     }    
   
-  // If no space is left in the tail's index table, a new node has to be created
+  // If no space is left in the tail's index table, a new node has to be created  
   struct inode_disk* old_tail = tail;
   struct inode_disk* next = calloc (1, sizeof (struct inode_disk));
   if (next == NULL)
@@ -199,6 +206,36 @@ inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
   return success;
 }
 
+bool
+inode_grow (struct inode* inode, off_t pos)
+{    
+  printf("GROW\n");
+  // We need that many sectors for that position
+  int needed_sectors = bytes_to_sectors (pos); 
+  if (needed_sectors == 0) 
+    needed_sectors = 1;
+  
+  // Calculate how many sectors are missing 
+  int missing = needed_sectors - 
+        (inode->data[0]->num_meta_nodes - 1) * INDEX_SIZE + 
+        inode->data[inode->num_disk_inodes-1]->num_sectors;    
+  ASSERT (missing > 0);
+  
+  // Add the missing number of sectors
+  int i = missing;
+  while (i-- > 0)
+    {      
+      static char zeros[BLOCK_SECTOR_SIZE]; 
+      if (!inode_disk_append_sector (inode->data[0], zeros))
+        return false;      
+    }
+  
+  // Reload the inode in-memory representation
+  inode_load_data (inode);
+  
+  return true;
+}
+
 /* Initializes an inode with LENGTH bytes of data and
    writes the new inode to sector SECTOR on the file system
    device.
@@ -210,7 +247,7 @@ inode_create (block_sector_t sector, off_t length)
   struct inode_disk *disk_inode = NULL;
   bool success = false;
 
-  //ASSERT (length >= 0);
+  ASSERT (length >= 0);
 
   /* If this assertion fails, the inode structure is not exactly
      one sector in size, and you should fix that. */
@@ -286,18 +323,32 @@ inode_open (block_sector_t sector)
   inode->num_disk_inodes = 0;
   
   // Store data nodes in a fixed size array for easier access later on
-  inode->data = NULL;    
-  struct inode_disk* data = NULL;
+  inode->data = NULL;         
+  inode_load_data (inode);
+  
+  return inode;
+}
+
+inode_load_data (struct inode* inode)
+{
+  if (inode->data != NULL)
+    {      
+      inode_free_data (inode);      
+    }      
+  ASSERT (inode->data == NULL);  
+  
+  struct inode_disk* data = NULL;   
+  inode->num_disk_inodes = 0;
   
   do
-    {
-      // Load one inode_disk node; the first lies in SECTOR, the rest is linked
-      int next_sector = data == NULL ? inode->sector : data->next;
+    {      
+      // Load one inode_disk node; the first lies in SECTOR, the rest is linked      
+      int next_sector = data == NULL ? inode->sector : data->next;      
       data = malloc (sizeof (struct inode_disk));
       
       if (data == NULL) PANIC("Out of Memory");    
       block_read (fs_device, next_sector, data);      
-      ASSERT (inode_disk_valid (data));
+      ASSERT (inode_disk_valid (data));            
       
       // The first block contains the number of linked blocks, use it to create
       // the array to store all meta data nodes
@@ -308,7 +359,7 @@ inode_open (block_sector_t sector)
             {
               hex_dump (0, data, 512, true);
               printf("Failed to allocate %d nodes for inode at sector %d\n", 
-                     data->num_meta_nodes, sector);
+                     data->num_meta_nodes, inode->sector);
               PANIC("Out of Memory");
             }
         }
@@ -316,9 +367,7 @@ inode_open (block_sector_t sector)
       // Save element in data array
       inode->data[inode->num_disk_inodes++] = data;      
     }
-  while (data->next > 0);   
-  
-  return inode;
+  while (data->next > 0);  
 }
 
 /* Reopens and returns INODE. */
@@ -373,10 +422,27 @@ inode_close (struct inode *inode)
               // The inode structure itself was dynamically allocated, free it
               free (inode->data[i]);
             }
+          
+          free (inode->data);
         }      
       
       free (inode); 
     }
+}
+
+void inode_free_data (struct inode* inode)
+{
+  int i, j;
+  
+  // Free all linked sectors
+  for (i = 0; i < inode->num_disk_inodes; i++)
+    {
+      // The inode structure itself was dynamically allocated, free it
+      free (inode->data[i]);
+    }
+
+  free (inode->data);  
+  inode->data = NULL;
 }
 
 /* Marks INODE to be deleted when it is closed by the last caller who
@@ -556,7 +622,6 @@ off_t
 inode_write_at (struct inode *inode, const void *buffer_, off_t size,
                 off_t offset) 
 {
-  const uint8_t *buffer = buffer_;
   off_t bytes_written = 0;
   uint8_t *bounce = NULL;
 
@@ -564,20 +629,29 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
     return 0;
 
   while (size > 0) 
-    {
-      /* Sector to write, starting byte offset within sector. */
-      block_sector_t sector_idx = byte_to_sector (inode, offset);
+    {      
       int sector_ofs = offset % BLOCK_SECTOR_SIZE;
 
       /* Bytes left in inode, bytes left in sector, lesser of the two. */
       off_t inode_left = inode_length (inode) - offset;
       int sector_left = BLOCK_SECTOR_SIZE - sector_ofs;
       int min_left = inode_left < sector_left ? inode_left : sector_left;
+      min_left = sector_left;
 
       /* Number of bytes to actually write into this sector. */
       int chunk_size = size < min_left ? size : min_left;
       if (chunk_size <= 0)
         break;
+      
+      /* Sector to write, starting byte offset within sector. */
+      int sector_idx = byte_to_sector (inode, offset);            
+      if (sector_idx < 0)
+        {          
+          // File needs to grow
+          inode_grow (inode, offset);
+          sector_idx = byte_to_sector (inode, offset);
+          ASSERT (sector_idx >= 0);
+        }            
 
       // Write into cache directly
       cache_write_in (sector_idx, buffer_ + bytes_written, sector_ofs, chunk_size);

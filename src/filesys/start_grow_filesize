@@ -1,0 +1,2 @@
+pintos-mkdisk tmp.dsk --filesys-size=2
+pintos -v -k -T 60 --qemu  --disk=tmp.dsk -p build/tests/filesys/extended/grow-file-size -a grow-file-size -p build/tests/filesys/extended/tar -a tar -- -q  -f run grow-file-size
