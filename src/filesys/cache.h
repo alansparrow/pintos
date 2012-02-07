@@ -3,6 +3,7 @@
 
 #include "devices/block.h"
 #include <stdbool.h>
+#include "filesys/off_t.h"
 
 // Size of the buffer cache in blocks (sectors)
 #define BUFFER_CACHE_SIZE 64
@@ -10,7 +11,9 @@
 void cache_init (void);
 
 bool cache_read (block_sector_t sector, void* buffer);
+void cache_read_in (block_sector_t sector, void* buffer, off_t ofs, off_t size);
 void cache_write (block_sector_t sector, const void* buffer);
+
 bool cache_enabled (void);
 
 void cache_flush (void);

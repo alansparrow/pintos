@@ -144,6 +144,18 @@ block_read (struct block *block, block_sector_t sector, void *buffer)
   block->read_cnt++;
 }
 
+/* Reads sector SECTOR from BLOCK into BUFFER, which must
+   have room for BLOCK_SECTOR_SIZE bytes.
+   Internally synchronizes accesses to block devices, so external
+   per-block device locking is unneeded. */
+void
+block_read_nocache (struct block *block, block_sector_t sector, void *buffer)
+{
+  check_sector (block, sector);    
+  block->ops->read (block->aux, sector, buffer);      
+  block->read_cnt++;
+}
+
 /* Write sector SECTOR to BLOCK from BUFFER, which must contain
    BLOCK_SECTOR_SIZE bytes.  Returns after the block device has
    acknowledged receiving the data.

@@ -106,6 +106,8 @@ cache_equals (const struct hash_elem* a_, const struct hash_elem* b_,
     return 1;
 }
 
+/* Attempts to read the contents of SECTOR into BUFFER from the cache. If 
+   SECTOR is not cached, false is returned. */
 bool
 cache_read (block_sector_t sector, void* buffer)
 {
@@ -123,6 +125,39 @@ cache_read (block_sector_t sector, void* buffer)
   return true;
 }
 
+/* Reads the contents of SECTOR into BUFFER. Starting from OFS only SIZE bytes
+   will be copied. If SECTOR is not cached, it will be loaded into the cache. */
+void 
+cache_read_in (block_sector_t sector, void* buffer, off_t ofs, off_t size)
+{
+  ASSERT (ofs < BLOCK_SECTOR_SIZE);
+  ASSERT (ofs + size <= BLOCK_SECTOR_SIZE);
+  
+  struct cache_block* block = cache_lookup (sector);
+  
+  // If the sector is not yet cashed, read in into the cash now
+  if (block == NULL)
+    {
+      void* temp = malloc (BLOCK_SECTOR_SIZE);
+      if (temp == NULL) 
+        PANIC("Out of Memory");
+      
+      block_read_nocache (fs_device, sector, temp);
+      cache_write (sector, temp);
+      free (temp);
+      
+      block = cache_lookup (sector);
+      ASSERT (block != NULL);
+    }
+  
+  // Now read the target range into buffer
+  memcpy (buffer, block->content + ofs, size);
+  
+  // Reset accessing flag, so block can be evicted again
+  block->accessing = false;
+}
+
+/* Writes BUFFER as content for SECTOR into the cache. */
 void
 cache_write (block_sector_t sector, const void* buffer)
 {
@@ -171,8 +206,22 @@ cache_create (block_sector_t sector)
 
   // Allocate and initialize the new cache block
   struct cache_block* block = calloc (sizeof (struct cache_block), 1);
-  if (block == NULL) return NULL;
+  if (block == NULL)
+    {
+      // Out of Memory
+      lock_release (&create_lock);
+      return NULL;
+    }
 
+  block->content = calloc (1, BLOCK_SECTOR_SIZE);
+  if (block->content == NULL)
+    {
+      // Out of Memory
+      free (block);
+      lock_release (&create_lock);
+      return NULL;
+    }
+  
   block->accessing = true;
   block->dirty = false;
   block->referenced = 1;
@@ -215,8 +264,13 @@ cache_evict ()
 
       hand = get_successor (hand);
     }
-
-  ASSERT (hand->referenced == 0);
+  
+  // The search could have had no success and therefore not moved the hand to 
+  // a proper element
+  if (hand->accessing || hand->referenced != 0)
+    {
+      PANIC("Could not find a cache block, that can be evicted");
+    }
 
   // Found a block to evict; move hand to next element
   struct cache_block* evictee = hand;
@@ -245,6 +299,7 @@ cache_remove (struct cache_block* block, bool flush)
     cache_flush_block (block);
 
   // and free the resources
+  free (block->content);
   free (block);
 }
 
@@ -323,7 +378,13 @@ get_successor (struct cache_block* block)
   return list_entry (next, struct cache_block, list_elem);
 }
 
-
+/* Looks up a SECTOR in the cache. If the cache contains the sector, the
+   corresponding block will be returned, NULL otherwise. 
+   Note that the "accessing" flag will be set to true atomically, so that
+   the returned cache block cannot be evicted after obtaining it. Therefore,
+   when operations on the block are finished, the flag must be reset to false. 
+   Otherwise at some point no blocks can be evicted wich will result in a 
+   kernel panic. */
 struct cache_block*
 cache_lookup (block_sector_t sector)
 {
