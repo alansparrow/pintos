@@ -24,7 +24,7 @@ struct cache_block
   bool accessing; /* True if someone is accessing this block right now */
 };
 
-static bool enable_cache = true;
+static bool enable_cache = false;
 
 /* Interval in which the write behind thread is executed to flush the cache to disk */
 static int write_behind_interval_ms = 2000;

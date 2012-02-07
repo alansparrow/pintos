@@ -10,7 +10,7 @@
 /* Identifies an inode. */
 #define INODE_MAGIC 0x494e4f44
 
-#define INDEX_SIZE 119
+#define INDEX_SIZE 120
 
 /* On-disk inode.
    Must be exactly BLOCK_SECTOR_SIZE (512) bytes long. */
@@ -25,10 +25,10 @@ struct inode_disk
     int num_sectors;                    /* Number of referenced sectors */    
     block_sector_t sectors[INDEX_SIZE]; /* References to used sectors for data */
     
-    int num_data_nodes;                 /* Number of linked inode_disk blocks */
+    int num_meta_nodes;                 /* Number of linked inode_disk blocks */
     block_sector_t prev;                /* Previous inode belong to this file */
     block_sector_t next;                /* Next inode belonging to this file */
-    block_sector_t tail;        /* Pointer to last data node, only for head */
+    block_sector_t tail;        /* Pointer to last meta node, only for head */
     
     //===== ^^ 500 Bytes ^^ ====
     
@@ -153,7 +153,7 @@ inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
   next->next = 0;
   next->prev = tail->inode_sector;         
   next->length = inode->length;  
-  next->num_data_nodes = inode->num_data_nodes + 1;
+  next->num_meta_nodes = inode->num_meta_nodes + 1;
   next->num_sectors = 0;
 
   // Allocate a sector for it on the file system
@@ -171,9 +171,9 @@ inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
   
   // Update old tail and head
   old_tail->next = next_inode_sector;
-  old_tail->num_data_nodes = tail->num_data_nodes;  
+  old_tail->num_meta_nodes = tail->num_meta_nodes;  
   inode->tail = next_inode_sector;
-  inode->num_data_nodes = tail->num_data_nodes;    
+  inode->num_meta_nodes = tail->num_meta_nodes;    
   
   // Append new sector to new tail; also writes new tail to disk
   bool success = inode_disk_append_sector (next, buffer);
@@ -275,6 +275,7 @@ inode_open (block_sector_t sector)
   inode->num_disk_inodes = 0;
   
   // Store data nodes in a fixed size array for easier access later on
+  printf("Loading meta data nodes...\n");
   inode->data = NULL;    
   struct inode_disk* data = NULL;
   
@@ -283,14 +284,16 @@ inode_open (block_sector_t sector)
       // Load one inode_disk node; the first lies in SECTOR, the rest is linked
       int next_sector = data == NULL ? inode->sector : data->next;
       data = malloc (sizeof (struct inode_disk));
-      if (data == NULL) PANIC("Out of Memory");      
+      if (data == NULL) PANIC("Out of Memory");    
+      printf("Loading sector %d\n", next_sector);
       block_read (fs_device, next_sector, &data);
       
       // The first block contains the number of linked blocks, use it to create
       // the array to store all meta data nodes
       if (inode->data == NULL)
         {
-          inode->data = malloc (sizeof(struct inode_disk) * data->num_data_nodes);
+          printf("Allocating memory for %d meta data nodes\n", data->num_meta_nodes);
+          inode->data = malloc (sizeof(struct inode_disk) * data->num_meta_nodes);
           if (inode->data == NULL) PANIC("Out of Memory");
         }
       
@@ -298,6 +301,8 @@ inode_open (block_sector_t sector)
       inode->data[inode->num_disk_inodes++] = data;      
     }
   while (data->next > 0);  
+  
+  printf("inode_open complete\n");
   
   return inode;
 }
