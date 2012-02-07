@@ -24,7 +24,7 @@ struct cache_block
   bool accessing; /* True if someone is accessing this block right now */
 };
 
-static bool enable_cache = false;
+static bool enable_cache = true;
 
 /* Interval in which the write behind thread is executed to flush the cache to disk */
 static int write_behind_interval_ms = 2000;
@@ -63,20 +63,22 @@ cache_init ()
   hand = NULL;    
   
   thread_create ("WriteBehind", PRI_DEFAULT, cache_write_behind, NULL);
+  
+  printf("Cache was initialized.\n");
 }
 
 void cache_write_behind (void* aux UNUSED)
-{  
+{      
   while (blocks_cached >= 0 && write_behind)
-    {
+    {      
       cache_flush ();
       
       timer_msleep (write_behind_interval_ms);
-    }    
+    }        
 }
 
 void cache_exit ()
-{
+{  
   write_behind = false;
 }
 
@@ -111,10 +113,14 @@ cache_equals (const struct hash_elem* a_, const struct hash_elem* b_,
 bool
 cache_read (block_sector_t sector, void* buffer)
 {
+  ASSERT (enable_cache);
+  
   // Look up a cache block and lock it for eviction
   struct cache_block* block = cache_lookup (sector);
   if (block == NULL)
     return false;
+  
+  ASSERT (block->sector_index == sector);
 
   // copy cached content into buffer
   memcpy (buffer, block->content, BLOCK_SECTOR_SIZE);
@@ -130,6 +136,7 @@ cache_read (block_sector_t sector, void* buffer)
 void 
 cache_read_in (block_sector_t sector, void* buffer, off_t ofs, off_t size)
 {
+  ASSERT (enable_cache);
   ASSERT (ofs < BLOCK_SECTOR_SIZE);
   ASSERT (ofs + size <= BLOCK_SECTOR_SIZE);
   
@@ -157,18 +164,19 @@ cache_read_in (block_sector_t sector, void* buffer, off_t ofs, off_t size)
   block->accessing = false;
 }
 
-/* Writes BUFFER as content for SECTOR into the cache. */
-void
-cache_write (block_sector_t sector, const void* buffer)
+void 
+cache_write_in (block_sector_t sector, void* buffer, off_t ofs, off_t size)
 {
+  ASSERT (enable_cache);
+  
   struct cache_block* block = cache_lookup (sector);
   if (block != NULL)
     {
       lock_acquire (&block->access_lock);
 
       // block is already cached -> overwrite
-      memcpy (block->content, buffer, BLOCK_SECTOR_SIZE);
-      block->dirty = true;
+      memcpy (block->content + ofs, buffer, size);
+      block->dirty = true;      
 
       lock_release (&block->access_lock);
       block->accessing = false;
@@ -181,11 +189,20 @@ cache_write (block_sector_t sector, const void* buffer)
 
   // Write buffer content into cache
   lock_acquire (&block->access_lock);
-  memcpy (block->content, buffer, BLOCK_SECTOR_SIZE);
+  memcpy (block->content + ofs, buffer, size);
   lock_release (&block->access_lock);
   
+  block->dirty = true;  
+  
   // Reset access flag, so block can be evicted
-  block->accessing = false;
+  block->accessing = false;  
+}
+
+/* Writes BUFFER as content for SECTOR into the cache. */
+void
+cache_write (block_sector_t sector, const void* buffer)
+{
+  cache_write_in (sector, buffer, 0, BLOCK_SECTOR_SIZE);  
 }
 
 /* Creates a new cache block for given sector. If the maximum number of 
@@ -309,13 +326,14 @@ void
 cache_flush_block (struct cache_block* block)
 {
   if (block->dirty)
-    {
-      lock_acquire (&block->access_lock);
+    {            
+      if (false && !lock_held_by_current_thread (&block->access_lock))
+        lock_acquire (&block->access_lock);
 
       block_write_nocache (fs_device, block->sector_index, block->content);
       block->dirty = false;
 
-      lock_release (&block->access_lock);
+      //lock_release (&block->access_lock);
     }
 }
 
@@ -323,15 +341,16 @@ cache_flush_block (struct cache_block* block)
    the cache itself is not cleared or free'd. */
 void
 cache_flush ()
-{
-  if (!cache_enabled ()) return;
+{    
+  if (!cache_enabled () || blocks_cached == 0) return;  
   struct cache_block* p = NULL;    
+  struct list_elem* e = list_head (&block_list);
   
-  while (!list_empty (&block_list))
-     {
-       p = list_entry (list_begin (&block_list), struct cache_block, list_elem); 
-       cache_flush_block (p);
-     }
+  while ((e = list_next (e)) != list_end (&block_list))
+    {
+      p = list_entry (e, struct cache_block, list_elem); 
+      cache_flush_block (p);
+    }  
 }
 
 /* Clears the whole cache by freeing all cache blocks. The cache is not 
@@ -389,7 +408,7 @@ struct cache_block*
 cache_lookup (block_sector_t sector)
 {
   struct cache_block p;
-  struct hash_elem *e;
+  struct hash_elem* e;
   struct cache_block* block;
 
   p.sector_index = sector;

@@ -81,7 +81,6 @@ free_map_create (void)
   if (free_map_file == NULL)
     PANIC ("can't open free map");
   
-  printf("Writing...\n");
   if (!bitmap_write (free_map, free_map_file))
     PANIC ("can't write free map");
 }

@@ -13,6 +13,7 @@ void cache_init (void);
 bool cache_read (block_sector_t sector, void* buffer);
 void cache_read_in (block_sector_t sector, void* buffer, off_t ofs, off_t size);
 void cache_write (block_sector_t sector, const void* buffer);
+void cache_write_in (block_sector_t sector, void* buffer, off_t ofs, off_t size);
 
 bool cache_enabled (void);
 

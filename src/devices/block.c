@@ -127,14 +127,15 @@ block_read (struct block *block, block_sector_t sector, void *buffer)
   if (cache_enabled () && block->type == BLOCK_FILESYS)
     {
       // Try reading from cache first (only for file system)
-      bool cached = cache_read (sector, buffer);
+      bool cached = cache_read (sector, buffer);            
 
       // If the block wasn't cached, read from file system and write to cache
       if (!cached)
         {
           block->ops->read (block->aux, sector, buffer);
           cache_write (sector, buffer);
-        }          
+        }     
+      
       return;
     }  
 #endif
