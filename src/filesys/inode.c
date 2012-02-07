@@ -67,13 +67,13 @@ struct inode
 /* Returns the block device sector that contains byte offset POS
    within INODE.
    Returns -1 if INODE does not contain data for a byte at offset
-   POS. */
+   POS. Returns -2 if there is space remaining though. */
 static block_sector_t
 byte_to_sector (const struct inode *inode, off_t pos) 
 {
   int orgpos = pos;
   ASSERT (inode != NULL);
-  
+    
   if (pos > inode->data[0]->length)
     return -1;
   
@@ -86,9 +86,9 @@ byte_to_sector (const struct inode *inode, off_t pos)
   int index = pos / BLOCK_SECTOR_SIZE;
   
   if (inode_offset >= inode->num_disk_inodes) 
-    return -1;
+    return -2;
   if (index >= inode->data[inode_offset]->num_sectors)
-    return -1;
+    return -2;
     
   return inode->data[inode_offset]->sectors[index];
 }
@@ -109,7 +109,7 @@ inode_init (void)
    pointer, with the new sector being referenced as the first index table entry 
    of the new inode. */
 bool
-inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
+inode_disk_append_sector (struct inode_disk* inode, const void* buffer, size_t size)
 { 
   struct inode_disk* tail = NULL;
   
@@ -139,7 +139,7 @@ inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
       // Write new data block to disk
       block_write (fs_device, sector, buffer);
       tail->sectors[tail->num_sectors++] = sector;
-      tail->length += BLOCK_SECTOR_SIZE;
+      tail->length += size;
       
       // Update the tail itself on disk (it's cheap 'cause it's cached anyway)
       block_write (fs_device, tail->inode_sector, tail);
@@ -147,7 +147,7 @@ inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
       // Update the head of the list too
       if (tail != inode) 
         {
-          inode->length += BLOCK_SECTOR_SIZE;
+          inode->length += size;
           block_write (fs_device, inode->inode_sector, inode);
           free (tail);
           tail = NULL;
@@ -189,7 +189,7 @@ inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
   inode->num_meta_nodes = tail->num_meta_nodes;    
   
   // Append new sector to new tail; also writes new tail to disk
-  bool success = inode_disk_append_sector (next, buffer);
+  bool success = inode_disk_append_sector (next, buffer, size);
   
   // Write changes in old tail and head to disk
   if (success)
@@ -206,14 +206,52 @@ inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
   return success;
 }
 
+/* Writes changes of given inode and its meta data nodes to disk.*/
+void inode_save (struct inode* inode)
+{
+  int i = 0;
+  for (i = 0; i < inode->num_disk_inodes; i++)
+    {
+      block_write (fs_device, inode->data[i]->inode_sector, inode->data[i]);
+    }
+}
+
 bool
 inode_grow (struct inode* inode, off_t pos)
-{    
-  printf("GROW\n");
+{          
+  int missing_bytes = pos - inode->data[0]->length;  
+  printf("GROW (%d,%d), filesize=%d, missing_bytes = %d\n", 
+         inode->sector, pos, inode->data[0]->length, missing_bytes);
+  ASSERT (missing_bytes > 0);   
+  
+  int bytes_available = BLOCK_SECTOR_SIZE - 
+                        inode->data[0]->length % BLOCK_SECTOR_SIZE;
+  if (inode->data[inode->num_disk_inodes-1]->num_sectors == 0) 
+    bytes_available = 0;
+  
+  printf("Available Bytes in last sector: %d\n", bytes_available);
+  
+  if (byte_to_sector (inode, pos) == -1 && bytes_available > missing_bytes)
+    {      
+      printf("Just increase file size, don't append sectors\n");
+      // If there's still space in the last sector remaining, simply increase
+      // the filesize
+      inode->data[0]->length += missing_bytes;
+      if (inode->num_disk_inodes > 1)
+        inode->data[inode->num_disk_inodes-1]->length += missing_bytes;
+      
+      printf("Save inode with new filesize = %d\n", inode->data[0]->length);
+      
+      inode_save (inode);
+      return true;
+    }
+  else
+    printf("append new sector\n");
+  
   // We need that many sectors for that position
   int needed_sectors = bytes_to_sectors (pos); 
   if (needed_sectors == 0) 
-    needed_sectors = 1;
+    needed_sectors = 1;     
   
   // Calculate how many sectors are missing 
   int missing = needed_sectors - 
@@ -226,12 +264,14 @@ inode_grow (struct inode* inode, off_t pos)
   while (i-- > 0)
     {      
       static char zeros[BLOCK_SECTOR_SIZE]; 
-      if (!inode_disk_append_sector (inode->data[0], zeros))
+      if (!inode_disk_append_sector (inode->data[0], zeros, missing_bytes))
         return false;      
     }
   
   // Reload the inode in-memory representation
   inode_load_data (inode);
+  
+  printf("%d sectors for %d bytes\n", inode->data[0]->num_sectors, inode->data[0]->length);
   
   return true;
 }
@@ -271,7 +311,7 @@ inode_create (block_sector_t sector, off_t length)
       
       while (sectors > 0)
         {
-          if (!inode_disk_append_sector(disk_inode, zeros))
+          if (!inode_disk_append_sector(disk_inode, zeros, BLOCK_SECTOR_SIZE))
             {
               PANIC("TODO: free_map_allocate == false behandeln");
               return false;
@@ -644,12 +684,15 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
         break;
       
       /* Sector to write, starting byte offset within sector. */
-      int sector_idx = byte_to_sector (inode, offset);            
+      int sector_idx = byte_to_sector (inode, offset + chunk_size - 1);            
       if (sector_idx < 0)
         {          
-          // File needs to grow
-          inode_grow (inode, offset);
+          // File needs to grow          
+          inode_grow (inode, offset + chunk_size);          
           sector_idx = byte_to_sector (inode, offset);
+          if (sector_idx < 0)
+            printf("file length (%d) too small for %d\n", 
+                   inode->data[0]->length, offset);
           ASSERT (sector_idx >= 0);
         }            
 
