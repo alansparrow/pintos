@@ -40,7 +40,7 @@ struct inode_disk
 static inline size_t
 bytes_to_sectors (off_t size)
 {
-  return DIV_ROUND_UP (size, BLOCK_SECTOR_SIZE);
+  return DIV_ROUND_UP (size, BLOCK_SECTOR_SIZE);  
 }
 
 /* In-memory inode. */
@@ -204,7 +204,7 @@ inode_create (block_sector_t sector, off_t length)
   struct inode_disk *disk_inode = NULL;
   bool success = false;
 
-  ASSERT (length >= 0);
+  //ASSERT (length >= 0);
 
   /* If this assertion fails, the inode structure is not exactly
      one sector in size, and you should fix that. */
@@ -212,14 +212,16 @@ inode_create (block_sector_t sector, off_t length)
 
   disk_inode = calloc (1, sizeof *disk_inode);
   if (disk_inode != NULL)
-    {
+    {      
       size_t sectors = bytes_to_sectors (length);
-      disk_inode->length = length;
+      disk_inode->length = 0;
       disk_inode->magic = INODE_MAGIC;
       disk_inode->inode_sector = sector;
       disk_inode->prev = 0;
       disk_inode->next = 0;
       disk_inode->tail = sector; 
+      disk_inode->num_meta_nodes = 1;
+      disk_inode->num_sectors = 0;      
             
       // Allocate sectors       
       static char zeros[BLOCK_SECTOR_SIZE];
@@ -232,7 +234,10 @@ inode_create (block_sector_t sector, off_t length)
               return false;
             }
           sectors--;
-        }
+        }      
+
+      disk_inode->length = length;
+      block_write (fs_device, sector, disk_inode);
       
       success = true;      
       free (disk_inode);
@@ -275,7 +280,6 @@ inode_open (block_sector_t sector)
   inode->num_disk_inodes = 0;
   
   // Store data nodes in a fixed size array for easier access later on
-  printf("Loading meta data nodes...\n");
   inode->data = NULL;    
   struct inode_disk* data = NULL;
   
@@ -283,16 +287,15 @@ inode_open (block_sector_t sector)
     {
       // Load one inode_disk node; the first lies in SECTOR, the rest is linked
       int next_sector = data == NULL ? inode->sector : data->next;
-      data = malloc (sizeof (struct inode_disk));
+      data = calloc (1, sizeof (struct inode_disk));
+      
       if (data == NULL) PANIC("Out of Memory");    
-      printf("Loading sector %d\n", next_sector);
-      block_read (fs_device, next_sector, &data);
+      block_read (fs_device, next_sector, data);
       
       // The first block contains the number of linked blocks, use it to create
       // the array to store all meta data nodes
       if (inode->data == NULL)
-        {
-          printf("Allocating memory for %d meta data nodes\n", data->num_meta_nodes);
+        {          
           inode->data = malloc (sizeof(struct inode_disk) * data->num_meta_nodes);
           if (inode->data == NULL) PANIC("Out of Memory");
         }
@@ -301,8 +304,6 @@ inode_open (block_sector_t sector)
       inode->data[inode->num_disk_inodes++] = data;      
     }
   while (data->next > 0);  
-  
-  printf("inode_open complete\n");
   
   return inode;
 }
