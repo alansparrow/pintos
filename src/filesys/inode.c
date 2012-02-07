@@ -220,8 +220,6 @@ bool
 inode_grow (struct inode* inode, off_t pos)
 {          
   int missing_bytes = pos - inode->data[0]->length;  
-  printf("### GROW (%d,%d), filesize=%d, missing_bytes = %d\n", 
-         inode->sector, pos, inode->data[0]->length, missing_bytes);
   ASSERT (missing_bytes > 0);   
   
   int bytes_available = BLOCK_SECTOR_SIZE - 
@@ -230,9 +228,7 @@ inode_grow (struct inode* inode, off_t pos)
     bytes_available = 0;
   
   if (byte_to_sector (inode, pos) == -1 && bytes_available > missing_bytes)
-    {      
-      printf("### Just increase file size, don't append sectors\n");
-      
+    {            
       // If there's still space in the last sector remaining, simply increase
       // the filesize
       inode->data[0]->length += missing_bytes;
@@ -246,13 +242,10 @@ inode_grow (struct inode* inode, off_t pos)
   // We need that many sectors for that position
   int needed_sectors = bytes_to_sectors (missing_bytes); 
   if (needed_sectors == 0) 
-    needed_sectors = 1;     
-  
-  printf("Need %d new sectors\n", needed_sectors);  
+    needed_sectors = 1;         
   
   // Add the missing number of sectors
-  int i = needed_sectors; 
-  printf("### Append %d new sector\n", i);
+  int i = needed_sectors;   
   while (i-- > 0)
     {      
       static char zeros[BLOCK_SECTOR_SIZE]; 
@@ -262,8 +255,6 @@ inode_grow (struct inode* inode, off_t pos)
   
   // Reload the inode in-memory representation
   inode_load_data (inode);
-  
-  printf("### %d sectors for %d bytes\n", inode->data[0]->num_sectors, inode->data[0]->length);
   
   return true;
 }
