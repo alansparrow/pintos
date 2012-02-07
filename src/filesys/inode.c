@@ -10,7 +10,7 @@
 /* Identifies an inode. */
 #define INODE_MAGIC 0x494e4f44
 
-#define INDEX_SIZE 120
+#define INDEX_SIZE 119
 
 /* On-disk inode.
    Must be exactly BLOCK_SECTOR_SIZE (512) bytes long. */
@@ -28,6 +28,7 @@ struct inode_disk
     int num_data_nodes;                 /* Number of linked inode_disk blocks */
     block_sector_t prev;                /* Previous inode belong to this file */
     block_sector_t next;                /* Next inode belonging to this file */
+    block_sector_t tail;        /* Pointer to last data node, only for head */
     
     //===== ^^ 500 Bytes ^^ ====
     
@@ -63,7 +64,7 @@ byte_to_sector (const struct inode *inode, off_t pos)
 {
   ASSERT (inode != NULL);
   
-  if (pos > inode->data.length)
+  if (pos > inode->data[0]->length)
     return -1;
   
   // Each inode can point to INDEX_SIZE sectors. If this number is reached,
@@ -91,63 +92,105 @@ inode_init (void)
   list_init (&open_inodes);
 }
 
-/* Appends a new sector to the given disk inode which must be stored at inode_sector. 
+/* Appends a new sector to the given disk INODE with BUFFER as content.
    If the index table is full, a new inode is created and pointed to by the next 
    pointer, with the new sector being referenced as the first index table entry 
    of the new inode. */
 bool
-inode_disk_append_sector (struct inode_disk* inode, block_sector_t inode_sector, 
-                          const void* buffer)
-{      
-  // Check if the new sector fits into inode's sector table
-  if (inode->num_sectors < INDEX_SIZE)
+inode_disk_append_sector (struct inode_disk* inode, const void* buffer)
+{ 
+  struct inode_disk* tail = NULL;
+  
+  // The new sector is going to be appended at the tail of the linked list
+  if (inode->tail != inode->inode_sector && inode->tail > 0)
     {
-      // Allocate sector for the data
-      int sector = -1;  
-      if (!free_map_allocate (1, &sector))
+      // the tail must be loaded from disk
+      tail = malloc (sizeof (struct inode_disk));
+      if (tail == NULL) 
         return false;
-      
-      block_write (fs_device, sector, buffer);
-      inode->sectors[inode->num_sectors++] = sector;
-    }
-  else if (inode->next > 0)
-    {
-      // Try to append to the next disk inode
+      block_read (fs_device, inode->tail, tail);
     }
   else
     {
-      // Allocate new disk inode to store more sector indices
-      struct inode_disk* next = calloc (1, sizeof(inode_disk));
-      if (next == NULL)
-        return false;
-      
-      next->magic = INODE_MAGIC;            
-      next->prev = inode_sector; // sector of previous inode of same file            
-      next->length = inode->length - BLOCK_SECTOR_SIZE * INDEX_SIZE; // remaining length
-      
-      // Allocate a sector for it on the file system
-      int next_inode_sector = -1;
-      if (!free_map_allocate (1, &next_inode_sector))
-        {
-          free (next);
-          return false;
-        }           
-            
-      if (inode_disk_append_sector (next, next_inode_sector, buffer))
-        {
-          block_write (fs_device, next_inode_sector, next);
-          inode->next = next_inode_sector;
-          inode->num_data_nodes++;
-          return true;
-        }
-      else
-        {
-          return false;
-        }
+      // There's only one node so far or given inode is the tail itself
+      tail = inode;
     }
   
-  // write the disk inode back to disk
-  block_write (fs_device, inode_sector, inode);
+  // Check if the new sector fits into tail's sector table
+  if (tail->num_sectors < INDEX_SIZE)
+    {
+      // Allocate sector for the data
+      block_sector_t sector = 0;  
+      if (!free_map_allocate (1, &sector))
+        return false;
+      
+      // Write new data block to disk
+      block_write (fs_device, sector, buffer);
+      tail->sectors[tail->num_sectors++] = sector;
+      tail->length += BLOCK_SECTOR_SIZE;
+      
+      // Update the tail itself on disk (it's cheap 'cause it's cached anyway)
+      block_write (fs_device, tail->inode_sector, tail);
+      
+      // Update the head of the list too
+      if (tail != inode) 
+        {
+          inode->length += BLOCK_SECTOR_SIZE;
+          block_write (fs_device, inode->inode_sector, inode);
+          free (tail);
+        }
+      
+      return true;
+    }    
+  
+  // If no space is left in the tail's index table, a new node has to be created
+  struct inode_disk* old_tail = tail;
+  struct inode_disk* next = calloc (1, sizeof (struct inode_disk));
+  if (next == NULL)
+    return false;
+
+  next->magic = INODE_MAGIC;
+  next->next = 0;
+  next->prev = tail->inode_sector;         
+  next->length = inode->length;  
+  next->num_data_nodes = inode->num_data_nodes + 1;
+  next->num_sectors = 0;
+
+  // Allocate a sector for it on the file system
+  block_sector_t next_inode_sector = 0;
+  if (!free_map_allocate (1, &next_inode_sector))
+    {
+      free (next);
+      if (tail != inode)
+        free (tail);
+      return false;
+    }
+
+  next->inode_sector = next_inode_sector;
+  next->tail = next_inode_sector;
+  
+  // Update old tail and head
+  old_tail->next = next_inode_sector;
+  old_tail->num_data_nodes = tail->num_data_nodes;  
+  inode->tail = next_inode_sector;
+  inode->num_data_nodes = tail->num_data_nodes;    
+  
+  // Append new sector to new tail; also writes new tail to disk
+  bool success = inode_disk_append_sector (next, buffer);
+  
+  // Write changes in old tail and head to disk
+  if (success)
+    {
+      block_write (fs_device, old_tail->inode_sector, old_tail);
+      if (old_tail != inode)
+        block_write (fs_device, inode->inode_sector, inode);
+    }
+  
+  // If tail was read from disk it can be free'd now
+  if (old_tail != inode)
+    free (old_tail);
+  
+  return success;
 }
 
 /* Initializes an inode with LENGTH bytes of data and
@@ -174,6 +217,9 @@ inode_create (block_sector_t sector, off_t length)
       disk_inode->length = length;
       disk_inode->magic = INODE_MAGIC;
       disk_inode->inode_sector = sector;
+      disk_inode->prev = 0;
+      disk_inode->next = 0;
+      disk_inode->tail = sector; 
             
       // Allocate sectors       
       static char zeros[BLOCK_SECTOR_SIZE];
@@ -182,14 +228,13 @@ inode_create (block_sector_t sector, off_t length)
         {
           if (!inode_disk_append_sector(disk_inode, zeros))
             {
-              return PANIC("TODO: free_map_allocate == false behandeln");
+              PANIC("TODO: free_map_allocate == false behandeln");
+              return false;
             }
           sectors--;
         }
       
-      block_write (fs_device, sector, disk_inode);
-      success = true;
-      
+      success = true;      
       free (disk_inode);
     }
   return success;
@@ -237,7 +282,7 @@ inode_open (block_sector_t sector)
     {
       // Load one inode_disk node; the first lies in SECTOR, the rest is linked
       int next_sector = data == NULL ? inode->sector : data->next;
-      data = malloc (sizeof (inode_disk));
+      data = malloc (sizeof (struct inode_disk));
       if (data == NULL) PANIC("Out of Memory");      
       block_read (fs_device, next_sector, &data);
       
@@ -245,7 +290,7 @@ inode_open (block_sector_t sector)
       // the array to store all meta data nodes
       if (inode->data == NULL)
         {
-          inode->data = malloc (sizeof(inode_disk) * data->num_data_nodes);
+          inode->data = malloc (sizeof(struct inode_disk) * data->num_data_nodes);
           if (inode->data == NULL) PANIC("Out of Memory");
         }
       
