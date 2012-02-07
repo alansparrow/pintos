@@ -10,21 +10,22 @@
 /* Identifies an inode. */
 #define INODE_MAGIC 0x494e4f44
 
-#define INDEX_SIZE 122
-#define INVALID_SECTOR 0xFFFFFFFF
-
+#define INDEX_SIZE 120
 
 /* On-disk inode.
    Must be exactly BLOCK_SECTOR_SIZE (512) bytes long. */
 struct inode_disk
   {
+    block_sector_t inode_sector;         /* Sector of this inode */
     off_t length;                       /* File size in bytes. */
     unsigned magic;                     /* Magic number. */
     
     //===== ^^ 12 Bytes ^^ =====
     
-    int num_sectors;                    /* Number of referenced sectors */
-    block_sector_t sectors[INDEX_SIZE]; /* References to used sectors */
+    int num_sectors;                    /* Number of referenced sectors */    
+    block_sector_t sectors[INDEX_SIZE]; /* References to used sectors for data */
+    
+    int num_data_nodes;                 /* Number of linked inode_disk blocks */
     block_sector_t prev;                /* Previous inode belong to this file */
     block_sector_t next;                /* Next inode belonging to this file */
     
@@ -32,7 +33,7 @@ struct inode_disk
     
     //uint32_t unused[125];               /* Not used. */
   };
-
+  
 /* Returns the number of sectors to allocate for an inode SIZE
    bytes long. */
 static inline size_t
@@ -49,7 +50,8 @@ struct inode
     int open_cnt;                       /* Number of openers. */
     bool removed;                       /* True if deleted, false otherwise. */
     int deny_write_cnt;                 /* 0: writes ok, >0: deny writes. */
-    struct inode_disk data;             /* Inode content. */
+    struct inode_disk** data;           /* Inode contents. */
+    int num_disk_inodes;                /* number of linked disk inodes */
   };
 
 /* Returns the block device sector that contains byte offset POS
@@ -72,22 +74,10 @@ byte_to_sector (const struct inode *inode, off_t pos)
   pos -= inode_offset * bytes_per_inode;
   int index = pos / BLOCK_SECTOR_SIZE;
   
-  struct inode_disk* data = inode->data;
-  while (inode_offset > 0)
-    {
-      ASSERT (data->next != NULL);
-      data = data->next;
-      inode_offset--;
-    }
+  ASSERT (inode_offset < inode->num_disk_inodes);
+  ASSERT (index < inode->data[inode_offset]->num_sectors);
     
-  return data->sectors[index];
-  
-  /*
-  if (pos < inode->data.length)
-    return inode->data.start + pos / BLOCK_SECTOR_SIZE;
-  else
-    return -1;
-  */
+  return inode->data[inode_offset]->sectors[index];
 }
 
 /* List of open inodes, so that opening a single inode twice
@@ -101,43 +91,63 @@ inode_init (void)
   list_init (&open_inodes);
 }
 
+/* Appends a new sector to the given disk inode which must be stored at inode_sector. 
+   If the index table is full, a new inode is created and pointed to by the next 
+   pointer, with the new sector being referenced as the first index table entry 
+   of the new inode. */
 bool
 inode_disk_append_sector (struct inode_disk* inode, block_sector_t inode_sector, 
                           const void* buffer)
-{
-  // Allocate sector for the data
-  int sector = -1;  
-  if (!free_map_allocate (1, &sector))
-    return false;
-  
+{      
+  // Check if the new sector fits into inode's sector table
   if (inode->num_sectors < INDEX_SIZE)
     {
+      // Allocate sector for the data
+      int sector = -1;  
+      if (!free_map_allocate (1, &sector))
+        return false;
+      
       block_write (fs_device, sector, buffer);
       inode->sectors[inode->num_sectors++] = sector;
     }
+  else if (inode->next > 0)
+    {
+      // Try to append to the next disk inode
+    }
   else
     {
-      // Allocate new inode to store more sector indices
+      // Allocate new disk inode to store more sector indices
       struct inode_disk* next = calloc (1, sizeof(inode_disk));
       if (next == NULL)
+        return false;
+      
+      next->magic = INODE_MAGIC;            
+      next->prev = inode_sector; // sector of previous inode of same file            
+      next->length = inode->length - BLOCK_SECTOR_SIZE * INDEX_SIZE; // remaining length
+      
+      // Allocate a sector for it on the file system
+      int next_inode_sector = -1;
+      if (!free_map_allocate (1, &next_inode_sector))
         {
-          free_map_release (sector, 1);
+          free (next);
+          return false;
+        }           
+            
+      if (inode_disk_append_sector (next, next_inode_sector, buffer))
+        {
+          block_write (fs_device, next_inode_sector, next);
+          inode->next = next_inode_sector;
+          inode->num_data_nodes++;
+          return true;
+        }
+      else
+        {
           return false;
         }
-      
-      // Remaining length
-      next->length = inode->length - BLOCK_SECTOR_SIZE * INDEX_SIZE;
-      next->magic = INODE_MAGIC;
-      next->prev = inode_sector;
-      next->next = NULL;
-      next->num_sectors = 0;    
-      
-      if 
     }
-  disk_inode->sectors[tableIndex] = index;
-  block_write (fs_device, index, zeros);
   
-  return true;
+  // write the disk inode back to disk
+  block_write (fs_device, inode_sector, inode);
 }
 
 /* Initializes an inode with LENGTH bytes of data and
@@ -163,18 +173,15 @@ inode_create (block_sector_t sector, off_t length)
       size_t sectors = bytes_to_sectors (length);
       disk_inode->length = length;
       disk_inode->magic = INODE_MAGIC;
-      disk_inode->prev = INVALID_SECTOR;
-      disk_inode->next = INVALID_SECTOR;
-      disk_inode->num_sectors = 0;
+      disk_inode->inode_sector = sector;
             
       // Allocate sectors       
       static char zeros[BLOCK_SECTOR_SIZE];
       
       while (sectors > 0)
         {
-          if (!inode_append_sector(disk_inode, zeros))
+          if (!inode_disk_append_sector(disk_inode, zeros))
             {
-              // TODO: Fehlerbehandlung wenn Speicher auf der Festplatte voll ist
               return PANIC("TODO: free_map_allocate == false behandeln");
             }
           sectors--;
@@ -182,22 +189,6 @@ inode_create (block_sector_t sector, off_t length)
       
       block_write (fs_device, sector, disk_inode);
       success = true;
-      
-      /*
-      if (free_map_allocate (sectors, &disk_inode->start)) 
-        {
-          block_write (fs_device, sector, disk_inode);
-          if (sectors > 0) 
-            {
-              static char zeros[BLOCK_SECTOR_SIZE];
-              size_t i;
-              
-              for (i = 0; i < sectors; i++) 
-                block_write (fs_device, disk_inode->start + i, zeros);
-            }
-          success = true; 
-        }
-      */
       
       free (disk_inode);
     }
@@ -236,7 +227,33 @@ inode_open (block_sector_t sector)
   inode->open_cnt = 1;
   inode->deny_write_cnt = 0;
   inode->removed = false;
-  block_read (fs_device, inode->sector, &inode->data);
+  inode->num_disk_inodes = 0;
+  
+  // Store data nodes in a fixed size array for easier access later on
+  inode->data = NULL;    
+  struct inode_disk* data = NULL;
+  
+  do
+    {
+      // Load one inode_disk node; the first lies in SECTOR, the rest is linked
+      int next_sector = data == NULL ? inode->sector : data->next;
+      data = malloc (sizeof (inode_disk));
+      if (data == NULL) PANIC("Out of Memory");      
+      block_read (fs_device, next_sector, &data);
+      
+      // The first block contains the number of linked blocks, use it to create
+      // the array to store all meta data nodes
+      if (inode->data == NULL)
+        {
+          inode->data = malloc (sizeof(inode_disk) * data->num_data_nodes);
+          if (inode->data == NULL) PANIC("Out of Memory");
+        }
+      
+      // Save element in data array
+      inode->data[inode->num_disk_inodes++] = data;      
+    }
+  while (data->next > 0);  
+  
   return inode;
 }
 
@@ -275,11 +292,25 @@ inode_close (struct inode *inode)
       /* Deallocate blocks if removed. */
       if (inode->removed) 
         {
-          free_map_release (inode->sector, 1);
-          free_map_release (inode->data.start,
-                            bytes_to_sectors (inode->data.length)); 
-        }
+          int i, j;
+          
+          // Free all linked sectors
+          for (i = 0; i < inode->num_disk_inodes; i++)
+            {
+              // Release the referenced data blocks on the disk
+              for (j = 0; j < inode->data[i]->num_sectors; j++)
+                {
+                  free_map_release (inode->data[i]->sectors[j], 1);
+                }
+              
+              // Release the block containing this inode
+              free_map_release (inode->data[i]->inode_sector, 1);
 
+              // The inode structure itself was dynamically allocated, free it
+              free (inode->data[i]);
+            }
+        }      
+      
       free (inode); 
     }
 }
@@ -440,5 +471,5 @@ inode_allow_write (struct inode *inode)
 off_t
 inode_length (const struct inode *inode)
 {
-  return inode->data.length;
+  return inode->data[0]->length;  
 }
