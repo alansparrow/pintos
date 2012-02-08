@@ -37,7 +37,7 @@ void
 filesys_done (void) 
 {
   //cache_flush ();
-  //cache_free ();
+  cache_free ();
   free_map_close ();
 }
 

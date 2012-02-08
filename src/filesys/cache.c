@@ -46,8 +46,10 @@ static struct list block_list;
 static struct hash block_map;
 static struct lock create_lock;
 static struct lock search_lock;
-static int blocks_cached = -1; /* Number of blocks in the cache right now */
 static struct cache_block* hand = NULL;
+
+static int blocks_cached = -1; /* Number of blocks in the cache right now */
+static int num_dirty = 0;
 static bool write_behind = true;
 
 void
@@ -74,7 +76,9 @@ void cache_write_behind (void* aux UNUSED)
       cache_flush ();
       
       timer_msleep (write_behind_interval_ms);
-    }        
+    }     
+  
+  cache_flush();
 }
 
 void cache_exit ()
@@ -167,7 +171,7 @@ cache_read_in (block_sector_t sector, void* buffer, off_t ofs, off_t size)
 void 
 cache_write_in (block_sector_t sector, void* buffer, off_t ofs, off_t size)
 {
-  ASSERT (enable_cache);
+  ASSERT (enable_cache);  
   
   struct cache_block* block = cache_lookup (sector);
   if (block != NULL)
@@ -175,10 +179,16 @@ cache_write_in (block_sector_t sector, void* buffer, off_t ofs, off_t size)
       lock_acquire (&block->access_lock);
 
       // block is already cached -> overwrite
-      memcpy (block->content + ofs, buffer, size);
-      block->dirty = true;      
+      memcpy (block->content + ofs, buffer, size);            
+      
+      if (!block->dirty)
+        {
+           block->dirty = true;
+           num_dirty++;
+        }
 
-      lock_release (&block->access_lock);
+      lock_release (&block->access_lock);            
+      
       block->accessing = false;
       return;
     }
@@ -191,8 +201,12 @@ cache_write_in (block_sector_t sector, void* buffer, off_t ofs, off_t size)
   lock_acquire (&block->access_lock);
   memcpy (block->content + ofs, buffer, size);
   lock_release (&block->access_lock);
-  
-  block->dirty = true;  
+
+  if (!block->dirty)
+    {
+      block->dirty = true;
+      num_dirty++;
+    } 
   
   // Reset access flag, so block can be evicted
   block->accessing = false;  
@@ -202,7 +216,7 @@ cache_write_in (block_sector_t sector, void* buffer, off_t ofs, off_t size)
 void
 cache_write (block_sector_t sector, const void* buffer)
 {
-  cache_write_in (sector, buffer, 0, BLOCK_SECTOR_SIZE);  
+  cache_write_in (sector, buffer, 0, BLOCK_SECTOR_SIZE);    
 }
 
 /* Creates a new cache block for given sector. If the maximum number of 
@@ -292,9 +306,13 @@ cache_evict ()
   // Found a block to evict; move hand to next element
   struct cache_block* evictee = hand;
   hand = get_successor (hand);
+  
+  int temp = blocks_cached;
 
   // Remove the block from the cache
   cache_remove (evictee, true);
+  
+  ASSERT (blocks_cached == temp - 1);
 }
 
 void
@@ -302,7 +320,7 @@ cache_remove (struct cache_block* block, bool flush)
 {
   // Prevent other threads from accessing the cache while this element is removed
   lock_acquire (&search_lock);
-  lock_acquire (&block->access_lock);
+  //lock_acquire (&block->access_lock);
   
   // Remove evictee from block lists
   list_remove (&block->list_elem);
@@ -326,14 +344,15 @@ void
 cache_flush_block (struct cache_block* block)
 {
   if (block->dirty)
-    {            
-      if (false && !lock_held_by_current_thread (&block->access_lock))
-        lock_acquire (&block->access_lock);
-
+    {                  
+      lock_acquire (&block->access_lock);
+            
+      ASSERT (block->content != NULL);      
       block_write_nocache (fs_device, block->sector_index, block->content);
       block->dirty = false;
+      num_dirty--;
 
-      //lock_release (&block->access_lock);
+      lock_release (&block->access_lock);
     }
 }
 
@@ -349,8 +368,8 @@ cache_flush ()
   while ((e = list_next (e)) != list_end (&block_list))
     {
       p = list_entry (e, struct cache_block, list_elem); 
-      cache_flush_block (p);
-    }  
+      cache_flush_block (p);            
+    }      
 }
 
 /* Clears the whole cache by freeing all cache blocks. The cache is not 
